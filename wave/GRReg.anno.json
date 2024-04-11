@@ -1,0 +1,31 @@
+[
+  {
+    "class":"firrtl.EmitCircuitAnnotation",
+    "emitter":"firrtl.VerilogEmitter"
+  },
+  {
+    "class":"firrtl.transforms.BlackBoxTargetDirAnno",
+    "targetDir":"wave"
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~GRReg|GRReg>io_ALU_GRReg_IO_rd_in",
+    "sources":[
+      "~GRReg|GRReg>io_rd_addr"
+    ]
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~GRReg|GRReg>io_ALU_GRReg_IO_rk",
+    "sources":[
+      "~GRReg|GRReg>io_rk_addr"
+    ]
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~GRReg|GRReg>io_ALU_GRReg_IO_rj",
+    "sources":[
+      "~GRReg|GRReg>io_rj_addr"
+    ]
+  }
+]

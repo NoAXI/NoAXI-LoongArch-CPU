@@ -1,0 +1,22 @@
+{
+    "value": {
+        "seenScripts": [
+            [
+                "/home/yuxuaan/Chisel_CPU_Learning/LA64CPU/build.sc",
+                "// // import Mill dependency\n// import mill._\n// import mill.define.Sources\n// import mill.modules.Util\n// import mill.scalalib.TestModule.ScalaTest\n// import scalalib._\n// // support BSP\n// import mill.bsp._\n\n// object T1 extends SbtModule { m =>\n//   override def millSourcePath = os.pwd  // 当前路径\n//   override def scalaVersion = \"2.13.12\"\n//   override def scalacOptions = Seq(\n//     \"-language:reflectiveCalls\",\n//     \"-deprecation\",\n//     \"-feature\",\n//     \"-Xcheckinit\",\n//   )\n//   override def ivyDeps = Agg(  // 指定了项目的依赖库\n//     ivy\"org.chipsalliance::chisel:6.2.0\",\n//     // ivy\"edu.berkeley.cs::chiseltest:0.6.0\"  // 对应的chisel版本是3.5.2\n//   )\n//   override def scalacPluginIvyDeps = Agg(  // 插件依赖\n//     ivy\"org.chipsalliance:::chisel-plugin:6.2.0\",\n//   )\n//   // 测试用\n//   object test extends SbtModuleTests with TestModule.ScalaTest {\n//     override def ivyDeps = m.ivyDeps() ++ Agg(\n//       ivy\"org.scalatest::scalatest::3.2.16\"\n//     )\n//   }\n// }\n\n\n// import Mill dependency\nimport mill._\nimport mill.define.Sources\nimport mill.modules.Util\nimport mill.scalalib.TestModule.ScalaTest\nimport scalalib._\n// support BSP\nimport mill.bsp._\n\nobject LA64 extends SbtModule { m =>\n  override def millSourcePath = os.pwd\n  override def scalaVersion = \"2.13.8\"\n  override def scalacOptions = Seq(\n    \"-language:reflectiveCalls\",\n    \"-deprecation\",\n    \"-feature\",\n    \"-Xcheckinit\",\n    \"-P:chiselplugin:genBundleElements\"\n  )\n  override def ivyDeps = Agg(\n    ivy\"edu.berkeley.cs::chisel3:3.5.1\",\n  )\n  override def scalacPluginIvyDeps = Agg(\n    ivy\"edu.berkeley.cs:::chisel3-plugin:3.5.1\",\n  )\n  object test extends SbtModuleTests with TestModule.ScalaTest {\n    override def ivyDeps = m.ivyDeps() ++ Agg(\n      ivy\"edu.berkeley.cs::chiseltest:0.5.1\"\n    )\n  }\n}\n"
+            ]
+        ],
+        "repos": [],
+        "ivyDeps": [],
+        "importGraphEdges": [
+            [
+                "/home/yuxuaan/Chisel_CPU_Learning/LA64CPU/build.sc",
+                []
+            ]
+        ],
+        "errors": [],
+        "millImport": false
+    },
+    "valueHash": -1754404593,
+    "inputsHash": 462486591
+}

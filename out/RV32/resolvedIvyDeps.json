@@ -1,0 +1,31 @@
+{
+    "value": [
+        "qref:v1:623f83d7:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/edu/berkeley/cs/chisel3_2.13/3.5.1/chisel3_2.13-3.5.1.jar",
+        "qref:v1:438104da:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.8/scala-library-2.13.8.jar",
+        "qref:v1:f8851f8d:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/edu/berkeley/cs/chisel3-macros_2.13/3.5.1/chisel3-macros_2.13-3.5.1.jar",
+        "qref:v1:fac8df3d:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/edu/berkeley/cs/chisel3-core_2.13/3.5.1/chisel3-core_2.13-3.5.1.jar",
+        "qref:v1:28f86f0b:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.13.8/scala-reflect-2.13.8.jar",
+        "qref:v1:e27b7a82:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/os-lib_2.13/0.8.0/os-lib_2.13-0.8.0.jar",
+        "qref:v1:14595772:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/edu/berkeley/cs/firrtl_2.13/1.5.1/firrtl_2.13-1.5.1.jar",
+        "qref:v1:a4742de7:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/geny_2.13/0.7.0/geny_2.13-0.7.0.jar",
+        "qref:v1:5c1aabde:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/antlr/antlr4-runtime/4.9.3/antlr4-runtime-4.9.3.jar",
+        "qref:v1:e9efebaa:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/com/google/protobuf/protobuf-java/3.18.0/protobuf-java-3.18.0.jar",
+        "qref:v1:c2ed1687:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/scopt/scopt_2.13/3.7.1/scopt_2.13-3.7.1.jar",
+        "qref:v1:bae636ff:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/net/jcazevedo/moultingyaml_2.13/0.4.2/moultingyaml_2.13-0.4.2.jar",
+        "qref:v1:8a40dd35:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/json4s/json4s-native_2.13/3.6.12/json4s-native_2.13-3.6.12.jar",
+        "qref:v1:b3909b56:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/commons/commons-text/1.9/commons-text-1.9.jar",
+        "qref:v1:ad433a7b:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/io/github/alexarchambault/data-class_2.13/0.2.5/data-class_2.13-0.2.5.jar",
+        "qref:v1:cf24f93b:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/modules/scala-parallel-collections_2.13/1.0.4/scala-parallel-collections_2.13-1.0.4.jar",
+        "qref:v1:5425f787:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/nscala-time/nscala-time_2.13/2.22.0/nscala-time_2.13-2.22.0.jar",
+        "qref:v1:341c4575:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/yaml/snakeyaml/1.26/snakeyaml-1.26.jar",
+        "qref:v1:71b9d038:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/json4s/json4s-core_2.13/3.6.12/json4s-core_2.13-3.6.12.jar",
+        "qref:v1:bbf079f4:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.11/commons-lang3-3.11.jar",
+        "qref:v1:9839f30c:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/joda-time/joda-time/2.10.1/joda-time-2.10.1.jar",
+        "qref:v1:57ae2329:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/joda/joda-convert/2.2.0/joda-convert-2.2.0.jar",
+        "qref:v1:8c79a965:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/json4s/json4s-ast_2.13/3.6.12/json4s-ast_2.13-3.6.12.jar",
+        "qref:v1:e1038bb2:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/json4s/json4s-scalap_2.13/3.6.12/json4s-scalap_2.13-3.6.12.jar",
+        "qref:v1:9edb433f:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/com/thoughtworks/paranamer/paranamer/2.8/paranamer-2.8.jar"
+    ],
+    "valueHash": -1792486995,
+    "inputsHash": 763860018
+}
