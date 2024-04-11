@@ -52,10 +52,12 @@ object LA64 extends SbtModule { m =>
     "-P:chiselplugin:genBundleElements"
   )
   override def ivyDeps = Agg(
-    ivy"edu.berkeley.cs::chisel3:3.5.1",
+    // ivy"edu.berkeley.cs::chisel3:3.5.1",
+    ivy"org.chipsalliance::chisel:6.2.0",
   )
   override def scalacPluginIvyDeps = Agg(
-    ivy"edu.berkeley.cs:::chisel3-plugin:3.5.1",
+    // ivy"edu.berkeley.cs:::chisel3-plugin:3.5.1",
+    ivy"org.chipsalliance:::chisel-plugin:6.2.0"
   )
   object test extends SbtModuleTests with TestModule.ScalaTest {
     override def ivyDeps = m.ivyDeps() ++ Agg(

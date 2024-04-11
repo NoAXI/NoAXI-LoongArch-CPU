@@ -4,9 +4,9 @@ import _root_.mill.runner.MillBuildRootModule
 
 object MiscInfo_build {
   implicit lazy val millBuildRootModuleInfo: _root_.mill.runner.MillBuildRootModule.Info = _root_.mill.runner.MillBuildRootModule.Info(
-    Vector("/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunjce_provider.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/zipfs.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/cldrdata.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/icedtea-sound.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunec.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/dnsns.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/nashorn.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/java-atk-wrapper.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunpkcs11.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/jaccess.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/libatk-wrapper.so", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/localedata.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/resources.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jsse.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jce.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/charsets.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jfr.jar", "/home/yuxuaan/Chisel_CPU_Learning/LA64CPU/out/mill-launcher/0.11.7.jar").map(_root_.os.Path(_)),
-    _root_.os.Path("/home/yuxuaan/Chisel_CPU_Learning/LA64CPU"),
-    _root_.os.Path("/home/yuxuaan/Chisel_CPU_Learning/LA64CPU"),
+    Vector("/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunjce_provider.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/zipfs.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/cldrdata.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/icedtea-sound.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunec.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/dnsns.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/nashorn.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/java-atk-wrapper.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunpkcs11.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/jaccess.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/libatk-wrapper.so", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/localedata.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/resources.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jsse.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jce.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/charsets.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jfr.jar", "/home/yuxuaan/LA64CPU/out/mill-launcher/0.11.7.jar").map(_root_.os.Path(_)),
+    _root_.os.Path("/home/yuxuaan/LA64CPU"),
+    _root_.os.Path("/home/yuxuaan/LA64CPU"),
   )
   implicit lazy val millBaseModuleInfo: _root_.mill.main.RootModule.Info = _root_.mill.main.RootModule.Info(
     millBuildRootModuleInfo.projectRoot,
@@ -17,7 +17,7 @@ import MiscInfo_build.{millBuildRootModuleInfo, millBaseModuleInfo}
 object build extends build
 class build extends _root_.mill.main.RootModule {
 
-//MILL_ORIGINAL_FILE_PATH=/home/yuxuaan/Chisel_CPU_Learning/LA64CPU/build.sc
+//MILL_ORIGINAL_FILE_PATH=/home/yuxuaan/LA64CPU/build.sc
 //MILL_USER_CODE_START_MARKER
 // // import Mill dependency
 // import mill._
@@ -73,10 +73,12 @@ object LA64 extends SbtModule { m =>
     "-P:chiselplugin:genBundleElements"
   )
   override def ivyDeps = Agg(
-    ivy"edu.berkeley.cs::chisel3:3.5.1",
+    // ivy"edu.berkeley.cs::chisel3:3.5.1",
+    ivy"org.chipsalliance::chisel:6.2.0",
   )
   override def scalacPluginIvyDeps = Agg(
-    ivy"edu.berkeley.cs:::chisel3-plugin:3.5.1",
+    // ivy"edu.berkeley.cs:::chisel3-plugin:3.5.1",
+    ivy"org.chipsalliance:::chisel-plugin:6.2.0"
   )
   object test extends SbtModuleTests with TestModule.ScalaTest {
     override def ivyDeps = m.ivyDeps() ++ Agg(

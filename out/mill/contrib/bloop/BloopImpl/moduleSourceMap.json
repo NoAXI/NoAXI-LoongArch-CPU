@@ -1,0 +1,14 @@
+{
+    "value": {
+        "LA64": [
+            "/home/yuxuaan/LA64CPU/src/main/scala",
+            "/home/yuxuaan/LA64CPU/src/main/java"
+        ],
+        "LA64.test": [
+            "/home/yuxuaan/LA64CPU/src/test/scala",
+            "/home/yuxuaan/LA64CPU/src/test/java"
+        ]
+    },
+    "valueHash": 1337249240,
+    "inputsHash": 1026894881
+}

@@ -1,12 +1,12 @@
 {
     "value": [
-        "qref:v1:e9037e96:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/edu/berkeley/cs/chisel3-plugin_2.13.8/3.5.1/chisel3-plugin_2.13.8-3.5.1.jar",
+        "qref:v1:9f3ed21d:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/chipsalliance/chisel-plugin_2.13.8/6.2.0/chisel-plugin_2.13.8-6.2.0.jar",
         "qref:v1:8b4e78c6:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-compiler/2.13.8/scala-compiler-2.13.8.jar",
         "qref:v1:438104da:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.8/scala-library-2.13.8.jar",
         "qref:v1:28f86f0b:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.13.8/scala-reflect-2.13.8.jar",
         "qref:v1:ad06b5c9:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/jline/jline/3.21.0/jline-3.21.0.jar",
         "qref:v1:c30391bd:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/net/java/dev/jna/jna/5.9.0/jna-5.9.0.jar"
     ],
-    "valueHash": 1859407811,
-    "inputsHash": -1921643629
+    "valueHash": 277299255,
+    "inputsHash": -1301935378
 }

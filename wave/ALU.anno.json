@@ -6,16 +6,5 @@
   {
     "class":"firrtl.transforms.BlackBoxTargetDirAnno",
     "targetDir":"wave"
-  },
-  {
-    "class":"firrtl.transforms.CombinationalPath",
-    "sink":"~ALU|ALU>io_rd",
-    "sources":[
-      "~ALU|ALU>io_instruction",
-      "~ALU|ALU>io_rj",
-      "~ALU|ALU>io_rk",
-      "~ALU|ALU>io_imm",
-      "~ALU|ALU>io_rd_in"
-    ]
   }
 ]

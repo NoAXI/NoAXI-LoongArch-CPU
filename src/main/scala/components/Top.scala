@@ -3,8 +3,9 @@ package components
 import chisel3._
 import chisel3.util._
 
-import config.Configs._
-import config.Instructions._
+import bundles._
+import config._
+import config.Functions._
 
 class TopIO extends Bundle {
     val tmp = Input(UInt(32.W))

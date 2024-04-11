@@ -1,7 +1,7 @@
 {
     "value": [
-        "ref:v0:c984eca8:/home/yuxuaan/Chisel_CPU_Learning/LA64CPU/mill-build/resources"
+        "ref:v0:c984eca8:/home/yuxuaan/LA64CPU/mill-build/resources"
     ],
-    "valueHash": -411031647,
-    "inputsHash": 602528472
+    "valueHash": 2045001318,
+    "inputsHash": -1090137051
 }

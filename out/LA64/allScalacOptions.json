@@ -1,12 +1,12 @@
 {
     "value": [
-        "-Xplugin:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/edu/berkeley/cs/chisel3-plugin_2.13.8/3.5.1/chisel3-plugin_2.13.8-3.5.1.jar",
+        "-Xplugin:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/chipsalliance/chisel-plugin_2.13.8/6.2.0/chisel-plugin_2.13.8-6.2.0.jar",
         "-language:reflectiveCalls",
         "-deprecation",
         "-feature",
         "-Xcheckinit",
         "-P:chiselplugin:genBundleElements"
     ],
-    "valueHash": -1168927943,
-    "inputsHash": 1721471428
+    "valueHash": 1980641583,
+    "inputsHash": 942539929
 }

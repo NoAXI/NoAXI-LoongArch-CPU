@@ -4,9 +4,8 @@ import chisel3._
 import chisel3.util._
 
 import bundles._
+import config._
 import config.Functions._
-import config.Configs._
-import config.Instructions._
 
 // class GRRegIO extends Bundle {
     // val GRReg = Flipped(new GRReg_ALU_IO())
@@ -17,7 +16,7 @@ import config.Instructions._
     // wb阶段的写入数据
 // }
 
-class GRReg extends Module {
+class GRReg extends Module with Parameters {
     val io = IO(new GRRegIO)
 
     val GRReg = RegInit(VecInit(Seq.fill(GR_LEN)(0.U(DATA_WIDTH_D.W))))

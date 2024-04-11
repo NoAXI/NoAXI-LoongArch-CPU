@@ -1,8 +1,8 @@
 {
     "value": [
-        "ref:v0:683a5f3d:/home/yuxuaan/Chisel_CPU_Learning/LA64CPU/build.sc",
-        "ref:v0:57cba3bb:/home/yuxuaan/Chisel_CPU_Learning/LA64CPU/out/mill-build/generateScriptSources.dest"
+        "ref:v0:0be822c6:/home/yuxuaan/LA64CPU/build.sc",
+        "ref:v0:b705ac85:/home/yuxuaan/LA64CPU/out/mill-build/generateScriptSources.dest"
     ],
-    "valueHash": 1519246062,
-    "inputsHash": 1694280150
+    "valueHash": 550939222,
+    "inputsHash": -945581549
 }

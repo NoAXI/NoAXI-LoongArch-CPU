@@ -4,14 +4,14 @@
             "dep": {
                 "module": {
                     "organization": {
-                        "value": "edu.berkeley.cs"
+                        "value": "org.chipsalliance"
                     },
                     "name": {
-                        "value": "chisel3"
+                        "value": "chisel"
                     },
                     "attributes": {}
                 },
-                "version": "3.5.1",
+                "version": "6.2.0",
                 "configuration": {
                     "value": "default(compile)"
                 },
@@ -40,6 +40,6 @@
             "force": false
         }
     ],
-    "valueHash": 538985055,
-    "inputsHash": 289270120
+    "valueHash": -1988763862,
+    "inputsHash": 1936512077
 }
