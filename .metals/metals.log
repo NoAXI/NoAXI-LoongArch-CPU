@@ -2338,3 +2338,6 @@ WARNING: Unmatched cancel notification for request id 9081
 2024.04.11 21:08:31 WARN  no build target for: /home/yuxuaan/LA64CPU/src/main/scala/components/ALU.scala[0m
 Apr 11, 2024 9:08:54 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
 INFO: Unsupported notification method: $/setTrace
+2024.04.11 21:41:54 INFO  Shutting down server[0m
+2024.04.11 21:41:54 INFO  shutting down Metals[0m
+2024.04.11 21:41:55 INFO  Exiting server[0m

@@ -42,6 +42,7 @@ trait Parameters {
     // val DATA_WIDTH_b = 1 // 位
 
     val INST_WIDTH = 32  // 指令长度
+    val INST_WIDTH_B = 32 / 8  // 指令字节长度
 
     val GR_SIZE = 32  // 通用寄存器数量
     val GR_LEN = 64  // 通用寄存器长度(位宽)
@@ -49,6 +50,13 @@ trait Parameters {
     val ADDR_WIDTH = 32 // 通用寄存器地址长度(not sure, maybe 是 max)
 
     val LS_TYPE_WIDTH = 3  // Load/Store 类型长度
+
+    val BR_BUS_WIDTH = 33  // 分支总线宽度
+    val FS_TO_DS_BUS_WIDTH = 64  // FecthStage to DecoderStage总线宽度
+    val DS_TO_ES_BUS_WIDTH = 152  // DecoderStage to ExecutionStage总线宽度
+    val ES_TO_MS_BUS_WIDTH = 71  // ExecutionStage to MemoryStage总线宽度
+    val MS_TO_WS_BUS_WIDTH = 70  // MemoryStage to WriteBackStage总线宽度
+    val WS_TO_RF_BUS_WIDTH = 38  // WriteBackStage to Registerfile总线宽度
 }
 
 // object Instructions {

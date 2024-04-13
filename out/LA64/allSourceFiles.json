@@ -2,20 +2,20 @@
     "value": [
         "ref:v0:fb5029c1:/home/yuxuaan/LA64CPU/src/main/scala/stages/EXE_MEM.scala",
         "ref:v0:e6c7efe2:/home/yuxuaan/LA64CPU/src/main/scala/stages/ID_EXE.scala",
-        "ref:v0:06f171e9:/home/yuxuaan/LA64CPU/src/main/scala/stages/IF_ID.scala",
+        "ref:v0:3ee0986f:/home/yuxuaan/LA64CPU/src/main/scala/stages/IF_ID.scala",
         "ref:v0:06f171e9:/home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala",
-        "ref:v0:cc45f131:/home/yuxuaan/LA64CPU/src/main/scala/bundles/bundles.scala",
-        "ref:v0:d62b80f8:/home/yuxuaan/LA64CPU/src/main/scala/isa/LA64.scala",
-        "ref:v0:53a9f7f3:/home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala",
+        "ref:v0:c6da2e2b:/home/yuxuaan/LA64CPU/src/main/scala/bundles/bundles.scala",
+        "ref:v0:4291b9cf:/home/yuxuaan/LA64CPU/src/main/scala/isa/LA64.scala",
+        "ref:v0:9be074d7:/home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala",
         "ref:v0:b2b816b5:/home/yuxuaan/LA64CPU/src/main/scala/components/Top.scala",
         "ref:v0:ac03c926:/home/yuxuaan/LA64CPU/src/main/scala/components/GRReg.scala",
-        "ref:v0:06f171e9:/home/yuxuaan/LA64CPU/src/main/scala/components/MemInst.scala",
+        "ref:v0:0e4fc02c:/home/yuxuaan/LA64CPU/src/main/scala/components/MemInst.scala",
         "ref:v0:06f171e9:/home/yuxuaan/LA64CPU/src/main/scala/components/PCReg.scala",
         "ref:v0:8593a5fc:/home/yuxuaan/LA64CPU/src/main/scala/components/Decoder.scala",
         "ref:v0:06f171e9:/home/yuxuaan/LA64CPU/src/main/scala/components/WriteBack.scala",
         "ref:v0:f65e7ce9:/home/yuxuaan/LA64CPU/src/main/scala/components/ALU.scala",
-        "ref:v0:06f171e9:/home/yuxuaan/LA64CPU/src/main/scala/components/MemData.scala"
+        "ref:v0:0e4fc02c:/home/yuxuaan/LA64CPU/src/main/scala/components/MemData.scala"
     ],
-    "valueHash": 712958363,
-    "inputsHash": -584028242
+    "valueHash": -1465030713,
+    "inputsHash": -282577812
 }
