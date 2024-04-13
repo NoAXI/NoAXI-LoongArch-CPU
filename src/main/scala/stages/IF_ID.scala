@@ -56,6 +56,7 @@ class IF_ID extends Module with Parameters {
         end
     end
     */
+    //why
     val fs_ready_go = true.B
     val fs_allowin = !fs_valid || fs_ready_go && io.ds_allowin
     io.fs_to_ds_valid := fs_valid && fs_ready_go
