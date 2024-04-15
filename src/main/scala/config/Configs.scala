@@ -26,13 +26,39 @@ object Functions {
         }
     }
 
+    // object SignExt {
+    // def apply(a: UInt, len: Int) = {
+    //     val aLen = a.getWidth
+    //     val signBit = a(aLen-1)
+    //     if (aLen >= len) a(len-1,0) else Cat(Fill(len - aLen, signBit), a)
+    // }
+    // }
+
+    // object ZeroExt {
+    // def apply(a: UInt, len: Int) = {
+    //     val aLen = a.getWidth
+    //     if (aLen >= len) a(len-1,0) else Cat(0.U((len - aLen).W), a)
+    // }
+    // }
+
     // def Mate[T <: Data](key: UInt, mapping: Iterable[(UInt, T)]): T =
     //     Mux1H(mapping.map(p => (p._1 === key, p._2)))
+
+    def lookup[T <: Data](key: UInt, default: T, map: Array[(BitPat, T)]): T  = {
+        val result = WireDefault(default)
+        for ((pattern, value) <- map) {
+            when (key === pattern) {
+                result := value
+            }
+        }
+        result
+    }
 
     // 没怎么看懂
     def MateDefault[T <: Data](key: UInt, default: T, map: Iterable[(UInt, T)]): T =
         MuxLookup(key, default)(map.toSeq)
 }
+
 
 trait Parameters {
     val DATA_WIDTH_D = 64  // 双字
@@ -53,7 +79,8 @@ trait Parameters {
 
     val BR_BUS_WIDTH = 33  // 分支总线宽度
     val FS_TO_DS_BUS_WIDTH = 64  // FecthStage to DecoderStage总线宽度
-    val DS_TO_ES_BUS_WIDTH = 152  // DecoderStage to ExecutionStage总线宽度
+    // val DS_TO_ES_BUS_WIDTH = 152  // DecoderStage to ExecutionStage总线宽度
+    val DS_TO_ES_BUS_WIDTH = 146  // DecoderStage to ExecutionStage总线宽度
     val ES_TO_MS_BUS_WIDTH = 71  // ExecutionStage to MemoryStage总线宽度
     val MS_TO_WS_BUS_WIDTH = 70  // MemoryStage to WriteBackStage总线宽度
     val WS_TO_RF_BUS_WIDTH = 38  // WriteBackStage to Registerfile总线宽度

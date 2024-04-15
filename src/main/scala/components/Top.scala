@@ -3,6 +3,7 @@ package components
 import chisel3._
 import chisel3.util._
 
+import stages._
 import bundles._
 import config._
 import config.Functions._

@@ -1,7 +1,7 @@
 {
     "workerCache": {
         "mill.scalalib.ZincWorkerModule.worker": {
-            "identityHashCode": 282850912,
+            "identityHashCode": 685606790,
             "inputHash": -1581975781
         }
     },
@@ -41,7 +41,7 @@
         ]
     ],
     "classLoaderIdentity": [
-        2004230117
+        -998836817
     ],
     "runClasspath": [
         "qref:v1:647bb4c6:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/mill-moduledefs_2.13/0.10.9/mill-moduledefs_2.13-0.10.9.jar",
