@@ -26,39 +26,28 @@ class IW_IO extends Bundle with Parameters {
 class IW extends Module with Parameters {
     val io = IO(new IW_IO)
 
-
-    // 取出上级流水级缓存内容
+    //与上一流水级握手，获取上一流水级信息
     val ms_to_ws_bus_r = RegInit(0.U(MS_TO_WS_BUS_WIDTH.W))
-    val
-    (   ws_gr_we,
-        ws_dest,
-        ws_final_result,
-        ws_pc,
-    ) =
-    (   ms_to_ws_bus_r(69),
-        ms_to_ws_bus_r(68, 64),
-        ms_to_ws_bus_r(63, 32),
-        ms_to_ws_bus_r(31, 0)
-    )
-
-    //下一级流水及缓存内容,wb_stage的下一级可以视作rf
-    val rf_we = ws_gr_we && ws_valid
-    val rf_waddr = ws_dest
-    val rf_wdata = ws_final_result
-    io.ws_to_rf_bus := Cat(rf_we,rf_waddr,rf_wdata)
-
     val ws_valid = RegInit(false.B)
     val ws_ready_go = true.B
     io.ws_allowin := !ws_valid || ws_ready_go
-
     when (io.ws_allowin) {
         ws_valid := io.ms_to_ws_valid
     }
-
     when (io.ms_to_ws_valid && io.ws_allowin) {
         ms_to_ws_bus_r := io.ms_to_ws_bus
     }
 
+    val ws_gr_we        = ms_to_ws_bus_r(69)
+    val ws_dest         = ms_to_ws_bus_r(68, 64)
+    val ws_final_result = ms_to_ws_bus_r(63, 32)
+    val ws_pc           = ms_to_ws_bus_r(31, 0)
+
+    //写寄存器，传给ds
+    val rf_we = ws_gr_we && ws_valid
+    val rf_waddr = ws_dest
+    val rf_wdata = ws_final_result
+    io.ws_to_rf_bus := Cat(rf_we,rf_waddr,rf_wdata)
 
     io.debug_wb_pc := ws_pc
     io.debug_wb_rf_we := Fill(4, rf_we)

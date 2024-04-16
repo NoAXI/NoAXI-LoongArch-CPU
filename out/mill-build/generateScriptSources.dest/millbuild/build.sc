@@ -64,13 +64,14 @@ import mill.bsp._
 
 object LA64 extends SbtModule { m =>
   override def millSourcePath = os.pwd
-  override def scalaVersion = "2.13.8"
+  override def scalaVersion = "2.13.12"
+  // override def scalaVersion = "2.13.8"
   override def scalacOptions = Seq(
     "-language:reflectiveCalls",
     "-deprecation",
     "-feature",
-    "-Xcheckinit",
-    "-P:chiselplugin:genBundleElements"
+    "-Xcheckinit"
+    // "-P:chiselplugin:genBundleElements"
   )
   override def ivyDeps = Agg(
     // ivy"edu.berkeley.cs::chisel3:3.5.1",

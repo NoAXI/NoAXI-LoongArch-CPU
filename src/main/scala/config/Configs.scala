@@ -73,6 +73,7 @@ trait Parameters {
     val GR_SIZE = 32  // 通用寄存器数量
     val GR_LEN = 64  // 通用寄存器长度(位宽)
     
+    val START_ADDR = 0x1bfffffc  // 程序起始地址
     val ADDR_WIDTH = 32 // 通用寄存器地址长度(not sure, maybe 是 max)
 
     val LS_TYPE_WIDTH = 3  // Load/Store 类型长度

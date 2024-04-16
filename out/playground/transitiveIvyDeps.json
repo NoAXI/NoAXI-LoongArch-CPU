@@ -1,0 +1,76 @@
+{
+    "value": [
+        {
+            "dep": {
+                "module": {
+                    "organization": {
+                        "value": "org.chipsalliance"
+                    },
+                    "name": {
+                        "value": "chisel_2.13"
+                    },
+                    "attributes": {}
+                },
+                "version": "5.0.0",
+                "configuration": {
+                    "value": "default(compile)"
+                },
+                "minimizedExclusions": {
+                    "data": "coursier.core.MinimizedExclusions.ExcludeNone"
+                },
+                "publication": {
+                    "name": "",
+                    "type": {
+                        "value": ""
+                    },
+                    "ext": {
+                        "value": ""
+                    },
+                    "classifier": {
+                        "value": ""
+                    }
+                },
+                "optional": false,
+                "transitive": true
+            },
+            "force": false
+        },
+        {
+            "dep": {
+                "module": {
+                    "organization": {
+                        "value": "org.scala-lang"
+                    },
+                    "name": {
+                        "value": "scala-library"
+                    },
+                    "attributes": {}
+                },
+                "version": "2.13.10",
+                "configuration": {
+                    "value": "default(compile)"
+                },
+                "minimizedExclusions": {
+                    "data": "coursier.core.MinimizedExclusions.ExcludeNone"
+                },
+                "publication": {
+                    "name": "",
+                    "type": {
+                        "value": ""
+                    },
+                    "ext": {
+                        "value": ""
+                    },
+                    "classifier": {
+                        "value": ""
+                    }
+                },
+                "optional": false,
+                "transitive": true
+            },
+            "force": true
+        }
+    ],
+    "valueHash": -856996115,
+    "inputsHash": 1579943353
+}

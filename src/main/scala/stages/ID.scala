@@ -97,7 +97,6 @@ object LA64_ALUInst extends InstType with Parameters {
         BNE         -> List(Inst2RI16,   FuncType.dec,   decOpType.branch   ),
         LU12I_W     -> List(Inst2RI20,   FuncType.alu,   ALUOpType.lui      )
     )
-    //assign src2_is_4  =  inst_jirl | inst_bl;
 }
 
 class ID_IO extends Bundle with Parameters {
@@ -123,12 +122,27 @@ class ID_IO extends Bundle with Parameters {
 class ID extends Module with Parameters with InstType{
     val io = IO(new ID_IO)
 
+    //与上一流水级握手，获取上一流水级信息
     val fs_to_ds_bus_r = RegInit(0.U(FS_TO_DS_BUS_WIDTH.W))
+    val ds_valid = RegInit(false.B)
+    val ds_ready_go = true.B
+    io.ds_allowin := !ds_valid || ds_ready_go && io.es_allowin
+    io.ds_to_es_valid := ds_valid && ds_ready_go
+    when (io.ds_allowin) {
+        ds_valid := io.fs_to_ds_valid
+    }
+    when (io.fs_to_ds_valid && io.ds_allowin) {
+        fs_to_ds_bus_r := io.fs_to_ds_bus
+    }
+    
+    //提取上一流水级信息
+    val ds_inst = fs_to_ds_bus_r(63, 32)
+    val ds_pc = fs_to_ds_bus_r(31, 0)
 
+    //提取指令基本信息
     val rd   = ds_inst( 4,  0)
     val rj   = ds_inst( 9,  5)
     val rk   = ds_inst(14, 10)
-
     val i12  = ds_inst(21, 10)
     val i20  = ds_inst(24,  5)
     val i16  = ds_inst(25, 10)
@@ -138,10 +152,10 @@ class ID extends Module with Parameters with InstType{
         ListLookup(ds_inst, List(Inst3R, FuncType.alu, ALUOpType.add), LA64_ALUInst.table)
 
     val imm = MateDefault(instType, 4.U, List(
-        Inst2RI12 -> SignedExtend(i12, DATA_WIDTH_W),
-        // Inst2RI16 -> SignedExtend(i16, DATA_WIDTH_W),
+        Inst2RI12 -> SignedExtend(i12, 32),
+        // Inst2RI16 -> SignedExtend(Cat(i16, Fill(2, 0.U)), 32), //br_offs (others) & jirl_offs
         Inst2RI20 -> Cat(i20, Fill(12, 0.U)),
-        // Inst2RI26 -> Cat(Fill(38, i26(25)), i26),
+        // Inst2RI26 -> SignedExtend(Cat(i26, Fill(2, 0.U)), 32), //br_offs (need_si26)
         Inst2RUI5 -> rk,
     ))
 
@@ -178,9 +192,16 @@ class ID extends Module with Parameters with InstType{
                         ds_inst =/= LA64_ALUInst.B)
     val mem_we       = (ds_inst === LA64_ALUInst.ST_W)
     val dest         = Mux(dst_is_r1, 1.U, rd)
+
     val rf_raddr1 = rj;
     val rf_raddr2 = Mux(src_reg_is_rd, rd, rk)
 
+    //提取ws传来的写回寄存器信息
+    val rf_we = io.ws_to_rf_bus(37)
+    val rf_waddr = io.ws_to_rf_bus(36, 32)
+    val rf_wdata = io.ws_to_rf_bus(31, 0)
+
+    //读寄存器 or 写寄存器
     val u_regfile = Module(new REG)
     u_regfile.io.raddr1 := rf_raddr1
     u_regfile.io.raddr2 := rf_raddr2
@@ -191,6 +212,7 @@ class ID extends Module with Parameters with InstType{
     val rj_value  = u_regfile.io.rdata1
     val rkd_value = u_regfile.io.rdata2
 
+    //写br_bus,传给fs
     val rj_eq_rd = (rj_value === rkd_value)
     val br_taken = (ds_inst === LA64_ALUInst.BEQ && rj_eq_rd
                  || ds_inst === LA64_ALUInst.BNE && !rj_eq_rd
@@ -207,26 +229,8 @@ class ID extends Module with Parameters with InstType{
 
     io.br_bus := Cat(br_taken, br_target)
 
-    val (
-        ds_inst,
-        ds_pc,
-    )=(
-        fs_to_ds_bus_r(63, 32),
-        fs_to_ds_bus_r(31, 0),
-    ) 
-
-    val (
-        rf_we  ,
-        rf_waddr,
-        rf_wdata
-    )=(
-        io.ws_to_rf_bus(37),
-        io.ws_to_rf_bus(36, 32),
-        io.ws_to_rf_bus(31, 0)
-    ) 
-    
+    //传递信息
     val load_op = false.B // 它没用上
-
     io.ds_to_es_bus := Cat( aluOpType    ,   // 12 -> 6
                             load_op      ,   // 1
                             src1_is_pc   ,   // 1
@@ -240,20 +244,6 @@ class ID extends Module with Parameters with InstType{
                             rkd_value    ,   // 32
                             ds_pc        ,    // 32
                             res_from_mem)
-
-
-    val ds_valid = RegInit(false.B)
-    val ds_ready_go = true.B
-    io.ds_allowin := !ds_valid || ds_ready_go && io.es_allowin
-    io.ds_to_es_valid := ds_valid && ds_ready_go
-
-    when (io.ds_allowin) {
-        ds_valid := io.fs_to_ds_valid
-    }
-
-    when (io.fs_to_ds_valid && io.ds_allowin) {
-        fs_to_ds_bus_r := io.fs_to_ds_bus
-    }
 }
 
 /*

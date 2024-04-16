@@ -1,8 +1,8 @@
 {
     "value": [
-        "ref:v0:0be822c6:/home/yuxuaan/LA64CPU/build.sc",
-        "ref:v0:b705ac85:/home/yuxuaan/LA64CPU/out/mill-build/generateScriptSources.dest"
+        "ref:v0:2ac5d9e8:/home/yuxuaan/LA64CPU/build.sc",
+        "ref:v0:99ff2cd8:/home/yuxuaan/LA64CPU/out/mill-build/generateScriptSources.dest"
     ],
-    "valueHash": 550939222,
-    "inputsHash": -945581549
+    "valueHash": 257746506,
+    "inputsHash": 18235849
 }

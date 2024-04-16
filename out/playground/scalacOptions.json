@@ -1,0 +1,10 @@
+{
+    "value": [
+        "-language:reflectiveCalls",
+        "-deprecation",
+        "-feature",
+        "-Xcheckinit"
+    ],
+    "valueHash": -1557173029,
+    "inputsHash": -2046630653
+}

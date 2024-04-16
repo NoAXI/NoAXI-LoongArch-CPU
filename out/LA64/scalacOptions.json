@@ -3,9 +3,8 @@
         "-language:reflectiveCalls",
         "-deprecation",
         "-feature",
-        "-Xcheckinit",
-        "-P:chiselplugin:genBundleElements"
+        "-Xcheckinit"
     ],
-    "valueHash": -53426174,
-    "inputsHash": -1343068601
+    "valueHash": -1557173029,
+    "inputsHash": 1042791897
 }

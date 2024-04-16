@@ -1,17 +1,16 @@
 {
     "value": [
-        "ref:v0:fb5029c1:/home/yuxuaan/LA64CPU/src/main/scala/stages/EXE_MEM.scala",
-        "ref:v0:5948aba3:/home/yuxuaan/LA64CPU/src/main/scala/stages/IF.scala",
+        "ref:v0:28275bd3:/home/yuxuaan/LA64CPU/src/main/scala/stages/IF.scala",
         "ref:v0:c14bf18c:/home/yuxuaan/LA64CPU/src/main/scala/stages/REG.scala",
-        "ref:v0:9d9b924e:/home/yuxuaan/LA64CPU/src/main/scala/stages/IM.scala",
-        "ref:v0:878a748b:/home/yuxuaan/LA64CPU/src/main/scala/stages/ID.scala",
+        "ref:v0:dcac6d61:/home/yuxuaan/LA64CPU/src/main/scala/stages/IM.scala",
+        "ref:v0:ef17f119:/home/yuxuaan/LA64CPU/src/main/scala/stages/ID.scala",
         "ref:v0:b4693257:/home/yuxuaan/LA64CPU/src/main/scala/stages/ALU.scala",
-        "ref:v0:8c3b10ff:/home/yuxuaan/LA64CPU/src/main/scala/stages/IW.scala",
-        "ref:v0:f68e0218:/home/yuxuaan/LA64CPU/src/main/scala/stages/IE.scala",
+        "ref:v0:6f07c460:/home/yuxuaan/LA64CPU/src/main/scala/stages/IW.scala",
+        "ref:v0:b4f7ea91:/home/yuxuaan/LA64CPU/src/main/scala/stages/IE.scala",
         "ref:v0:c6da2e2b:/home/yuxuaan/LA64CPU/src/main/scala/bundles/bundles.scala",
         "ref:v0:4291b9cf:/home/yuxuaan/LA64CPU/src/main/scala/isa/LA64.scala",
-        "ref:v0:b04b2613:/home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala",
-        "ref:v0:63889775:/home/yuxuaan/LA64CPU/src/main/scala/components/Top.scala",
+        "ref:v0:0145e5ef:/home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala",
+        "ref:v0:e104ddfd:/home/yuxuaan/LA64CPU/src/main/scala/components/Top.scala",
         "ref:v0:ac03c926:/home/yuxuaan/LA64CPU/src/main/scala/components/GRReg.scala",
         "ref:v0:0e4fc02c:/home/yuxuaan/LA64CPU/src/main/scala/components/MemInst.scala",
         "ref:v0:06f171e9:/home/yuxuaan/LA64CPU/src/main/scala/components/PCReg.scala",
@@ -20,6 +19,6 @@
         "ref:v0:f65e7ce9:/home/yuxuaan/LA64CPU/src/main/scala/components/ALU.scala",
         "ref:v0:0e4fc02c:/home/yuxuaan/LA64CPU/src/main/scala/components/MemData.scala"
     ],
-    "valueHash": -79132224,
-    "inputsHash": -686905670
+    "valueHash": 2018154656,
+    "inputsHash": -1286567499
 }

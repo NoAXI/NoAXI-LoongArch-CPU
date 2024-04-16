@@ -22,6 +22,6 @@ class Top extends Module {
 }
 
 object main extends App {
-    emitVerilog(new ALU(), Array("--target-dir", "wave"))
+    emitVerilog(new IW(), Array("--target-dir", "wave"))
     println("ok!")
 }
