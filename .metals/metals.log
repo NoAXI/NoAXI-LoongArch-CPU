@@ -7527,3 +7527,357 @@ WARNING: Unmatched cancel notification for request id 6493
 2024.04.15 20:35:40 INFO  time: compiled LA64 in 0.61s[0m
 Apr 15, 2024 8:36:15 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
 INFO: Unsupported notification method: $/setTrace
+2024.04.15 20:36:59 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:36:59 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:36:59 INFO  time: compiled LA64 in 0.28s[0m
+2024.04.15 20:37:05 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:37:05 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:37:05 INFO  time: compiled LA64 in 0.57s[0m
+2024.04.15 20:37:09 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:37:09 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:37:09 INFO  time: compiled LA64 in 76ms[0m
+Apr 15, 2024 8:37:12 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 6685
+Apr 15, 2024 8:37:40 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 6818
+Apr 15, 2024 8:37:48 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 6870
+Apr 15, 2024 8:37:50 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 6888
+2024.04.15 20:38:03 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:38:03 INFO  time: compiled LA64 in 0.12s[0m
+2024.04.15 20:38:13 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:38:13 INFO  time: compiled LA64 in 0.13s[0m
+2024.04.15 20:40:44 WARN  Using indexes to guess the definition of W[0m
+2024.04.15 20:40:45 WARN  Using indexes to guess the definition of W[0m
+2024.04.15 20:40:49 WARN  Using indexes to guess the definition of UInt[0m
+2024.04.15 20:40:51 WARN  Using indexes to guess the definition of UInt[0m
+2024.04.15 20:40:53 WARN  Using indexes to guess the definition of UInt[0m
+2024.04.15 20:40:53 WARN  Using indexes to guess the definition of UInt[0m
+2024.04.15 20:40:55 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:40:55 INFO  time: compiled LA64 in 0.1s[0m
+Apr 15, 2024 8:41:38 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 7504
+2024.04.15 20:41:42 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:41:42 INFO  time: compiled LA64 in 0.68s[0m
+Apr 15, 2024 8:42:25 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 7702
+2024.04.15 20:42:34 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:42:34 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:42:34 INFO  time: compiled LA64 in 86ms[0m
+2024.04.15 20:42:39 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:42:39 INFO  time: compiled LA64 in 61ms[0m
+Apr 15, 2024 8:42:42 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 7788
+Apr 15, 2024 8:42:47 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 7798
+2024.04.15 20:42:50 WARN  Using indexes to guess the definition of IF[0m
+2024.04.15 20:42:51 WARN  Using indexes to guess the definition of IF[0m
+Apr 15, 2024 8:42:51 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 7816
+Apr 15, 2024 8:42:52 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 7827
+Apr 15, 2024 8:42:53 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 7834
+2024.04.15 20:43:30 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:43:30 INFO  time: compiled LA64 in 0.63s[0m
+2024.04.15 20:44:06 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:44:06 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:44:06 INFO  time: compiled LA64 in 0.58s[0m
+2024.04.15 20:44:19 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:44:19 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:44:19 INFO  time: compiled LA64 in 0.67s[0m
+2024.04.15 20:44:21 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:44:21 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:44:21 INFO  time: compiled LA64 in 0.57s[0m
+2024.04.15 20:44:50 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:44:50 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:44:50 INFO  time: compiled LA64 in 0.55s[0m
+Apr 15, 2024 8:45:22 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8408
+2024.04.15 20:45:28 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:45:28 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:45:28 INFO  time: compiled LA64 in 0.65s[0m
+Apr 15, 2024 8:45:41 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8508
+2024.04.15 20:45:56 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:45:56 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:45:56 INFO  time: compiled LA64 in 0.65s[0m
+Apr 15, 2024 8:46:28 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8641
+2024.04.15 20:46:28 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:46:28 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:46:28 INFO  time: compiled LA64 in 0.67s[0m
+2024.04.15 20:46:58 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:46:58 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:46:58 INFO  time: compiled LA64 in 0.67s[0m
+Apr 15, 2024 8:47:41 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8703
+Apr 15, 2024 8:47:41 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8704
+Apr 15, 2024 8:47:41 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8705
+Apr 15, 2024 8:47:41 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8706
+2024.04.15 20:47:47 ERROR Failed to tokenize input for semantic tokens for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala
+scala.meta.tokenizers.TokenizeException: <input>:45: error: illegal character '\u300a'
+    io 《》
+       ^
+	at scala.meta.internal.tokenizers.Reporter.syntaxError(Reporter.scala:23)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError$(Reporter.scala:23)
+	at scala.meta.internal.tokenizers.Reporter$$anon$1.syntaxError(Reporter.scala:33)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError(Reporter.scala:25)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError$(Reporter.scala:25)
+	at scala.meta.internal.tokenizers.Reporter$$anon$1.syntaxError(Reporter.scala:33)
+	at scala.meta.internal.tokenizers.LegacyScanner.fetchOther$1(LegacyScanner.scala:469)
+	at scala.meta.internal.tokenizers.LegacyScanner.fetchToken(LegacyScanner.scala:474)
+	at scala.meta.internal.tokenizers.LegacyScanner.nextToken(LegacyScanner.scala:211)
+	at scala.meta.internal.tokenizers.LegacyScanner.foreach(LegacyScanner.scala:1011)
+	at scala.meta.internal.tokenizers.ScalametaTokenizer.uncachedTokenize(ScalametaTokenizer.scala:24)
+	at scala.meta.internal.tokenizers.ScalametaTokenizer.$anonfun$tokenize$1(ScalametaTokenizer.scala:17)
+	at scala.collection.concurrent.TrieMap.getOrElseUpdate(TrieMap.scala:962)
+	at scala.meta.internal.tokenizers.ScalametaTokenizer.tokenize(ScalametaTokenizer.scala:17)
+	at scala.meta.internal.tokenizers.ScalametaTokenizer$$anon$2.apply(ScalametaTokenizer.scala:332)
+	at scala.meta.tokenizers.Api$XtensionTokenizeDialectInput.tokenize(Api.scala:25)
+	at scala.meta.tokenizers.Api$XtensionTokenizeInputLike.tokenize(Api.scala:14)
+	at scala.meta.internal.metals.SemanticTokensProvider$.getTokens(SemanticTokensProvider.scala:30)
+	at scala.meta.internal.metals.SemanticTokensProvider$.provide(SemanticTokensProvider.scala:89)
+	at scala.meta.internal.metals.Compilers.$anonfun$semanticTokens$3(Compilers.scala:541)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:467)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:750)
+[0m
+Apr 15, 2024 8:47:48 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8746
+Apr 15, 2024 8:47:56 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8762
+Apr 15, 2024 8:47:56 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8763
+Apr 15, 2024 8:47:56 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8764
+Apr 15, 2024 8:47:56 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8765
+2024.04.15 20:47:58 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:47:58 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:47:58 INFO  time: compiled LA64 in 0.57s[0m
+Apr 15, 2024 8:48:26 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8811
+Apr 15, 2024 8:48:44 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8859
+Apr 15, 2024 8:48:44 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8860
+Apr 15, 2024 8:48:44 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8861
+2024.04.15 20:48:49 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:48:49 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:48:49 INFO  time: compiled LA64 in 0.7s[0m
+2024.04.15 20:48:56 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:48:56 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:48:56 INFO  time: compiled LA64 in 0.99s[0m
+Apr 15, 2024 8:49:50 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8938
+2024.04.15 20:49:58 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:49:58 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:49:58 INFO  time: compiled LA64 in 0.56s[0m
+Apr 15, 2024 8:49:59 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 8999
+Apr 15, 2024 8:49:59 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9005
+Apr 15, 2024 8:50:25 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9019
+Apr 15, 2024 8:50:33 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9028
+2024.04.15 20:50:40 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:50:40 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:50:40 INFO  time: compiled LA64 in 0.96s[0m
+Apr 15, 2024 8:50:59 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9088
+2024.04.15 20:51:06 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:51:06 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:51:06 INFO  time: compiled LA64 in 0.55s[0m
+2024.04.15 20:51:19 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:51:19 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:51:19 INFO  time: compiled LA64 in 0.7s[0m
+Apr 15, 2024 8:52:18 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9187
+2024.04.15 20:52:19 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:52:19 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:52:19 INFO  time: compiled LA64 in 0.56s[0m
+2024.04.15 20:54:38 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:54:38 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:54:38 INFO  time: compiled LA64 in 0.53s[0m
+Apr 15, 2024 8:54:47 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9318
+Apr 15, 2024 8:54:49 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9339
+Apr 15, 2024 8:54:49 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9341
+Apr 15, 2024 8:54:49 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9343
+2024.04.15 20:55:07 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:55:07 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:55:07 INFO  time: compiled LA64 in 0.62s[0m
+Apr 15, 2024 8:55:13 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9434
+Apr 15, 2024 8:55:18 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9451
+Apr 15, 2024 8:55:24 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9462
+2024.04.15 20:55:31 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:55:31 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:55:31 INFO  time: compiled LA64 in 0.53s[0m
+2024.04.15 20:56:01 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:56:01 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:56:01 INFO  time: compiled LA64 in 0.62s[0m
+Apr 15, 2024 8:56:13 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9653
+Apr 15, 2024 8:56:13 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9654
+2024.04.15 20:56:19 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:56:19 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:56:19 INFO  time: compiled LA64 in 87ms[0m
+2024.04.15 20:56:20 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:23 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:23 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:23 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:23 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:23 WARN  Using indexes to guess the definition of ds[0m
+2024.04.15 20:56:23 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:23 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:23 WARN  Using indexes to guess the definition of ds[0m
+2024.04.15 20:56:23 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:23 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:23 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:25 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:56:25 INFO  time: compiled LA64 in 0.11s[0m
+2024.04.15 20:56:25 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+Apr 15, 2024 8:56:26 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9712
+2024.04.15 20:56:32 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:32 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:32 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:32 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:32 WARN  Using indexes to guess the definition of fs_to_ds_bus[0m
+2024.04.15 20:56:32 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:32 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:33 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala[0m
+2024.04.15 20:56:34 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:56:34 INFO  time: compiled LA64 in 0.7s[0m
+2024.04.15 20:57:29 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:57:29 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:57:29 INFO  time: compiled LA64 in 0.62s[0m
+2024.04.15 20:58:09 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:58:09 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:58:09 INFO  time: compiled LA64 in 0.6s[0m
+Apr 15, 2024 8:58:41 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9979
+Apr 15, 2024 8:58:41 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9981
+Apr 15, 2024 8:58:52 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9994
+Apr 15, 2024 8:58:55 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 10011
+Apr 15, 2024 8:58:55 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 10012
+Apr 15, 2024 8:58:55 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 10013
+2024.04.15 20:59:15 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 20:59:15 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 20:59:15 INFO  time: compiled LA64 in 0.7s[0m
+2024.04.15 21:00:07 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 21:00:07 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 21:00:07 INFO  time: compiled LA64 in 0.62s[0m
+Apr 15, 2024 9:00:25 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 10229
+2024.04.15 21:00:33 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 21:00:33 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 21:00:33 INFO  time: compiled LA64 in 0.67s[0m
+Apr 15, 2024 9:01:04 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 10296
+2024.04.15 21:01:08 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 21:01:08 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 21:01:08 INFO  time: compiled LA64 in 0.83s[0m
+2024.04.15 21:01:23 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 21:01:23 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 21:01:23 INFO  time: compiled LA64 in 0.63s[0m
+Apr 15, 2024 9:02:05 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 10369
+Apr 15, 2024 9:02:50 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 10378
+2024.04.15 21:12:07 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 21:12:09 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 21:12:09 INFO  time: compiled LA64 in 1.67s[0m
+2024.04.15 21:12:12 INFO  compiling la64 (1 scala source)[0m
+2024.04.15 21:12:13 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.15 21:12:13 INFO  time: compiled LA64 in 1.06s[0m
+Apr 15, 2024 9:12:59 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 10458
+2024.04.16 08:23:49 INFO  Started: Metals version 1.2.2 in folders '/home/yuxuaan/LA64CPU' for client Visual Studio Code 1.88.1.[0m
+08:23:50.956 [pool-1-thread-1] INFO org.flywaydb.core.internal.license.VersionPrinter -- Flyway Community Edition 9.22.3 by Redgate
+08:23:50.959 [pool-1-thread-1] INFO org.flywaydb.core.internal.license.VersionPrinter -- See release notes here: https://rd.gt/416ObMi
+08:23:50.959 [pool-1-thread-1] INFO org.flywaydb.core.internal.license.VersionPrinter -- 
+08:23:50.963 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Scanning for classpath resources at 'classpath:db/callback' ...
+08:23:50.963 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Determining location urls for classpath:db/callback using ClassLoader sun.misc.Launcher$AppClassLoader@1b6d3586 ...
+08:23:50.963 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Unable to resolve location classpath:db/callback.
+08:23:50.963 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Scanning for classpath resources at 'classpath:db/migration' ...
+08:23:50.963 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Determining location urls for classpath:db/migration using ClassLoader sun.misc.Launcher$AppClassLoader@1b6d3586 ...
+08:23:50.963 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Scanning URL: jar:file:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scalameta/metals_2.13/1.2.2/metals_2.13-1.2.2.jar!/db/migration
+08:23:50.966 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Found resource: db/migration/
+08:23:50.966 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Found resource: db/migration/V1__Create_tables.sql
+08:23:50.966 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Found resource: db/migration/V2__Server_discovery.sql
+08:23:50.966 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Found resource: db/migration/V3__Jar_symbols.sql
+08:23:50.966 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Found resource: db/migration/V4__Fingerprints.sql
+08:23:50.966 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Scanning for classes at classpath:db/migration
+08:23:50.970 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/ (filename: )
+08:23:50.970 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.resource.ResourceNameValidator -- Validating V1__Create_tables.sql
+08:23:50.971 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.resource.ResourceNameValidator -- Validating V2__Server_discovery.sql
+08:23:50.971 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.resource.ResourceNameValidator -- Validating V3__Jar_symbols.sql
+08:23:50.972 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.resource.ResourceNameValidator -- Validating V4__Fingerprints.sql
+08:23:51.063 [pool-1-thread-1] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:h2:file:/home/yuxuaan/LA64CPU/.metals/metals (H2 2.2)
+08:23:51.064 [pool-1-thread-1] DEBUG org.flywaydb.core.FlywayExecutor -- Driver: H2 JDBC Driver 2.2.224 (2023-09-17)
+08:23:51.064 [pool-1-thread-1] DEBUG org.flywaydb.core.FlywayExecutor -- DDL Transactions Supported: false
+08:23:51.065 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.schemahistory.SchemaHistoryFactory -- Schemas: 
+08:23:51.065 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.schemahistory.SchemaHistoryFactory -- Default schema: null
+08:23:51.070 [pool-1-thread-1] WARN org.flywaydb.core.internal.database.base.Database -- Flyway upgrade recommended: H2 2.2.224 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.220.
+08:23:51.073 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.callback.SqlScriptCallbackFactory -- Scanning for SQL callbacks ...
+08:23:51.073 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/ (filename: )
+08:23:51.083 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.command.DbValidate -- Validating migrations ...
+08:23:51.088 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/ (filename: )
+08:23:51.098 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V1__Create_tables.sql (filename: V1__Create_tables.sql)
+08:23:51.098 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V2__Server_discovery.sql (filename: V2__Server_discovery.sql)
+08:23:51.098 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V3__Jar_symbols.sql (filename: V3__Jar_symbols.sql)
+08:23:51.098 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V4__Fingerprints.sql (filename: V4__Fingerprints.sql)
+08:23:51.098 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/ (filename: )
+08:23:51.099 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V1__Create_tables.sql (filename: V1__Create_tables.sql)
+08:23:51.099 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V2__Server_discovery.sql (filename: V2__Server_discovery.sql)
+08:23:51.099 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V3__Jar_symbols.sql (filename: V3__Jar_symbols.sql)
+08:23:51.099 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V4__Fingerprints.sql (filename: V4__Fingerprints.sql)
+08:23:51.099 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/ (filename: )
+08:23:51.113 [pool-1-thread-1] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 4 migrations (execution time 00:00.029s)
+08:23:51.116 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.command.DbSchemas -- Skipping creation of existing schema: "PUBLIC"
+08:23:51.123 [pool-1-thread-1] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "PUBLIC": 4
+08:23:51.128 [pool-1-thread-1] INFO org.flywaydb.core.internal.command.DbMigrate -- Schema "PUBLIC" is up to date. No migration necessary.
+08:23:51.179 [pool-1-thread-1] DEBUG org.flywaydb.core.FlywayExecutor -- Memory usage: 56 of 140M
+2024.04.16 08:23:51 INFO  skipping build import with status 'Installed'[0m
+2024.04.16 08:23:51 INFO  Attempting to connect to the build server...[0m
+2024.04.16 08:23:51 INFO  Bloop uses /usr/lib/jvm/java-8-openjdk-amd64/jre defined at /home/yuxuaan/.bloop/bloop.json[0m
+2024.04.16 08:23:56 INFO  no build target found for /home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala. Using presentation compiler with project's scala-library version: 3.3.1[0m
+2024.04.16 08:24:06 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at /home/yuxuaan/LA64CPU/.metals/bsp.trace.json or /home/yuxuaan/.cache/metals/bsp.trace.json[0m
+2024.04.16 08:24:06 INFO  time: Connected to build server in 15s[0m
+2024.04.16 08:24:06 INFO  Connected to Build server: Bloop v1.5.15[0m
+2024.04.16 08:24:07 INFO  time: Imported build in 0.4s[0m
+2024.04.16 08:24:08 WARN  Could not find java sources in /usr/lib/jvm/java-8-openjdk-amd64/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/src.zip. Java symbols will not be available.[0m
+2024.04.16 08:24:08 WARN  Could not find java sources in /usr/lib/jvm/java-8-openjdk-amd64/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/src.zip. Java symbols will not be available.[0m
+2024.04.16 08:24:08 WARN  Could not find java sources in /usr/lib/jvm/java-8-openjdk-amd64/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/src.zip. Java symbols will not be available.[0m
+2024.04.16 08:24:08 INFO  time: indexed workspace in 1.55s[0m
+2024.04.16 08:24:10 WARN  Invalid text document uri received from build server: file:///home/yuxuaan/LA64CPU/src/main/scala/stages/MEM_WB.scala[0m
+2024.04.16 08:24:10 INFO  BSP server: 
+Found names but no class, trait or object is defined in the compilation unit.
+The incremental compiler cannot record the dependency information in such case.
+Some errors like unused import referring to a non-existent class might not be reported.
+    [0m
+2024.04.16 08:44:52 INFO  Shutting down server[0m
+2024.04.16 08:44:52 INFO  shutting down Metals[0m
+2024.04.16 08:44:52 INFO  Shut down connection with build server.[0m
+2024.04.16 08:44:52 INFO  Exiting server[0m

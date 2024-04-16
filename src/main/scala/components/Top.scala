@@ -21,7 +21,7 @@ class Top extends Module {
     // 连线暂略，bundle未调整好
 }
 
-object main extends App {
-    emitVerilog(new IW(), Array("--target-dir", "wave"))
-    println("ok!")
-}
+// object main extends App {
+//     emitVerilog(new IW(), Array("--target-dir", "wave"))
+//     println("ok!")
+// }

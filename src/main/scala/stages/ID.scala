@@ -39,6 +39,20 @@ object decOpType {
     def branch  = "b0".U
 }
 
+object Src1Type {
+    def nor = "b0".U
+    def pc  = "b1".U
+}
+
+object Src2Type {
+    def nor = "b00".U
+    def imm = "b01".U
+    def is4 = "b10".U
+}
+
+//000000101011
+//00000011
+
 object LA64_ALUInst extends InstType with Parameters {
     def ADD_W       = BitPat("b00000000000100000???????????????")
     // def ADD_D       = BitPat("b00000000000100001???????????????")
@@ -73,29 +87,30 @@ object LA64_ALUInst extends InstType with Parameters {
     // def LU32I_D     = BitPat("b0001011?????????????????????????")
     // def LU52I_D     = BitPat("b0000001100??????????????????????")
 
+    //                    (instType,    funcType,       aluOpType,  ,src_addr2_is_rd,      src1,          src2  )
     val table = Array (
-        ADD_W       -> List(Inst3R,      FuncType.alu,   ALUOpType.add      ),
-        // ADD_D       -> List(Inst2R, FuncType.alu, ALUOpType.add),
-        SUB_W       -> List(Inst3R,      FuncType.alu,   ALUOpType.sub      ),
-        // SUB_D       -> List(Inst2R, FuncType.alu, ALUOpType.sub),
-        SLT         -> List(Inst3R,      FuncType.alu,   ALUOpType.slt      ),     
-        SLTU        -> List(Inst3R,      FuncType.alu,   ALUOpType.sltu     ),
-        NOR         -> List(Inst3R,      FuncType.alu,   ALUOpType.nor      ),
-        AND         -> List(Inst3R,      FuncType.alu,   ALUOpType.and      ),
-        OR          -> List(Inst3R,      FuncType.alu,   ALUOpType.or       ),
-        XOR         -> List(Inst3R,      FuncType.alu,   ALUOpType.xor      ),
-        SLLI_W      -> List(Inst2RUI5,   FuncType.alu,   ALUOpType.sll      ),
-        SRLI_W      -> List(Inst2RUI5,   FuncType.alu,   ALUOpType.srl      ),
-        SRAI_W      -> List(Inst2RUI5,   FuncType.alu,   ALUOpType.sra      ),
-        ADDI_W      -> List(Inst2RI12,   FuncType.alu,   ALUOpType.add      ),
-        LD_W        -> List(Inst2RI12,   FuncType.alu,   ALUOpType.add      ),
-        ST_W        -> List(Inst2RI12,   FuncType.alu,   ALUOpType.add      ),
-        JIRL        -> List(Inst2RI16,   FuncType.alu,   ALUOpType.add      ),
-        B           -> List(Inst2RI26,   FuncType.dec,   decOpType.branch   ),
-        BL          -> List(Inst2RI26,   FuncType.alu,   ALUOpType.add      ),
-        BEQ         -> List(Inst2RI16,   FuncType.dec,   decOpType.branch   ),
-        BNE         -> List(Inst2RI16,   FuncType.dec,   decOpType.branch   ),
-        LU12I_W     -> List(Inst2RI20,   FuncType.alu,   ALUOpType.lui      )
+        ADD_W     -> List(Inst3R,      FuncType.alu,   ALUOpType.add      ,false.B,  Src1Type.nor, Src2Type.nor),
+        // ADD_D     -> List(Inst2R, FuncType.alu, ALUOpType.add),      
+        SUB_W     -> List(Inst3R,      FuncType.alu,   ALUOpType.sub      ,false.B,  Src1Type.nor, Src2Type.nor),
+        // SUB_D     -> List(Inst2R, FuncType.alu, ALUOpType.sub),      
+        SLT       -> List(Inst3R,      FuncType.alu,   ALUOpType.slt      ,false.B,  Src1Type.nor, Src2Type.nor),     
+        SLTU      -> List(Inst3R,      FuncType.alu,   ALUOpType.sltu     ,false.B,  Src1Type.nor, Src2Type.nor),
+        NOR       -> List(Inst3R,      FuncType.alu,   ALUOpType.nor      ,false.B,  Src1Type.nor, Src2Type.nor),
+        AND       -> List(Inst3R,      FuncType.alu,   ALUOpType.and      ,false.B,  Src1Type.nor, Src2Type.nor),
+        OR        -> List(Inst3R,      FuncType.alu,   ALUOpType.or       ,false.B,  Src1Type.nor, Src2Type.nor),
+        XOR       -> List(Inst3R,      FuncType.alu,   ALUOpType.xor      ,false.B,  Src1Type.nor, Src2Type.nor),
+        SLLI_W    -> List(Inst2RUI5,   FuncType.alu,   ALUOpType.sll      ,false.B,  Src1Type.nor, Src2Type.imm),
+        SRLI_W    -> List(Inst2RUI5,   FuncType.alu,   ALUOpType.srl      ,false.B,  Src1Type.nor, Src2Type.imm),
+        SRAI_W    -> List(Inst2RUI5,   FuncType.alu,   ALUOpType.sra      ,false.B,  Src1Type.nor, Src2Type.imm),
+        ADDI_W    -> List(Inst2RI12,   FuncType.alu,   ALUOpType.add      ,false.B,  Src1Type.nor, Src2Type.imm),
+        LD_W      -> List(Inst2RI12,   FuncType.alu,   ALUOpType.add      ,false.B,  Src1Type.nor, Src2Type.imm),
+        ST_W      -> List(Inst2RI12,   FuncType.alu,   ALUOpType.add      ,true .B,  Src1Type.nor, Src2Type.imm),
+        JIRL      -> List(Inst2RI16,   FuncType.alu,   ALUOpType.add      ,false.B,  Src1Type.pc , Src2Type.is4),
+        B         -> List(Inst2RI26,   FuncType.dec,   decOpType.branch   ,false.B,  Src1Type.nor, Src2Type.nor),
+        BL        -> List(Inst2RI26,   FuncType.alu,   ALUOpType.add      ,false.B,  Src1Type.pc , Src2Type.is4),
+        BEQ       -> List(Inst2RI16,   FuncType.dec,   decOpType.branch   ,true .B,  Src1Type.nor, Src2Type.nor),
+        BNE       -> List(Inst2RI16,   FuncType.dec,   decOpType.branch   ,true .B,  Src1Type.nor, Src2Type.nor),
+        LU12I_W   -> List(Inst2RI20,   FuncType.alu,   ALUOpType.lui      ,false.B,  Src1Type.nor, Src2Type.imm)
     )
 }
 
@@ -148,8 +163,8 @@ class ID extends Module with Parameters with InstType{
     val i16  = ds_inst(25, 10)
     val i26  = Cat(ds_inst(9, 0), ds_inst(25, 10))
 
-    val List(instType, funcType, aluOpType) = 
-        ListLookup(ds_inst, List(Inst3R, FuncType.alu, ALUOpType.add), LA64_ALUInst.table)
+    val List(instType, funcType, aluOpType, src_reg_is_rd, src1Type, src2Type) = 
+        ListLookup(ds_inst, List("b11111".U, FuncType.alu, ALUOpType.add, false.B, Src1Type.nor, Src2Type.nor), LA64_ALUInst.table)
 
     val imm = MateDefault(instType, 4.U, List(
         Inst2RI12 -> SignedExtend(i12, 32),
@@ -164,25 +179,29 @@ class ID extends Module with Parameters with InstType{
 
     val jirl_offs = SignedExtend(Cat(i16, Fill(2, 0.U)), 32)
 
-    val src_reg_is_rd = (ds_inst === LA64_ALUInst.BEQ 
-                      || ds_inst === LA64_ALUInst.BNE 
-                      || ds_inst === LA64_ALUInst.ST_W)
+    // val src_reg_is_rd = (ds_inst === LA64_ALUInst.BEQ 
+    //                   || ds_inst === LA64_ALUInst.BNE 
+    //                   || ds_inst === LA64_ALUInst.ST_W)
 
-    val src1_is_pc = (ds_inst === LA64_ALUInst.JIRL
-                   || ds_inst === LA64_ALUInst.BL)
-
-    val src2_is_imm = (ds_inst === LA64_ALUInst.SLLI_W
-                    || ds_inst === LA64_ALUInst.SRLI_W
-                    || ds_inst === LA64_ALUInst.SRAI_W
-                    || ds_inst === LA64_ALUInst.ADDI_W
-                    || ds_inst === LA64_ALUInst.LD_W
-                    || ds_inst === LA64_ALUInst.ST_W
-                    || ds_inst === LA64_ALUInst.LU12I_W
-                    || ds_inst === LA64_ALUInst.JIRL
-                    || ds_inst === LA64_ALUInst.BL)
+    // val src1_is_pc = (ds_inst === LA64_ALUInst.JIRL
+    //                || ds_inst === LA64_ALUInst.BL)
     
-    val src2_is_4 = (ds_inst === LA64_ALUInst.JIRL
-                 || ds_inst === LA64_ALUInst.BL)
+    // val src2_is_imm = (ds_inst === LA64_ALUInst.SLLI_W
+    //                 || ds_inst === LA64_ALUInst.SRLI_W
+    //                 || ds_inst === LA64_ALUInst.SRAI_W
+    //                 || ds_inst === LA64_ALUInst.ADDI_W
+    //                 || ds_inst === LA64_ALUInst.LD_W
+    //                 || ds_inst === LA64_ALUInst.ST_W
+    //                 || ds_inst === LA64_ALUInst.LU12I_W
+    //                 || ds_inst === LA64_ALUInst.JIRL
+    //                 || ds_inst === LA64_ALUInst.BL)
+    
+    // val src2_is_4 = (ds_inst === LA64_ALUInst.JIRL
+    //              || ds_inst === LA64_ALUInst.BL)
+
+    val src1_is_pc = src1Type === Src1Type.pc
+    val src2_is_4 = src2Type === Src2Type.is4
+    val src2_is_imm = src2_is_4 | src2Type === Src2Type.imm
 
     val res_from_mem = (ds_inst === LA64_ALUInst.LD_W)
     val dst_is_r1    = (ds_inst === LA64_ALUInst.BL)
@@ -194,7 +213,7 @@ class ID extends Module with Parameters with InstType{
     val dest         = Mux(dst_is_r1, 1.U, rd)
 
     val rf_raddr1 = rj;
-    val rf_raddr2 = Mux(src_reg_is_rd, rd, rk)
+    val rf_raddr2 = Mux(src_reg_is_rd === true.B, rd, rk)
 
     //提取ws传来的写回寄存器信息
     val rf_we = io.ws_to_rf_bus(37)

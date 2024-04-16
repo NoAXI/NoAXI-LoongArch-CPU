@@ -1,15 +1,15 @@
 {
     "value": {
+        "OLDPWD": "/home/yuxuaan/LA64CPU/wave",
         "VSCODE_GIT_ASKPASS_MAIN": "/home/yuxuaan/.vscode-server/bin/e170252f762678dec6ca2cc69aba1570769a5d39/extensions/git/dist/askpass-main.js",
         "HTTP_PROXY": "http://127.0.0.1:7890",
-        "WSL_INTEROP": "/run/WSL/456_interop",
+        "MAKEFLAGS": "",
+        "WSL_INTEROP": "/run/WSL/432_interop",
         "USER": "yuxuaan",
         "HOSTTYPE": "x86_64",
-        "PULSE_SERVER": "unix:/mnt/wslg/PulseServer",
         "SHLVL": "3",
-        "https_proxy": "http://127.0.0.1:7890",
         "LANG": "en_US.UTF-8",
-        "VSCODE_GIT_IPC_HANDLE": "/run/user/1000/vscode-git-e5634a60c6.sock",
+        "VSCODE_GIT_IPC_HANDLE": "/run/user/1000/vscode-git-1d133240f2.sock",
         "SHELL": "/bin/bash",
         "LOGNAME": "yuxuaan",
         "VSCODE_GIT_ASKPASS_NODE": "/home/yuxuaan/.vscode-server/bin/e170252f762678dec6ca2cc69aba1570769a5d39/node",
@@ -27,6 +27,13 @@
         "HOME": "/home/yuxuaan",
         "COLORTERM": "truecolor",
         "XDG_DATA_DIRS": "/usr/local/share:/usr/share:/var/lib/snapd/desktop",
+        "MOTD_SHOWN": "update-motd",
+        "PULSE_SERVER": "unix:/mnt/wslg/PulseServer",
+        "MFLAGS": "",
+        "MAKELEVEL": "1",
+        "MAKE_TERMERR": "/dev/pts/8",
+        "https_proxy": "http://127.0.0.1:7890",
+        "MAKE_TERMOUT": "/dev/pts/8",
         "TERM_PROGRAM_VERSION": "1.88.1",
         "PWD": "/home/yuxuaan/LA64CPU",
         "NO_PROXY": "127.0.0.1,192.168.*,172.31.*,172.30.*,172.29.*,172.28.*,172.27.*,172.26.*,172.25.*,172.24.*,172.23.*,172.22.*,172.21.*,172.20.*,172.19.*,172.18.*,172.17.*,172.16.*,10.*,127.*,localhost,<local>",
@@ -37,9 +44,9 @@
         "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
         "WSL2_GUI_APPS_ENABLED": "1",
         "HTTPS_PROXY": "http://127.0.0.1:7890",
-        "VSCODE_IPC_HOOK_CLI": "/run/user/1000/vscode-ipc-dbab5c8b-f5c1-4af7-9fed-28c78a5cd82f.sock",
+        "VSCODE_IPC_HOOK_CLI": "/run/user/1000/vscode-ipc-f8cb4ffe-53d4-4291-9f6a-ef302426ae76.sock",
         "WSLENV": "VSCODE_WSL_EXT_LOCATION/up"
     },
-    "valueHash": -1902609456,
-    "inputsHash": 1130641743
+    "valueHash": 798336802,
+    "inputsHash": -1672624709
 }
