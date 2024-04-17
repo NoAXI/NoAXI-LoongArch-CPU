@@ -23,7 +23,8 @@ trait InstType {  // 指令类型
     def Inst2RUI6   = "b01010".U // add
 
     def Inst1RI21   = "b10000".U
-    def InstI26     = "b10001".U
+    def Inst1RCSR   = "b10001".U
+    def InstI26     = "b10010".U
 
     def isWriteReg(instType: UInt): Bool = !instType(4)  // 是否写寄存器
     def apply() = UInt(4.W) 
@@ -36,7 +37,8 @@ object FuncType {  //功能类型
 }
 
 object decOpType {
-    def branch  = "b0".U
+    def branch  = "b00".U
+    def wf  = "b01".U
 }
 
 object Src1Type {
@@ -63,6 +65,7 @@ object LA64_ALUInst extends InstType with Parameters {
     def NOR         = BitPat("b00000000000101000???????????????")
     def AND         = BitPat("b00000000000101001???????????????")
     def OR          = BitPat("b00000000000101010???????????????")
+    def ORI         = BitPat("b0000001110??????????????????????")//add
     def XOR         = BitPat("b00000000000101011???????????????")
     def SLLI_W      = BitPat("b00000000010000001???????????????")
     def SRLI_W      = BitPat("b00000000010001001???????????????") 
@@ -76,6 +79,7 @@ object LA64_ALUInst extends InstType with Parameters {
     def BEQ         = BitPat("b010000??????????????????????????")    
     def BNE         = BitPat("b010001??????????????????????????")
     def LU12I_W     = BitPat("b0001010?????????????????????????")
+    def CSRWR       = BitPat("b00000100??????????????00001?????")//add
 
     // def ADDI_W      = BitPat("b0000001010??????????????????????")
     // def ADDI_D      = BitPat("b0000001011??????????????????????")
@@ -98,6 +102,7 @@ object LA64_ALUInst extends InstType with Parameters {
         NOR       -> List(Inst3R,      FuncType.alu,   ALUOpType.nor      ,false.B,  Src1Type.nor, Src2Type.nor),
         AND       -> List(Inst3R,      FuncType.alu,   ALUOpType.and      ,false.B,  Src1Type.nor, Src2Type.nor),
         OR        -> List(Inst3R,      FuncType.alu,   ALUOpType.or       ,false.B,  Src1Type.nor, Src2Type.nor),
+        ORI       -> List(Inst2RI12,   FuncType.alu,   ALUOpType.or       ,false.B,  Src1Type.nor, Src2Type.imm),//add
         XOR       -> List(Inst3R,      FuncType.alu,   ALUOpType.xor      ,false.B,  Src1Type.nor, Src2Type.nor),
         SLLI_W    -> List(Inst2RUI5,   FuncType.alu,   ALUOpType.sll      ,false.B,  Src1Type.nor, Src2Type.imm),
         SRLI_W    -> List(Inst2RUI5,   FuncType.alu,   ALUOpType.srl      ,false.B,  Src1Type.nor, Src2Type.imm),
@@ -110,7 +115,8 @@ object LA64_ALUInst extends InstType with Parameters {
         BL        -> List(Inst2RI26,   FuncType.alu,   ALUOpType.add      ,false.B,  Src1Type.pc , Src2Type.is4),
         BEQ       -> List(Inst2RI16,   FuncType.dec,   decOpType.branch   ,true .B,  Src1Type.nor, Src2Type.nor),
         BNE       -> List(Inst2RI16,   FuncType.dec,   decOpType.branch   ,true .B,  Src1Type.nor, Src2Type.nor),
-        LU12I_W   -> List(Inst2RI20,   FuncType.alu,   ALUOpType.lui      ,false.B,  Src1Type.nor, Src2Type.imm)
+        LU12I_W   -> List(Inst2RI20,   FuncType.alu,   ALUOpType.lui      ,false.B,  Src1Type.nor, Src2Type.imm),
+        CSRWR     -> List(Inst1RCSR,   FuncType.dec,   decOpType.wf       ,false.B,  Src1Type.nor, Src2Type.imm)//add
     )
 }
 
@@ -132,6 +138,9 @@ class ID_IO extends Bundle with Parameters {
 
     //** to fs
     val br_bus = Output(UInt(BR_BUS_WIDTH.W))
+
+    //for test
+    val inst = Output(UInt(32.W))
 }
 
 class ID extends Module with Parameters with InstType{
@@ -152,6 +161,7 @@ class ID extends Module with Parameters with InstType{
     
     //提取上一流水级信息
     val ds_inst = fs_to_ds_bus_r(63, 32)
+    io.inst := ds_inst
     val ds_pc = fs_to_ds_bus_r(31, 0)
 
     //提取指令基本信息
@@ -164,7 +174,7 @@ class ID extends Module with Parameters with InstType{
     val i26  = Cat(ds_inst(9, 0), ds_inst(25, 10))
 
     val List(instType, funcType, aluOpType, src_reg_is_rd, src1Type, src2Type) = 
-        ListLookup(ds_inst, List("b11111".U, FuncType.alu, ALUOpType.add, false.B, Src1Type.nor, Src2Type.nor), LA64_ALUInst.table)
+        ListLookup(ds_inst, List("b01111".U, FuncType.alu, ALUOpType.add, false.B, Src1Type.nor, Src2Type.nor), LA64_ALUInst.table)
 
     val imm = MateDefault(instType, 4.U, List(
         Inst2RI12 -> SignedExtend(i12, 32),

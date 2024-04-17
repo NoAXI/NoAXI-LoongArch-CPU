@@ -73,7 +73,7 @@ class Top extends Module with Parameters {
     io.debug_wb_rf_wdata <> ws.io.debug_wb_rf_wdata
 }
 
-object main extends App {
-    emitVerilog(new Top(), Array("--target-dir", "wave"))
-    println("ok!")
-}
+// object main extends App {
+//     emitVerilog(new Top(), Array("--target-dir", "wave"))
+//     println("ok!")
+// }
