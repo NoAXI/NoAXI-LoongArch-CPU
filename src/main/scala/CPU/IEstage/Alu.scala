@@ -19,8 +19,9 @@ class Alu extends Module with Parameters {
     val io = IO(new Alu_IO)
     
     io.alu_result := MateDefault(io.alu_op, 0.U, List(
-        AluOpType.add  ->    (io.alu_src1 + io.alu_src2),
-        AluOpType.sub  ->    (io.alu_src1 - io.alu_src2),
+        AluOpType.add  ->    (SignedExtend(io.alu_src1 + io.alu_src2, DATA_WIDTH)),
+        // AluOpType.add  ->    (SignedExtend(io.alu_src1 + io.alu_src2, DATA_WIDTH)),
+        AluOpType.sub  ->    (SignedExtend(io.alu_src1 - io.alu_src2, DATA_WIDTH)),
         AluOpType.slt  ->    (Mux(io.alu_src1.asSInt < io.alu_src2.asSInt, 1.U, 0.U)),
         AluOpType.sltu ->    (Mux(io.alu_src1 < io.alu_src2, 1.U, 0.U)),
         AluOpType.and  ->    (io.alu_src1 & io.alu_src2),

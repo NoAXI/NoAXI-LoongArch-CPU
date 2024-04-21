@@ -25,7 +25,7 @@ trait InstType {  // 指令类型
 
     // def IsWriteReg(instType: UInt): Bool = !instType(4)  // 是否写寄存器
     def OffWhich(instType: UInt): UInt = instType(6, 5)  // 偏移的形式地址是什么类型
-    def IsBranch(instType: UInt): Bool = OffWhich(instType) =/= 0.U    // 是否分支
+    def IsBranch(instType: UInt): Bool = OffWhich(instType) =/= 0.U && instType =/= 0.U   // 是否分支
     def apply() = UInt(7.W) 
 }
 

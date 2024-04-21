@@ -14,7 +14,7 @@ class Reg_IO extends Bundle with Parameters {
     val rdata1 = Output(UInt(DATA_WIDTH.W))
     val rdata2 = Output(UInt(DATA_WIDTH.W))
 
-    val rf_bus = Flipped(new RegFileBus)
+    val rf_bus = Input(new RegFileBus)
 }
 
 class Reg extends Module with Parameters {

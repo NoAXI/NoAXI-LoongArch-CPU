@@ -1,4 +1,4 @@
-all:
+cp all:
 	mill _.run
 	cd wave && ./sb.sh
 	cd wave && mv Top.sv mycpu_top.v

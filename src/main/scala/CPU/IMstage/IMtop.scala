@@ -21,7 +21,18 @@ class IMtop extends Module with Parameters {
     val io = IO(new IMtop_IO)
 
     //握手
-    val bus = ConnetGetBus(io.hand_shake_bf, io.hand_shake_af)
+    val bus = RegInit(0.U.asTypeOf(new Bus))
+    val valid = RegInit(false.B)
+    val ready_go = true.B
+    io.hand_shake_bf.ready_in := !valid || ready_go && io.hand_shake_af.ready_in
+    io.hand_shake_af.valid_out := valid && ready_go
+    when (io.hand_shake_bf.ready_in) {
+        valid := io.hand_shake_bf.valid_out
+    }
+    when (io.hand_shake_bf.valid_out && io.hand_shake_bf.ready_in) {
+        bus := io.hand_shake_bf.bus_out
+    }
+    // val bus = ConnetGetBus(io.hand_shake_bf, io.hand_shake_af)
 
     //传递信息
     val to_next_bus = bus

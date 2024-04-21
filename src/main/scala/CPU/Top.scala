@@ -37,26 +37,27 @@ class Top extends Module with Parameters {
     val imtop = Module(new IMtop)
     val iwtop = Module(new IWtop)
 
-    val empty_bus = WireInit(0.U.asTypeOf(new Bus))
+    val empty_bus = WireDefault(0.U.asTypeOf(new Bus))
 
-    iftop.io.hand_shake_bf.valid_out := true.B
-    iftop.io.hand_shake_bf.bus_out := empty_bus
+    // iftop.io.hand_shake_bf.valid_out := ~reset.asBool
+    // iftop.io.hand_shake_bf.bus_out := empty_bus
+    iftop.io.ds_allowin <> idtop.io.ds_allowin
     iftop.io.inst_sram_rdata <> io.inst_sram_rdata
     iftop.io.br_bus <> idtop.io.br_bus
     iftop.io.hand_shake_af <> idtop.io.hand_shake_bf
 
-    idtop.io.hand_shake_bf <> iftop.io.hand_shake_af
+    // idtop.io.hand_shake_bf <> iftop.io.hand_shake_af
     idtop.io.rf_bus <> iwtop.io.rf_bus
     idtop.io.hand_shake_af <> ietop.io.hand_shake_bf
 
-    ietop.io.hand_shake_bf <> idtop.io.hand_shake_af
+    // ietop.io.hand_shake_bf <> idtop.io.hand_shake_af
     ietop.io.hand_shake_af <> imtop.io.hand_shake_bf
 
-    imtop.io.hand_shake_bf <> ietop.io.hand_shake_af
+    // imtop.io.hand_shake_bf <> ietop.io.hand_shake_af
     imtop.io.data_sram_rdata <> io.data_sram_rdata
     imtop.io.hand_shake_af <> iwtop.io.hand_shake_bf
     
-    iwtop.io.hand_shake_bf <> imtop.io.hand_shake_af
+    // iwtop.io.hand_shake_bf <> imtop.io.hand_shake_af
     iwtop.io.hand_shake_af.ready_in := true.B
 
     io.inst_sram_en <> iftop.io.inst_sram_en
@@ -75,7 +76,7 @@ class Top extends Module with Parameters {
     io.debug_wb_rf_wdata <> iwtop.io.debug_wb_rf_wdata
 }
 
-object main extends App {
-    emitVerilog(new Top(), Array("--target-dir", "wave"))
-    println("ok!")
-}
+// object main extends App {
+//     emitVerilog(new Top(), Array("--target-dir", "wave"))
+//     println("ok!")
+// }

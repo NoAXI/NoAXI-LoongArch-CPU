@@ -17,7 +17,7 @@ import chisel3.util._
 import HandShake._
 
 trait Parameters {
-    val DATA_WIDTH = 64
+    val DATA_WIDTH = 32
 
     val INST_WIDTH = 32
 
@@ -29,8 +29,8 @@ trait Parameters {
 }
 
 object Functions {
-    def ConnetGetBus (x: HandShakeBf, y:HandShakeAf): Bus = {
-        val bus = WireInit(0.U.asTypeOf(new Bus))
+    def ConnectGetBus (x: HandShakeBf, y: HandShakeAf): Bus = {
+        val bus = RegInit(0.U.asTypeOf(new Bus))
         val valid = RegInit(false.B)
         val ready_go = true.B
         x.ready_in := !valid || ready_go && y.ready_in

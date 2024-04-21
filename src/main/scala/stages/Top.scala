@@ -16,7 +16,7 @@ class Top_IO extends Bundle with Parameters {
     // data sram interface
     val data_sram_en = Output(Bool())
     val data_sram_we = Output(UInt(4.W))
-    val data_sram_waddr = Output(UInt(32.W))
+    val data_sram_addr = Output(UInt(32.W))
     val data_sram_wdata = Output(UInt(32.W))
     val data_sram_rdata = Input(UInt(32.W))
 
@@ -38,7 +38,9 @@ class Top extends Module with Parameters {
 
     fs.io.ds_allowin <> ds.io.ds_allowin
     fs.io.inst_sram_rdata := io.inst_sram_rdata//
-    fs.io.br_bus <> ds.io.br_bus
+    // fs.io.br_bus <> ds.io.br_bus
+    fs.io.br_taken <> ds.io.br_taken
+    fs.io.br_target <> ds.io.br_target
 
     ds.io.es_allowin <> es.io.es_allowin
     ds.io.fs_to_ds_valid <> fs.io.fs_to_ds_valid
@@ -57,15 +59,22 @@ class Top extends Module with Parameters {
     ws.io.ms_to_ws_valid <> ms.io.ms_to_ws_valid
     ws.io.ms_to_ws_bus <> ms.io.ms_to_ws_bus
 
+    ws.io.data_sram_rdata := io.data_sram_rdata
+
     io.inst_sram_en <> fs.io.inst_sram_en
     io.inst_sram_we <> fs.io.inst_sram_we
     io.inst_sram_addr <> fs.io.inst_sram_addr
     io.inst_sram_wdata <> fs.io.inst_sram_wdata
 
-    io.data_sram_en <> es.io.data_sram_en
-    io.data_sram_we <> es.io.data_sram_we
-    io.data_sram_waddr <> es.io.data_sram_waddr
-    io.data_sram_wdata <> es.io.data_sram_wdata
+    // io.data_sram_en <> es.io.data_sram_en
+    // io.data_sram_we <> es.io.data_sram_we
+    // io.data_sram_addr <> es.io.data_sram_waddr
+    // io.data_sram_wdata <> es.io.data_sram_wdata
+
+    io.data_sram_en <> ms.io.data_sram_en
+    io.data_sram_we <> ms.io.data_sram_we
+    io.data_sram_addr <> ms.io.data_sram_waddr
+    io.data_sram_wdata <> ms.io.data_sram_wdata
 
     io.debug_wb_pc <> ws.io.debug_wb_pc
     io.debug_wb_rf_we <> ws.io.debug_wb_rf_we
@@ -73,7 +82,7 @@ class Top extends Module with Parameters {
     io.debug_wb_rf_wdata <> ws.io.debug_wb_rf_wdata
 }
 
-// object main extends App {
-//     emitVerilog(new Top(), Array("--target-dir", "wave"))
-//     println("ok!")
-// }
+object main extends App {
+    emitVerilog(new Top(), Array("--target-dir", "wave"))
+    println("ok!")
+}

@@ -6,12 +6,12 @@ import chisel3.util._
 import Parameters._
 
 class BranchBus extends Bundle with Parameters {
-    val valid = Output(Bool())
-    val pc_target = Output(UInt(ADDR_WIDTH.W))
+    val valid = Bool()
+    val pc_target = UInt(ADDR_WIDTH.W)
 }
 
 class RegFileBus extends Bundle with Parameters {
-    val valid = Output(Bool())
-    val waddr = Output(UInt(ADDR_WIDTH_REG.W))
-    val wdata = Output(UInt(DATA_WIDTH.W))
+    val valid = Bool()
+    val waddr = UInt(ADDR_WIDTH_REG.W)
+    val wdata = UInt(DATA_WIDTH.W)
 }

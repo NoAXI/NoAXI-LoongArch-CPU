@@ -20,14 +20,26 @@ class IWtop_IO extends Bundle with Parameters {
     val debug_wb_rf_wdata = Output(UInt(32.W))
 
     //写回
-    val rf_bus = new RegFileBus
+    val rf_bus = Output(new RegFileBus)
 }
 
 class IWtop extends Module with Parameters {
     val io = IO(new IWtop_IO)
 
     //握手
-    val bus = ConnetGetBus(io.hand_shake_bf, io.hand_shake_af)
+    val bus = RegInit(0.U.asTypeOf(new Bus))
+    val valid = RegInit(false.B)
+    val ready_go = true.B
+    io.hand_shake_bf.ready_in := !valid || ready_go && io.hand_shake_af.ready_in
+    io.hand_shake_af.valid_out := valid && ready_go
+    when (io.hand_shake_bf.ready_in) {
+        valid := io.hand_shake_bf.valid_out
+    }
+    when (io.hand_shake_bf.valid_out && io.hand_shake_bf.ready_in) {
+        bus := io.hand_shake_bf.bus_out
+    }
+    // val bus = ConnetGetBus(io.hand_shake_bf, io.hand_shake_af)
+
     io.rf_bus := bus.rf_bus
     io.rf_bus.valid := (bus.rf_bus.valid && io.hand_shake_bf.ready_in
                                        && io.hand_shake_bf.valid_out)
