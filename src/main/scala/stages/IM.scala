@@ -77,7 +77,7 @@ class IM extends Module with Parameters {
     io.ms_to_ws_bus.ms_res_from_mem := ms_res_from_mem
 
     io.data_sram_en := true.B
-    io.data_sram_we := mem_we
+    io.data_sram_we := Fill(4, mem_we)
     io.data_sram_waddr := ms_alu_result
     io.data_sram_wdata := rkd_value
 }

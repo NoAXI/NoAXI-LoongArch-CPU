@@ -798,7 +798,7 @@ module IM(	// src/main/scala/stages/IM.scala:33:7
   assign ms_to_ws_bus_final_result = es_to_ms_bus_r_alu_result;	// src/main/scala/stages/IM.scala:33:7, :38:33
   assign ms_to_ws_bus_pc = es_to_ms_bus_r_pc;	// src/main/scala/stages/IM.scala:33:7, :38:33
   assign ms_to_ws_bus_ms_res_from_mem = ms_res_from_mem;	// src/main/scala/stages/IM.scala:33:7, :38:33
-  assign data_sram_we = {3'h0, es_to_ms_bus_r_mem_we};	// src/main/scala/stages/IM.scala:33:7, :38:33, :80:21
+  assign data_sram_we = {4{es_to_ms_bus_r_mem_we}};	// src/main/scala/stages/IM.scala:33:7, :38:33, :80:28
   assign data_sram_addr = es_to_ms_bus_r_alu_result;	// src/main/scala/stages/IM.scala:33:7, :38:33
   assign data_sram_wdata = es_to_ms_bus_r_rkd_value;	// src/main/scala/stages/IM.scala:33:7, :38:33
 endmodule

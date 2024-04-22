@@ -1,16 +1,15 @@
 {
     "value": {
-        "OLDPWD": "/home/yuxuaan",
         "VSCODE_GIT_ASKPASS_MAIN": "/home/yuxuaan/.vscode-server/bin/e170252f762678dec6ca2cc69aba1570769a5d39/extensions/git/dist/askpass-main.js",
         "HTTP_PROXY": "http://127.0.0.1:7890",
         "MAKEFLAGS": "",
-        "WSL_INTEROP": "/run/WSL/448_interop",
+        "WSL_INTEROP": "/run/WSL/439_interop",
         "USER": "yuxuaan",
         "HOSTTYPE": "x86_64",
         "PULSE_SERVER": "unix:/mnt/wslg/PulseServer",
         "SHLVL": "3",
         "LANG": "en_US.UTF-8",
-        "VSCODE_GIT_IPC_HANDLE": "/run/user/1000/vscode-git-1d133240f2.sock",
+        "VSCODE_GIT_IPC_HANDLE": "/run/user/1000/vscode-git-e5634a60c6.sock",
         "SHELL": "/bin/bash",
         "LOGNAME": "yuxuaan",
         "VSCODE_GIT_ASKPASS_NODE": "/home/yuxuaan/.vscode-server/bin/e170252f762678dec6ca2cc69aba1570769a5d39/node",
@@ -30,9 +29,9 @@
         "XDG_DATA_DIRS": "/usr/local/share:/usr/share:/var/lib/snapd/desktop",
         "MFLAGS": "",
         "MAKELEVEL": "1",
-        "MAKE_TERMERR": "/dev/pts/5",
+        "MAKE_TERMERR": "/dev/pts/6",
         "https_proxy": "http://127.0.0.1:7890",
-        "MAKE_TERMOUT": "/dev/pts/5",
+        "MAKE_TERMOUT": "/dev/pts/6",
         "TERM_PROGRAM_VERSION": "1.88.1",
         "PWD": "/home/yuxuaan/LA64CPU",
         "NO_PROXY": "192.168.*,172.31.*,172.30.*,172.29.*,172.28.*,172.27.*,172.26.*,172.25.*,172.24.*,172.23.*,172.22.*,172.21.*,172.20.*,172.19.*,172.18.*,172.17.*,172.16.*,10.*,127.*,localhost,<local>",
@@ -43,9 +42,9 @@
         "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
         "WSL2_GUI_APPS_ENABLED": "1",
         "HTTPS_PROXY": "http://127.0.0.1:7890",
-        "VSCODE_IPC_HOOK_CLI": "/run/user/1000/vscode-ipc-09569284-aae1-48dd-b865-68f27136e1d3.sock",
+        "VSCODE_IPC_HOOK_CLI": "/run/user/1000/vscode-ipc-1eda0c87-7069-4174-86c9-cfe5ca3e22e6.sock",
         "WSLENV": "VSCODE_WSL_EXT_LOCATION/up"
     },
-    "valueHash": 1193021612,
-    "inputsHash": 92127850
+    "valueHash": 1670527742,
+    "inputsHash": -328378622
 }

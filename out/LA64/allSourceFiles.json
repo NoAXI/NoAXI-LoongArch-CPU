@@ -4,12 +4,12 @@
         "ref:v0:617caaf5:/home/yuxuaan/LA64CPU/src/main/scala/stages/IF.scala",
         "ref:v0:c14bf18c:/home/yuxuaan/LA64CPU/src/main/scala/stages/REG.scala",
         "ref:v0:347382e6:/home/yuxuaan/LA64CPU/src/main/scala/stages/bus.scala",
-        "ref:v0:56635819:/home/yuxuaan/LA64CPU/src/main/scala/stages/IM.scala",
+        "ref:v0:58a0f949:/home/yuxuaan/LA64CPU/src/main/scala/stages/IM.scala",
         "ref:v0:04249cd2:/home/yuxuaan/LA64CPU/src/main/scala/stages/ID.scala",
         "ref:v0:652ea8b5:/home/yuxuaan/LA64CPU/src/main/scala/stages/ALU.scala",
         "ref:v0:27c8d4ec:/home/yuxuaan/LA64CPU/src/main/scala/stages/IW.scala",
         "ref:v0:11aa90c0:/home/yuxuaan/LA64CPU/src/main/scala/stages/IE.scala",
-        "ref:v0:376ac45e:/home/yuxuaan/LA64CPU/src/main/scala/isa/LA64.scala",
+        "ref:v0:a7cf3626:/home/yuxuaan/LA64CPU/src/main/scala/isa/LA64.scala",
         "ref:v0:e2bb0dc1:/home/yuxuaan/LA64CPU/src/main/scala/CPU/IDstage/Reg.scala",
         "ref:v0:11e7c3cf:/home/yuxuaan/LA64CPU/src/main/scala/CPU/IDstage/IDtop.scala",
         "ref:v0:8b44f09b:/home/yuxuaan/LA64CPU/src/main/scala/CPU/Top.scala",
@@ -25,6 +25,6 @@
         "ref:v0:2ac25f63:/home/yuxuaan/LA64CPU/src/main/scala/CPU/ISA.scala",
         "ref:v0:0145e5ef:/home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala"
     ],
-    "valueHash": 1331513109,
-    "inputsHash": 1339797378
+    "valueHash": -1134135776,
+    "inputsHash": -907945237
 }

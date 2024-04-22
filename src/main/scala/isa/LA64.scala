@@ -5,8 +5,6 @@ import chisel3.util._
 
 import config._
 import stages._
-import stages.FuncType._
-import stages.ALUOpType._
 
 //乱写的
 object LA64_ALUInst extends InstType with Parameters {
