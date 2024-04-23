@@ -12,7 +12,7 @@ class ID_IO extends Bundle with Parameters {
   val to   = DecoupledIO(new info)
 
   // ** from writeback
-  val ws_to_rf_bus = Input(UInt(38.W))
+  val rf_bus = Input(new rf_bus)
 
   // ** to if
   val br_bus = Output(new br_bus)
@@ -26,8 +26,8 @@ class ID extends Module with Parameters with InstType {
 
   // 译码获取信息
   val inst = info.inst
-  val List(inst_type, func_type, op_type, is_wf) =
-    ListLookup(inst, List("b0000000".U, "b1".U, "b111111".U, "b1".U), LA64_ALUInst.table)
+  val List(inst_type, func_type, op_type, is_wf, src_type1, src_type2) =
+    ListLookup(inst, List("b0000000".U, "b1".U, "b111111".U, "b1".U, "b111".U, "b111".U), LA32.table)
 
   val imm = MateDefault(
     inst_type,
@@ -52,16 +52,17 @@ class ID extends Module with Parameters with InstType {
 
   // 写回
   val reg = Module(new REG)
-  reg.io.we     := io.ws_to_rf_bus(37)
-  reg.io.waddr  := io.ws_to_rf_bus(36, 32)
-  reg.io.wdata  := io.ws_to_rf_bus(31, 0)
+  reg.io.rf_bus := io.rf_bus
+
+  // 读取
   reg.io.raddr1 := rj
-  reg.io.raddr2 := Mux(
-    (inst === LA64_ALUInst.BEQ
-      || inst === LA64_ALUInst.BNE
-      || inst === LA64_ALUInst.ST_W),
-    rd,
+  reg.io.raddr2 := MateDefault(
+    src_type2,
     rk,
+    List(
+      SrcType.rd -> rd,
+      SrcType.rd_imm -> rd
+    )
   )
   val rj_value  = reg.io.rdata1
   val rkd_value = reg.io.rdata2
@@ -70,11 +71,11 @@ class ID extends Module with Parameters with InstType {
   io.br_bus.br_taken := MuxCase(
     false.B,
     Seq(
-      (inst === LA64_ALUInst.JIRL)                          -> (true.B),
-      (inst === LA64_ALUInst.B)                             -> (true.B),
-      (inst === LA64_ALUInst.BL)                            -> (true.B),
-      (inst === LA64_ALUInst.BEQ && rj_value === rkd_value) -> (true.B),
-      (inst === LA64_ALUInst.BNE && rj_value =/= rkd_value) -> (true.B),
+      (inst === LA32.JIRL)                          -> (true.B),
+      (inst === LA32.B)                             -> (true.B),
+      (inst === LA32.BL)                            -> (true.B),
+      (inst === LA32.BEQ && rj_value === rkd_value) -> (true.B),
+      (inst === LA32.BNE && rj_value =/= rkd_value) -> (true.B),
     ),
   ) && io.to.valid
   io.br_bus.br_target := MateDefault(
@@ -84,9 +85,9 @@ class ID extends Module with Parameters with InstType {
       OffType.off_rj_or_direct -> (MuxCase(
         0.U,
         Seq(
-          (inst === LA64_ALUInst.JIRL) -> (rj_value + SignedExtend(Cat(imm, Fill(2, 0.U)), 32)),
-          (inst === LA64_ALUInst.BEQ && rj_value === rkd_value) -> (info.pc + imm),
-          (inst === LA64_ALUInst.BNE && rj_value =/= rkd_value) -> (info.pc + imm),
+          (inst === LA32.JIRL) -> (rj_value + SignedExtend(Cat(imm, Fill(2, 0.U)), 32)),
+          (inst === LA32.BEQ && rj_value === rkd_value) -> (info.pc + imm),
+          (inst === LA32.BNE && rj_value =/= rkd_value) -> (info.pc + imm),
         ),
       )),
       OffType.off_pc -> (info.pc + SignedExtend(Cat(imm, Fill(2, 0.U)), 32)),
@@ -98,25 +99,22 @@ class ID extends Module with Parameters with InstType {
   to_info           := info
   to_info.func_type := func_type
   to_info.op_type   := op_type
-  to_info.src1 := MuxCase(
+  to_info.src1 := MateDefault(
+    src_type1,
     rj_value,
-    Seq(
-      (inst === LA64_ALUInst.JIRL) -> (info.pc),
-      (inst === LA64_ALUInst.BL)   -> (info.pc),
-    ),
+    List(
+      SrcType.pc -> (info.pc)
+    )
   )
-  to_info.src2 := MuxCase(
+  to_info.src2 := MateDefault(
+    src_type2,
     rkd_value,
-    Seq(
-      (inst === LA64_ALUInst.JIRL) -> (4.U),
-      (inst === LA64_ALUInst.BL)   -> (4.U),
-      (inst === LA64_ALUInst.SLLI_W
-        || inst === LA64_ALUInst.SRLI_W
-        || inst === LA64_ALUInst.SRAI_W
-        || inst === LA64_ALUInst.ADDI_W
-        || inst === LA64_ALUInst.LD_W
-        || inst === LA64_ALUInst.ST_W
-        || inst === LA64_ALUInst.LU12I_W) -> imm,
+    List(
+      SrcType.is4     -> (4.U),
+      SrcType.imm     -> imm,
+      SrcType.rd_imm  -> imm,
+      SrcType.rk      -> rkd_value,
+      SrcType.rd      -> rkd_value,
     ),
   )
 
@@ -125,7 +123,7 @@ class ID extends Module with Parameters with InstType {
   to_info.func_type := func_type
   to_info.op_type   := op_type
   to_info.is_wf     := is_wf
-  to_info.dest      := Mux(inst === LA64_ALUInst.BL, 1.U, rd)
+  to_info.dest      := Mux(inst === LA32.BL, 1.U, rd)
   to_info.rkd_value := rkd_value
   io.to.bits        := to_info
 }

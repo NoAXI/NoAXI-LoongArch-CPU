@@ -7,23 +7,23 @@ import config._
 
 class Top_IO extends Bundle with Parameters {
   // inst sram interface
-  val inst_sram_en = Output(Bool())
-  val inst_sram_we = Output(UInt(4.W))
-  val inst_sram_addr = Output(UInt(32.W))
+  val inst_sram_en    = Output(Bool())
+  val inst_sram_we    = Output(UInt(4.W))
+  val inst_sram_addr  = Output(UInt(32.W))
   val inst_sram_wdata = Output(UInt(32.W))
   val inst_sram_rdata = Input(UInt(32.W))
 
   // data sram interface
-  val data_sram_en = Output(Bool())
-  val data_sram_we = Output(UInt(4.W))
-  val data_sram_addr = Output(UInt(32.W))
+  val data_sram_en    = Output(Bool())
+  val data_sram_we    = Output(UInt(4.W))
+  val data_sram_addr  = Output(UInt(32.W))
   val data_sram_wdata = Output(UInt(32.W))
   val data_sram_rdata = Input(UInt(32.W))
 
   // trace debug interface
-  val debug_wb_pc = Output(UInt(32.W))
-  val debug_wb_rf_we = Output(UInt(4.W))
-  val debug_wb_rf_wnum = Output(UInt(5.W))
+  val debug_wb_pc       = Output(UInt(32.W))
+  val debug_wb_rf_we    = Output(UInt(4.W))
+  val debug_wb_rf_wnum  = Output(UInt(5.W))
   val debug_wb_rf_wdata = Output(UInt(32.W))
 }
 
@@ -36,35 +36,35 @@ class Top extends Module with Parameters {
   val ms = Module(new IM)
   val ws = Module(new IW)
 
-  fs.io.from.valid := !reset.asBool
-  fs.io.from.bits := RegInit(0.U.asTypeOf(new info))
+  fs.io.from.valid      := !reset.asBool
+  fs.io.from.bits       := RegInit(0.U.asTypeOf(new info))
   fs.io.inst_sram_rdata := io.inst_sram_rdata
-  fs.io.br_bus <> ds.io.br_bus
+  fs.io.br_bus          <> ds.io.br_bus
 
-  ds.io.from <> fs.io.to
-  ds.io.ws_to_rf_bus <> ws.io.ws_to_rf_bus
+  ds.io.from   <> fs.io.to
+  ds.io.rf_bus <> ws.io.rf_bus
 
   es.io.from <> ds.io.to
 
-  ms.io.from <> es.io.to
+  ms.io.from            <> es.io.to
   ms.io.data_sram_rdata := io.data_sram_rdata //
 
-  ws.io.from <> ms.io.to
+  ws.io.from     <> ms.io.to
   ws.io.to.ready := true.B
 
-  io.inst_sram_en <> fs.io.inst_sram_en
-  io.inst_sram_we <> fs.io.inst_sram_we
-  io.inst_sram_addr <> fs.io.inst_sram_addr
+  io.inst_sram_en    <> fs.io.inst_sram_en
+  io.inst_sram_we    <> fs.io.inst_sram_we
+  io.inst_sram_addr  <> fs.io.inst_sram_addr
   io.inst_sram_wdata <> fs.io.inst_sram_wdata
 
-  io.data_sram_en <> es.io.data_sram_en
-  io.data_sram_we <> es.io.data_sram_we
-  io.data_sram_addr <> es.io.data_sram_addr
+  io.data_sram_en    <> es.io.data_sram_en
+  io.data_sram_we    <> es.io.data_sram_we
+  io.data_sram_addr  <> es.io.data_sram_addr
   io.data_sram_wdata <> es.io.data_sram_wdata
 
-  io.debug_wb_pc <> ws.io.debug_wb_pc
-  io.debug_wb_rf_we <> ws.io.debug_wb_rf_we
-  io.debug_wb_rf_wnum <> ws.io.debug_wb_rf_wnum
+  io.debug_wb_pc       <> ws.io.debug_wb_pc
+  io.debug_wb_rf_we    <> ws.io.debug_wb_rf_we
+  io.debug_wb_rf_wnum  <> ws.io.debug_wb_rf_wnum
   io.debug_wb_rf_wdata <> ws.io.debug_wb_rf_wdata
 }
 

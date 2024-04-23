@@ -26,7 +26,7 @@ class IM extends Module with Parameters {
 
   // 传递信息
   val to_info = WireDefault(0.U.asTypeOf(new info))
-  to_info            := info
-  to_info.alu_result := Mux(ms_res_from_mem, io.data_sram_rdata, info.alu_result)
-  io.to.bits         := to_info
+  to_info        := info
+  to_info.result := Mux(ms_res_from_mem, io.data_sram_rdata, info.result)
+  io.to.bits     := to_info
 }

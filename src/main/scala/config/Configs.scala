@@ -19,7 +19,7 @@ class info extends Bundle {
 
   val src1 = UInt(32.W)
   val src2 = UInt(32.W)
-  val alu_result   = UInt(32.W)
+  val result   = UInt(32.W)
 }
 
 object Functions {

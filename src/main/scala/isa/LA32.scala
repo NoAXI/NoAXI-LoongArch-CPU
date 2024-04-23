@@ -4,26 +4,25 @@ import chisel3._
 import chisel3.util._
 
 trait InstType {  // 指令类型
-    def Inst2R      = "b0000010".U
-    def Inst3R      = "b0000011".U
-    def Inst4R      = "b0000100".U
+    def Inst2R      = "b00_00_0010".U
+    def Inst3R      = "b00_00_0011".U
+    def Inst4R      = "b00_00_0100".U
 
-    def Inst2RI8    = "b0000000".U
-    def Inst2RI12   = "b0000001".U //至少ori的立即数需要零拓展
-    def Inst2RI14   = "b0000101".U
-    def Inst2RI16   = "b0100110".U
-    def Inst2RI20   = "b0000111".U // add
-    def Inst2RI26   = "b1001000".U // add
-    def Inst2RUI5   = "b0001001".U // add
-    def Inst2RUI6   = "b0001010".U // add
+    def Inst2RI8    = "b00_00_0000".U
+    def Inst2RI12   = "b00_00_0001".U //至少ori的立即数需要零拓展
+    def Inst2RI14   = "b00_00_0101".U
+    def Inst2RI16   = "b01_00_0110".U
+    def Inst2RI20   = "b00_00_0111".U // add
+    def Inst2RI26   = "b10_00_1000".U // add
+    def Inst2RUI5   = "b00_00_1001".U // add
+    def Inst2RUI6   = "b00_00_1010".U // add
 
-    def Inst1RI21   = "b0010000".U
-    def Inst1RCSR   = "b0010001".U //add
-    def InstI26     = "b0010010".U
+    def Inst1RI21   = "b00_01_0000".U
+    def Inst1RCSR   = "b00_01_0001".U //add
+    def InstI26     = "b00_01_0010".U
 
     // def IsWriteReg(instType: UInt): Bool = !instType(4)  // 是否写寄存器
-    def OffWhich(instType: UInt): UInt = instType(6, 5)  // 偏移的形式地址是什么类型
-    def IsBranch(instType: UInt): Bool = OffWhich(instType) =/= 0.U && instType =/= 0.U   // 是否分支
+    def OffWhich(instType: UInt): UInt = instType(7, 6)  // 偏移的形式地址是什么类型
     def apply() = UInt(7.W) 
 }
 
@@ -76,7 +75,18 @@ object IsWf {
     def apply() = UInt(1.W)
 }
 
-object LA64_ALUInst extends InstType {
+object SrcType {
+    def is4 = "b000".U
+    def rj = "b001".U
+    def rk = "b010".U
+    def rd = "b011".U
+    def pc = "b100".U
+    def imm = "b101".U
+    def rd_imm = "b110".U
+    def apply() = UInt(3.W)
+}
+
+object LA32 extends InstType {
     def ADD_W       = BitPat("b00000000000100000???????????????")
     // def ADD_D       = BitPat("b00000000000100001???????????????")
     def SUB_W       = BitPat("b00000000000100010???????????????")
@@ -112,30 +122,27 @@ object LA64_ALUInst extends InstType {
     // def LU32I_D     = BitPat("b0001011?????????????????????????")
     // def LU52I_D     = BitPat("b0000001100??????????????????????")
 
-    val table = Array (
-        ADD_W     -> List(Inst3R,      FuncType.alu,   AluOpType.add,   IsWf.y ),//isWriteReg
-        // ADD_D     -> List(Inst2R, FuncType.alu, ALUOpType.add)
-        SUB_W     -> List(Inst3R,      FuncType.alu,   AluOpType.sub,   IsWf.y ),//isWriteReg
-        // SUB_D     -> List(Inst2R, FuncType.alu, ALUOpType.sub)
-        SLT       -> List(Inst3R,      FuncType.alu,   AluOpType.slt,   IsWf.y ),//isWriteReg   
-        SLTU      -> List(Inst3R,      FuncType.alu,   AluOpType.sltu,  IsWf.y ),//isWriteReg
-        NOR       -> List(Inst3R,      FuncType.alu,   AluOpType.nor,   IsWf.y ),//isWriteReg
-        AND       -> List(Inst3R,      FuncType.alu,   AluOpType.and,   IsWf.y ),//isWriteReg
-        OR        -> List(Inst3R,      FuncType.alu,   AluOpType.or,    IsWf.y ),//isWriteReg
-        ORI       -> List(Inst2RI12,   FuncType.alu,   AluOpType.or,    IsWf.y ),//isWriteReg
-        XOR       -> List(Inst3R,      FuncType.alu,   AluOpType.xor,   IsWf.y ),//isWriteReg
-        SLLI_W    -> List(Inst2RUI5,   FuncType.alu,   AluOpType.sll,   IsWf.y ),//isWriteReg
-        SRLI_W    -> List(Inst2RUI5,   FuncType.alu,   AluOpType.srl,   IsWf.y ),//isWriteReg
-        SRAI_W    -> List(Inst2RUI5,   FuncType.alu,   AluOpType.sra,   IsWf.y ),//isWriteReg
-        ADDI_W    -> List(Inst2RI12,   FuncType.alu,   AluOpType.add,   IsWf.y ),//isWriteReg
-        LD_W      -> List(Inst2RI12,   FuncType.mem,   MemOpType.read,  IsWf.y ),//isWriteReg
-        ST_W      -> List(Inst2RI12,   FuncType.mem,   MemOpType.write, IsWf.n ),
-        JIRL      -> List(Inst2RI16,   FuncType.alu,   AluOpType.add,   IsWf.y ),//isWriteReg
-        B         -> List(Inst2RI26,   FuncType.non,   AluOpType.non,   IsWf.n ),
-        BL        -> List(Inst2RI26,   FuncType.alu,   AluOpType.add,   IsWf.y ),//isWriteReg
-        BEQ       -> List(Inst2RI16,   FuncType.non,   AluOpType.non,   IsWf.n ),
-        BNE       -> List(Inst2RI16,   FuncType.non,   AluOpType.non,   IsWf.n ),
-        LU12I_W   -> List(Inst2RI20,   FuncType.alu,   AluOpType.lui,   IsWf.y ),//isWriteReg
-        // CSRWR     -> List(Inst1RCSR,   FuncType.alu,   AluOpType.add    )//add
+    val table = Array ( 
+        ADD_W     -> List(Inst3R,      FuncType.alu,   AluOpType.add,   IsWf.y,   SrcType.rj,   SrcType.rk      ),
+        SUB_W     -> List(Inst3R,      FuncType.alu,   AluOpType.sub,   IsWf.y,   SrcType.rj,   SrcType.rk      ),
+        SLT       -> List(Inst3R,      FuncType.alu,   AluOpType.slt,   IsWf.y,   SrcType.rj,   SrcType.rk      ),   
+        SLTU      -> List(Inst3R,      FuncType.alu,   AluOpType.sltu,  IsWf.y,   SrcType.rj,   SrcType.rk      ),
+        NOR       -> List(Inst3R,      FuncType.alu,   AluOpType.nor,   IsWf.y,   SrcType.rj,   SrcType.rk      ),
+        AND       -> List(Inst3R,      FuncType.alu,   AluOpType.and,   IsWf.y,   SrcType.rj,   SrcType.rk      ),
+        OR        -> List(Inst3R,      FuncType.alu,   AluOpType.or,    IsWf.y,   SrcType.rj,   SrcType.rk      ),
+        ORI       -> List(Inst2RI12,   FuncType.alu,   AluOpType.or,    IsWf.y,   SrcType.rj,   SrcType.rk      ),
+        XOR       -> List(Inst3R,      FuncType.alu,   AluOpType.xor,   IsWf.y,   SrcType.rj,   SrcType.rk      ),
+        SLLI_W    -> List(Inst2RUI5,   FuncType.alu,   AluOpType.sll,   IsWf.y,   SrcType.rj,   SrcType.imm     ),
+        SRLI_W    -> List(Inst2RUI5,   FuncType.alu,   AluOpType.srl,   IsWf.y,   SrcType.rj,   SrcType.imm     ),
+        SRAI_W    -> List(Inst2RUI5,   FuncType.alu,   AluOpType.sra,   IsWf.y,   SrcType.rj,   SrcType.imm     ),
+        ADDI_W    -> List(Inst2RI12,   FuncType.alu,   AluOpType.add,   IsWf.y,   SrcType.rj,   SrcType.imm     ),
+        LD_W      -> List(Inst2RI12,   FuncType.mem,   MemOpType.read,  IsWf.y,   SrcType.rj,   SrcType.imm     ),
+        ST_W      -> List(Inst2RI12,   FuncType.mem,   MemOpType.write, IsWf.n,   SrcType.rj,   SrcType.rd_imm ),
+        JIRL      -> List(Inst2RI16,   FuncType.alu,   AluOpType.add,   IsWf.y,   SrcType.pc,   SrcType.is4     ),
+        B         -> List(Inst2RI26,   FuncType.non,   AluOpType.non,   IsWf.n,   SrcType.rj,   SrcType.rk      ),
+        BL        -> List(Inst2RI26,   FuncType.alu,   AluOpType.add,   IsWf.y,   SrcType.pc,   SrcType.is4     ),
+        BEQ       -> List(Inst2RI16,   FuncType.non,   AluOpType.non,   IsWf.n,   SrcType.rj,   SrcType.rd      ),
+        BNE       -> List(Inst2RI16,   FuncType.non,   AluOpType.non,   IsWf.n,   SrcType.rj,   SrcType.rd      ),
+        LU12I_W   -> List(Inst2RI20,   FuncType.alu,   AluOpType.lui,   IsWf.y,   SrcType.rj,   SrcType.imm     ),
     )
 }

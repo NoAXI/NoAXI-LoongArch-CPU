@@ -33,9 +33,9 @@ class IE extends Module with Parameters {
   val alu_result = alu.io.alu_result
 
   val to_info = WireDefault(0.U.asTypeOf(new info))
-  to_info            := info
-  to_info.alu_result := alu_result
-  io.to.bits         := to_info
+  to_info        := info
+  to_info.result := alu_result
+  io.to.bits     := to_info
 
   io.data_sram_en    := true.B
   io.data_sram_we    := Mux(es_mem_we && io.to.valid, 15.U(4.W), 0.U)
