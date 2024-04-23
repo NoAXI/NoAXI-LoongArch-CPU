@@ -6,20 +6,20 @@ import chisel3.util._
 import math._
 import isa._
 
-class info extends Bundle {
-  val pc   = UInt(32.W)
-  val inst = UInt(32.W)
+class info extends Bundle with Parameters{
+  val pc   = UInt(ADDR_WIDTH.W)
+  val inst = UInt(INST_WIDTH.W)
 
   val func_type = FuncType()
   val op_type   = UInt(10.W)
   val is_wf     = Bool()
 
-  val dest      = UInt(5.W)
-  val rkd_value = UInt(32.W)
+  val dest      = UInt(ADDR_WIDTH_REG.W)
+  val rkd_value = UInt(DATA_WIDTH.W)
 
-  val src1 = UInt(32.W)
-  val src2 = UInt(32.W)
-  val result   = UInt(32.W)
+  val src1   = UInt(DATA_WIDTH.W)
+  val src2   = UInt(DATA_WIDTH.W)
+  val result = UInt(DATA_WIDTH.W)
 }
 
 object Functions {
@@ -40,14 +40,14 @@ object Functions {
   }
 
   def SignedExtend(a: UInt, len: Int) = {
-      val aLen = a.getWidth
-      val signBit = a(aLen-1)
-      if (aLen >= len) a(len-1,0) else Cat(Fill(len - aLen, signBit), a)
+    val aLen    = a.getWidth
+    val signBit = a(aLen - 1)
+    if (aLen >= len) a(len - 1, 0) else Cat(Fill(len - aLen, signBit), a)
   }
 
   def UnSignedExtend(a: UInt, len: Int) = {
-      val aLen = a.getWidth
-      if (aLen >= len) a(len-1,0) else Cat(0.U((len - aLen).W), a)
+    val aLen = a.getWidth
+    if (aLen >= len) a(len - 1, 0) else Cat(0.U((len - aLen).W), a)
   }
 
   def lookup[T <: Data](key: UInt, default: T, map: Array[(BitPat, T)]): T = {
@@ -66,11 +66,8 @@ object Functions {
 }
 
 trait Parameters {
-  val DATA_WIDTH_D = 64               // 双字
-  val DATA_WIDTH_W = DATA_WIDTH_D / 2 // 字
-  val DATA_WIDTH_H = DATA_WIDTH_W / 2 // 半字
-  val DATA_WIDTH_B = DATA_WIDTH_H / 2 // 字节
-  // val DATA_WIDTH_b = 1 // 位
+  val DATA_WIDTH = 32
+  val DATA_WIDTH_B = 32 / 8
 
   val INST_WIDTH   = 32     // 指令长度
   val INST_WIDTH_B = 32 / 8 // 指令字节长度
@@ -78,9 +75,9 @@ trait Parameters {
   val GR_SIZE = 32 // 通用寄存器数量
   val GR_LEN  = 64 // 通用寄存器长度(位宽)
 
-  val START_ADDR = 0x1bfffffc // 程序起始地址
-  val ADDR_WIDTH = 32         // 通用寄存器地址长度(not sure, maybe 是 max)
+  val START_ADDR     = 0x1bfffffc // 程序起始地址
+  val ADDR_WIDTH     = 32         // 通用寄存器地址长度(not sure, maybe 是 max)
+  val ADDR_WIDTH_REG = 5
 
   val LS_TYPE_WIDTH = 3 // Load/Store 类型长度
 }
-

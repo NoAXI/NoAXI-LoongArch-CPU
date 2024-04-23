@@ -36,9 +36,9 @@ class ID extends Module with Parameters with InstType {
       Inst2RI8  -> inst(17, 10),
       Inst2RI12 -> SignedExtend(inst(21, 10), 32),
       Inst2RI14 -> inst(23, 10),
-      Inst2RI16 -> SignedExtend(Cat(inst(25, 10), Fill(2, 0.U)), 32),
-      Inst2RI20 -> SignedExtend(Cat(inst(24, 5), Fill(12, 0.U)), 32),
-      Inst2RI26 -> SignedExtend(Cat(inst(9, 0), inst(25, 10)), 32),
+      Inst2RI16 -> SignedExtend(Cat(inst(25, 10), Fill(2, 0.U)), DATA_WIDTH),
+      Inst2RI20 -> SignedExtend(Cat(inst(24, 5), Fill(12, 0.U)), DATA_WIDTH),
+      Inst2RI26 -> SignedExtend(Cat(inst(9, 0), inst(25, 10)), DATA_WIDTH),
       Inst2RUI5 -> inst(14, 10),
       Inst2RUI6 -> inst(15, 10),
       Inst1RI21 -> inst(31, 10),
@@ -85,13 +85,13 @@ class ID extends Module with Parameters with InstType {
       OffType.off_rj_or_direct -> (MuxCase(
         0.U,
         Seq(
-          (inst === LA32.JIRL) -> (rj_value + SignedExtend(Cat(imm, Fill(2, 0.U)), 32)),
+          (inst === LA32.JIRL) -> (rj_value + imm),
           (inst === LA32.BEQ && rj_value === rkd_value) -> (info.pc + imm),
           (inst === LA32.BNE && rj_value =/= rkd_value) -> (info.pc + imm),
         ),
       )),
-      OffType.off_pc -> (info.pc + SignedExtend(Cat(imm, Fill(2, 0.U)), 32)),
-    ),
+      OffType.off_pc -> (info.pc + SignedExtend(Cat(imm, Fill(2, 0.U)), DATA_WIDTH)),
+    )
   )
 
   // 传递信息
@@ -118,7 +118,6 @@ class ID extends Module with Parameters with InstType {
     ),
   )
 
-  // 传递信息
   val load_op = false.B // 它没用上
   to_info.func_type := func_type
   to_info.op_type   := op_type

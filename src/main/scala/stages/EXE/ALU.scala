@@ -8,10 +8,10 @@ import config._
 import config.Functions._
 
 class ALU_IO extends Bundle with Parameters {
-  val alu_op     = Input(UInt(6.W))
-  val alu_src1   = Input(UInt(32.W))
-  val alu_src2   = Input(UInt(32.W))
-  val alu_result = Output(UInt(32.W))
+  val alu_op     = Input(AluOpType())
+  val alu_src1   = Input(UInt(DATA_WIDTH.W))
+  val alu_src2   = Input(UInt(DATA_WIDTH.W))
+  val alu_result = Output(UInt(DATA_WIDTH.W))
 }
 
 class ALU extends Module with Parameters {
@@ -21,10 +21,10 @@ class ALU extends Module with Parameters {
     io.alu_op,
     0.U,
     List(
-      AluOpType.add   -> (SignedExtend(io.alu_src1 + io.alu_src2, 32)),
-      MemOpType.read  -> (SignedExtend(io.alu_src1 + io.alu_src2, 32)),
-      MemOpType.write -> (SignedExtend(io.alu_src1 + io.alu_src2, 32)),
-      AluOpType.sub   -> (SignedExtend(io.alu_src1 - io.alu_src2, 32)),
+      AluOpType.add   -> (SignedExtend(io.alu_src1 + io.alu_src2, DATA_WIDTH)),
+      MemOpType.read  -> (SignedExtend(io.alu_src1 + io.alu_src2, DATA_WIDTH)),
+      MemOpType.write -> (SignedExtend(io.alu_src1 + io.alu_src2, DATA_WIDTH)),
+      AluOpType.sub   -> (SignedExtend(io.alu_src1 - io.alu_src2, DATA_WIDTH)),
       AluOpType.slt   -> (Mux(io.alu_src1.asSInt < io.alu_src2.asSInt, 1.U, 0.U)),
       AluOpType.sltu  -> (Mux(io.alu_src1 < io.alu_src2, 1.U, 0.U)),
       AluOpType.and   -> (io.alu_src1 & io.alu_src2),
@@ -33,8 +33,8 @@ class ALU extends Module with Parameters {
       AluOpType.xor   -> (io.alu_src1 ^ io.alu_src2),
       AluOpType.sll   -> (io.alu_src1 << (io.alu_src2(4, 0))),
       AluOpType.srl   -> (io.alu_src1 >> (io.alu_src2(4, 0))),
-      AluOpType.sra   -> (Cat(Fill(32, io.alu_src1(31)), io.alu_src1) >> (io.alu_src2(4, 0)))(31, 0),
+      AluOpType.sra   -> (Cat(Fill(32, io.alu_src1(31)), io.alu_src1) >> (io.alu_src2(4, 0)))(DATA_WIDTH - 1, 0),
       AluOpType.lui   -> (io.alu_src2),
-    ),
+    )
   )
 }

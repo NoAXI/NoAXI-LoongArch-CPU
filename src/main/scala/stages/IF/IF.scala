@@ -10,17 +10,15 @@ class IF_IO extends Bundle with Parameters {
   val from = Flipped(DecoupledIO(new info))
   val to   = DecoupledIO(new info)
 
-  // from sram
-  val inst_sram_rdata = Input(UInt(INST_WIDTH.W))
-
   // ** from ds
   val br_bus = Input(new br_bus)
 
-  // ** to sram
+  // ** from and to sram
   val inst_sram_en    = Output(Bool())
   val inst_sram_we    = Output(UInt(INST_WIDTH_B.W))
   val inst_sram_addr  = Output(UInt(ADDR_WIDTH.W))
   val inst_sram_wdata = Output(UInt(INST_WIDTH.W))
+  val inst_sram_rdata = Input(UInt(INST_WIDTH.W))
 }
 
 class IF extends Module with Parameters {

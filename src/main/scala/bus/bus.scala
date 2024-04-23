@@ -3,13 +3,15 @@ package stages
 import chisel3._
 import chisel3.util._
 
-class rf_bus extends Bundle {
+import config._
+
+class rf_bus extends Bundle with Parameters {
   val we    = Bool()
-  val waddr = UInt(5.W)
-  val wdata = UInt(32.W)
+  val waddr = UInt(ADDR_WIDTH_REG.W)
+  val wdata = UInt(DATA_WIDTH.W)
 }
 
-class br_bus extends Bundle {
+class br_bus extends Bundle with Parameters {
   val br_taken  = Bool()
-  val br_target = UInt(32.W)
+  val br_target = UInt(ADDR_WIDTH.W)
 }

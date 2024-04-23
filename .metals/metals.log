@@ -18999,3 +18999,638 @@ WARNING: Unmatched cancel notification for request id 2096
 2024.04.23 17:55:36 INFO  time: compiled LA64 in 0.62s[0m
 Apr 23, 2024 5:56:07 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
 INFO: Unsupported notification method: $/setTrace
+2024.04.23 21:41:34 INFO  Started: Metals version 1.2.2 in folders '/home/yuxuaan/LA64CPU' for client Visual Studio Code 1.88.1.[0m
+21:41:35.173 [pool-1-thread-1] INFO org.flywaydb.core.internal.license.VersionPrinter -- Flyway Community Edition 9.22.3 by Redgate
+21:41:35.175 [pool-1-thread-1] INFO org.flywaydb.core.internal.license.VersionPrinter -- See release notes here: https://rd.gt/416ObMi
+21:41:35.175 [pool-1-thread-1] INFO org.flywaydb.core.internal.license.VersionPrinter -- 
+21:41:35.178 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Scanning for classpath resources at 'classpath:db/callback' ...
+21:41:35.178 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Determining location urls for classpath:db/callback using ClassLoader sun.misc.Launcher$AppClassLoader@1b6d3586 ...
+21:41:35.178 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Unable to resolve location classpath:db/callback.
+21:41:35.178 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Scanning for classpath resources at 'classpath:db/migration' ...
+21:41:35.178 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Determining location urls for classpath:db/migration using ClassLoader sun.misc.Launcher$AppClassLoader@1b6d3586 ...
+21:41:35.178 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Scanning URL: jar:file:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scalameta/metals_2.13/1.2.2/metals_2.13-1.2.2.jar!/db/migration
+21:41:35.180 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Found resource: db/migration/
+21:41:35.180 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Found resource: db/migration/V1__Create_tables.sql
+21:41:35.180 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Found resource: db/migration/V2__Server_discovery.sql
+21:41:35.180 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Found resource: db/migration/V3__Jar_symbols.sql
+21:41:35.180 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Found resource: db/migration/V4__Fingerprints.sql
+21:41:35.180 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.classpath.ClassPathScanner -- Scanning for classes at classpath:db/migration
+21:41:35.182 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/ (filename: )
+21:41:35.182 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.resource.ResourceNameValidator -- Validating V1__Create_tables.sql
+21:41:35.183 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.resource.ResourceNameValidator -- Validating V2__Server_discovery.sql
+21:41:35.183 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.resource.ResourceNameValidator -- Validating V3__Jar_symbols.sql
+21:41:35.183 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.resource.ResourceNameValidator -- Validating V4__Fingerprints.sql
+21:41:35.252 [pool-1-thread-1] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:h2:file:/home/yuxuaan/LA64CPU/.metals/metals (H2 2.2)
+21:41:35.252 [pool-1-thread-1] DEBUG org.flywaydb.core.FlywayExecutor -- Driver: H2 JDBC Driver 2.2.224 (2023-09-17)
+21:41:35.252 [pool-1-thread-1] DEBUG org.flywaydb.core.FlywayExecutor -- DDL Transactions Supported: false
+21:41:35.253 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.schemahistory.SchemaHistoryFactory -- Schemas: 
+21:41:35.253 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.schemahistory.SchemaHistoryFactory -- Default schema: null
+21:41:35.257 [pool-1-thread-1] WARN org.flywaydb.core.internal.database.base.Database -- Flyway upgrade recommended: H2 2.2.224 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.220.
+21:41:35.258 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.callback.SqlScriptCallbackFactory -- Scanning for SQL callbacks ...
+21:41:35.258 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/ (filename: )
+21:41:35.266 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.command.DbValidate -- Validating migrations ...
+21:41:35.271 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/ (filename: )
+21:41:35.294 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V1__Create_tables.sql (filename: V1__Create_tables.sql)
+21:41:35.294 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V2__Server_discovery.sql (filename: V2__Server_discovery.sql)
+21:41:35.294 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V3__Jar_symbols.sql (filename: V3__Jar_symbols.sql)
+21:41:35.294 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V4__Fingerprints.sql (filename: V4__Fingerprints.sql)
+21:41:35.294 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/ (filename: )
+21:41:35.295 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V1__Create_tables.sql (filename: V1__Create_tables.sql)
+21:41:35.295 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V2__Server_discovery.sql (filename: V2__Server_discovery.sql)
+21:41:35.295 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V3__Jar_symbols.sql (filename: V3__Jar_symbols.sql)
+21:41:35.295 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/V4__Fingerprints.sql (filename: V4__Fingerprints.sql)
+21:41:35.295 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.scanner.Scanner -- Filtering out resource: db/migration/ (filename: )
+21:41:35.304 [pool-1-thread-1] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 4 migrations (execution time 00:00.037s)
+21:41:35.307 [pool-1-thread-1] DEBUG org.flywaydb.core.internal.command.DbSchemas -- Skipping creation of existing schema: "PUBLIC"
+21:41:35.312 [pool-1-thread-1] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "PUBLIC": 4
+21:41:35.315 [pool-1-thread-1] INFO org.flywaydb.core.internal.command.DbMigrate -- Schema "PUBLIC" is up to date. No migration necessary.
+21:41:35.355 [pool-1-thread-1] DEBUG org.flywaydb.core.FlywayExecutor -- Memory usage: 39 of 232M
+2024.04.23 21:41:35 INFO  skipping build import with status 'Installed'[0m
+2024.04.23 21:41:35 INFO  Attempting to connect to the build server...[0m
+2024.04.23 21:41:35 INFO  Bloop uses /usr/lib/jvm/java-8-openjdk-amd64/jre defined at /home/yuxuaan/.bloop/bloop.json[0m
+2024.04.23 21:41:37 INFO  no build target found for /home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/IE.scala. Using presentation compiler with project's scala-library version: 3.3.1[0m
+2024.04.23 21:41:38 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at /home/yuxuaan/LA64CPU/.metals/bsp.trace.json or /home/yuxuaan/.cache/metals/bsp.trace.json[0m
+2024.04.23 21:41:38 INFO  time: Connected to build server in 2.88s[0m
+2024.04.23 21:41:38 INFO  Connected to Build server: Bloop v1.5.15[0m
+2024.04.23 21:41:38 INFO  time: Imported build in 0.14s[0m
+2024.04.23 21:41:39 WARN  Could not find java sources in /usr/lib/jvm/java-8-openjdk-amd64/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/src.zip. Java symbols will not be available.[0m
+2024.04.23 21:41:39 WARN  Could not find java sources in /usr/lib/jvm/java-8-openjdk-amd64/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/src.zip. Java symbols will not be available.[0m
+2024.04.23 21:41:39 WARN  Could not find java sources in /usr/lib/jvm/java-8-openjdk-amd64/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/lib/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/src.zip, /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/src.zip. Java symbols will not be available.[0m
+2024.04.23 21:41:39 INFO  time: indexed workspace in 1.18s[0m
+2024.04.23 21:54:33 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 21:54:38 INFO  time: compiled LA64 in 4.76s[0m
+2024.04.23 21:55:04 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 21:55:05 INFO  Deduplicating compilation of LA64 from bsp client 'Metals 1.2.2' (since 13m 27.443s)[0m
+2024.04.23 21:55:05 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 21:55:05 INFO  time: compiled LA64 in 0.13s[0m
+2024.04.23 21:55:13 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 21:55:15 INFO  time: compiled LA64 in 1.06s[0m
+2024.04.23 21:55:19 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 21:55:19 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/isa/LA32.scala[0m
+2024.04.23 21:55:19 INFO  time: compiled LA64 in 0.99s[0m
+2024.04.23 21:55:29 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 21:55:29 INFO  time: compiled LA64 in 0.81s[0m
+Apr 23, 2024 9:55:41 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 193
+2024.04.23 21:55:43 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 21:55:44 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/ID/ID.scala[0m
+2024.04.23 21:55:45 INFO  time: compiled LA64 in 1.24s[0m
+2024.04.23 22:03:55 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:03:58 INFO  time: compiled LA64 in 3.19s[0m
+2024.04.23 22:23:51 INFO  compiling la64 (1 scala source)[0m
+Apr 23, 2024 10:23:52 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 334
+2024.04.23 22:23:53 INFO  time: compiled LA64 in 2.57s[0m
+Apr 23, 2024 10:23:54 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 345
+Apr 23, 2024 10:23:54 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 347
+Apr 23, 2024 10:23:55 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 361
+Apr 23, 2024 10:23:57 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 373
+2024.04.23 22:23:58 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:23:58 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:23:59 INFO  time: compiled LA64 in 1.16s[0m
+2024.04.23 22:24:00 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:24:00 INFO  time: compiled LA64 in 0.83s[0m
+2024.04.23 22:24:05 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:24:05 INFO  time: compiled LA64 in 0.27s[0m
+2024.04.23 22:24:05 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:24:06 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:24:07 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:24:07 INFO  time: compiled LA64 in 0.2s[0m
+2024.04.23 22:24:07 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+Apr 23, 2024 10:24:12 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 445
+2024.04.23 22:24:12 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:24:12 INFO  time: compiled LA64 in 0.13s[0m
+2024.04.23 22:24:12 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:24:12 INFO  time: compiled LA64 in 65ms[0m
+2024.04.23 22:24:13 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:24:14 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:24:15 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:24:15 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:24:15 WARN  Using indexes to guess the definition of INST_WIDTH[0m
+2024.04.23 22:24:15 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:24:16 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:24:16 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:24:16 INFO  time: compiled LA64 in 0.57s[0m
+2024.04.23 22:24:20 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:24:20 INFO  time: compiled LA64 in 0.77s[0m
+2024.04.23 22:24:44 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:24:44 INFO  time: compiled LA64 in 76ms[0m
+2024.04.23 22:24:45 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+Apr 23, 2024 10:24:53 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 552
+Apr 23, 2024 10:25:00 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 593
+2024.04.23 22:25:02 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:25:02 INFO  time: compiled LA64 in 0.21s[0m
+Apr 23, 2024 10:25:04 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 620
+2024.04.23 22:25:05 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:25:05 INFO  time: compiled LA64 in 0.14s[0m
+2024.04.23 22:25:06 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:25:06 INFO  time: compiled LA64 in 0.16s[0m
+2024.04.23 22:25:10 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:25:10 INFO  time: compiled LA64 in 0.15s[0m
+2024.04.23 22:25:11 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:25:11 INFO  time: compiled LA64 in 0.12s[0m
+2024.04.23 22:25:13 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:14 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:15 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:15 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:25:15 INFO  time: compiled LA64 in 0.12s[0m
+2024.04.23 22:25:16 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+Apr 23, 2024 10:25:17 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 688
+Apr 23, 2024 10:25:17 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 684
+Apr 23, 2024 10:25:17 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 685
+2024.04.23 22:25:17 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:18 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:19 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:25:19 INFO  time: compiled LA64 in 0.13s[0m
+2024.04.23 22:25:20 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:21 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:21 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:21 WARN  Using indexes to guess the definition of DATA_WIDTH[0m
+2024.04.23 22:25:22 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:22 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:22 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:22 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:22 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:22 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:25 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:25 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:26 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+Apr 23, 2024 10:25:26 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 753
+2024.04.23 22:25:27 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:28 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:29 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:25:29 INFO  time: compiled LA64 in 0.33s[0m
+2024.04.23 22:25:29 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:29 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:25:30 INFO  time: compiled LA64 in 0.11s[0m
+2024.04.23 22:25:30 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+Apr 23, 2024 10:25:33 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 784
+Apr 23, 2024 10:25:38 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 791
+2024.04.23 22:25:39 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:39 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:40 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:41 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+Apr 23, 2024 10:25:42 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 819
+Apr 23, 2024 10:25:42 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 820
+Apr 23, 2024 10:25:42 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 821
+2024.04.23 22:25:41 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:43 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:25:43 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:43 INFO  time: compiled LA64 in 0.87s[0m
+2024.04.23 22:25:43 INFO  compiling la64 (11 scala sources)[0m
+2024.04.23 22:25:44 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:44 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:44 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:44 WARN  Using indexes to guess the definition of DATA_WIDTH[0m
+2024.04.23 22:25:44 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:44 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:44 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:44 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:45 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:45 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:45 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:45 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:45 INFO  time: compiled LA64 in 1.93s[0m
+2024.04.23 22:25:45 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:25:45 INFO  time: compiled LA64 in 0.47s[0m
+2024.04.23 22:25:45 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:25:47 INFO  time: compiled LA64 in 1s[0m
+2024.04.23 22:25:48 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:25:49 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:25:48 INFO  time: compiled LA64 in 0.53s[0m
+Apr 23, 2024 10:25:56 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 880
+2024.04.23 22:25:58 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:25:58 INFO  time: compiled LA64 in 0.42s[0m
+2024.04.23 22:25:58 INFO  compiling la64 (4 scala sources)[0m
+2024.04.23 22:26:00 INFO  time: compiled LA64 in 1.02s[0m
+2024.04.23 22:26:00 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:26:00 INFO  time: compiled LA64 in 0.45s[0m
+2024.04.23 22:26:00 INFO  compiling la64 (3 scala sources)[0m
+2024.04.23 22:26:01 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:26:02 INFO  time: compiled LA64 in 0.92s[0m
+2024.04.23 22:26:08 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:26:08 INFO  time: compiled LA64 in 0.43s[0m
+2024.04.23 22:26:17 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:26:18 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:26:17 INFO  time: compiled LA64 in 0.49s[0m
+2024.04.23 22:26:46 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:26:46 INFO  time: compiled LA64 in 69ms[0m
+2024.04.23 22:26:46 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:26:54 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:26:55 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:26:56 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:26:57 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:26:57 INFO  time: compiled LA64 in 59ms[0m
+2024.04.23 22:26:57 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:26:59 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:27:00 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:27:00 INFO  time: compiled LA64 in 56ms[0m
+2024.04.23 22:27:01 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+Apr 23, 2024 10:27:01 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1035
+2024.04.23 22:27:01 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:27:02 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:27:03 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:27:03 INFO  time: compiled LA64 in 83ms[0m
+2024.04.23 22:27:04 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+Apr 23, 2024 10:27:05 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1065
+Apr 23, 2024 10:27:05 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1064
+2024.04.23 22:27:06 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:27:06 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:27:07 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:27:07 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:27:07 INFO  time: compiled LA64 in 0.88s[0m
+2024.04.23 22:27:07 INFO  compiling la64 (11 scala sources)[0m
+2024.04.23 22:27:08 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:27:09 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:27:10 INFO  time: compiled LA64 in 1.75s[0m
+2024.04.23 22:27:10 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:27:10 INFO  time: compiled LA64 in 0.75s[0m
+2024.04.23 22:27:26 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:27:26 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:27:26 INFO  time: compiled LA64 in 0.68s[0m
+2024.04.23 22:27:28 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:27:28 INFO  time: compiled LA64 in 0.65s[0m
+2024.04.23 22:27:33 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:27:33 INFO  time: compiled LA64 in 0.69s[0m
+2024.04.23 22:27:51 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:27:51 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/ID/ID.scala[0m
+2024.04.23 22:27:51 INFO  time: compiled LA64 in 0.77s[0m
+2024.04.23 22:27:56 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:27:56 INFO  time: compiled LA64 in 0.93s[0m
+2024.04.23 22:28:06 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:28:06 INFO  time: compiled LA64 in 0.6s[0m
+2024.04.23 22:28:09 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:28:09 INFO  time: compiled LA64 in 65ms[0m
+2024.04.23 22:28:10 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:28:49 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:28:49 INFO  time: compiled LA64 in 0.11s[0m
+2024.04.23 22:28:50 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+Apr 23, 2024 10:28:52 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1340
+Apr 23, 2024 10:28:53 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1344
+2024.04.23 22:28:53 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:28:54 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:28:55 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:28:55 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:28:55 INFO  time: compiled LA64 in 0.64s[0m
+2024.04.23 22:28:55 INFO  compiling la64 (11 scala sources)[0m
+2024.04.23 22:28:57 INFO  time: compiled LA64 in 1.44s[0m
+2024.04.23 22:29:02 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:29:02 INFO  time: compiled LA64 in 0.66s[0m
+2024.04.23 22:29:12 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:29:13 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:29:12 INFO  time: compiled LA64 in 0.68s[0m
+2024.04.23 22:29:15 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:29:15 INFO  time: compiled LA64 in 0.66s[0m
+2024.04.23 22:29:22 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:29:23 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:29:23 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:29:23 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:29:23 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:29:22 INFO  time: compiled LA64 in 0.69s[0m
+2024.04.23 22:29:25 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:29:25 INFO  time: compiled LA64 in 0.65s[0m
+2024.04.23 22:29:45 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:29:46 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/ALU.scala[0m
+2024.04.23 22:29:46 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/ALU.scala[0m
+2024.04.23 22:29:46 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/ALU.scala[0m
+2024.04.23 22:29:46 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/ALU.scala[0m
+2024.04.23 22:29:46 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/ALU.scala[0m
+2024.04.23 22:29:45 INFO  time: compiled LA64 in 0.61s[0m
+2024.04.23 22:29:47 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:29:47 INFO  time: compiled LA64 in 0.63s[0m
+2024.04.23 22:29:48 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:29:49 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/ALU.scala[0m
+2024.04.23 22:29:48 INFO  time: compiled LA64 in 0.52s[0m
+Apr 23, 2024 10:29:53 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1601
+2024.04.23 22:29:55 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:29:55 INFO  time: compiled LA64 in 0.63s[0m
+Apr 23, 2024 10:30:28 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1650
+Apr 23, 2024 10:30:28 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1651
+Apr 23, 2024 10:30:28 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1652
+Apr 23, 2024 10:30:29 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1660
+Apr 23, 2024 10:30:37 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1669
+Apr 23, 2024 10:30:37 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1670
+Apr 23, 2024 10:30:42 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1678
+Apr 23, 2024 10:30:46 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1696
+2024.04.23 22:30:47 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:30:47 INFO  time: compiled LA64 in 0.52s[0m
+Apr 23, 2024 10:30:51 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1714
+Apr 23, 2024 10:30:51 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1715
+2024.04.23 22:30:59 WARN  Using indexes to guess the definition of DATA_WIDTH[0m
+Apr 23, 2024 10:30:59 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1749
+2024.04.23 22:31:01 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:31:01 INFO  time: compiled LA64 in 0.62s[0m
+2024.04.23 22:31:06 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:31:07 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/ALU.scala[0m
+2024.04.23 22:31:06 INFO  time: compiled LA64 in 0.61s[0m
+2024.04.23 22:31:08 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:31:08 INFO  time: compiled LA64 in 0.58s[0m
+Apr 23, 2024 10:31:18 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1819
+2024.04.23 22:31:20 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:31:20 INFO  time: compiled LA64 in 0.12s[0m
+2024.04.23 22:31:24 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:31:24 INFO  time: compiled LA64 in 81ms[0m
+2024.04.23 22:31:25 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:31:25 INFO  time: compiled LA64 in 88ms[0m
+2024.04.23 22:31:30 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:31:30 INFO  time: compiled LA64 in 60ms[0m
+2024.04.23 22:31:35 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:31:35 INFO  time: compiled LA64 in 94ms[0m
+2024.04.23 22:31:41 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:31:41 INFO  time: compiled LA64 in 59ms[0m
+Apr 23, 2024 10:31:42 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1956
+2024.04.23 22:31:43 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:31:43 INFO  time: compiled LA64 in 55ms[0m
+2024.04.23 22:31:44 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:31:44 INFO  time: compiled LA64 in 0.59s[0m
+2024.04.23 22:31:53 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:31:54 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/IE.scala[0m
+2024.04.23 22:31:53 INFO  time: compiled LA64 in 0.86s[0m
+2024.04.23 22:32:07 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:32:07 INFO  time: compiled LA64 in 0.61s[0m
+2024.04.23 22:32:18 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:32:18 INFO  time: compiled LA64 in 96ms[0m
+2024.04.23 22:32:26 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:32:26 INFO  time: compiled LA64 in 0.12s[0m
+2024.04.23 22:32:26 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:32:27 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:32:28 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:32:28 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:32:28 INFO  time: compiled LA64 in 0.75s[0m
+2024.04.23 22:32:28 INFO  compiling la64 (11 scala sources)[0m
+2024.04.23 22:32:29 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:32:29 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:32:29 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:32:29 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala[0m
+2024.04.23 22:32:30 INFO  time: compiled LA64 in 1.35s[0m
+Apr 23, 2024 10:32:43 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2111
+Apr 23, 2024 10:32:50 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2122
+Apr 23, 2024 10:32:50 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2129
+Apr 23, 2024 10:32:53 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2136
+Apr 23, 2024 10:32:55 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2144
+Apr 23, 2024 10:33:01 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2151
+2024.04.23 22:33:06 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:33:06 INFO  time: compiled LA64 in 0.49s[0m
+2024.04.23 22:33:09 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:33:10 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/WB/IW.scala[0m
+2024.04.23 22:33:09 INFO  time: compiled LA64 in 0.52s[0m
+2024.04.23 22:33:12 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:33:12 INFO  time: compiled LA64 in 0.53s[0m
+Apr 23, 2024 10:33:13 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2230
+Apr 23, 2024 10:33:15 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2238
+2024.04.23 22:33:17 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:33:17 INFO  time: compiled LA64 in 84ms[0m
+2024.04.23 22:33:18 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/WB/IW.scala[0m
+2024.04.23 22:33:19 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/WB/IW.scala[0m
+2024.04.23 22:33:20 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:33:20 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/WB/IW.scala[0m
+2024.04.23 22:33:20 INFO  time: compiled LA64 in 0.56s[0m
+2024.04.23 22:33:25 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:33:25 INFO  time: compiled LA64 in 79ms[0m
+2024.04.23 22:33:25 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:33:26 INFO  time: compiled LA64 in 63ms[0m
+2024.04.23 22:33:29 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:33:29 INFO  time: compiled LA64 in 0.53s[0m
+2024.04.23 22:33:38 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:33:38 INFO  time: compiled LA64 in 78ms[0m
+2024.04.23 22:33:39 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/WB/IW.scala[0m
+2024.04.23 22:33:40 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:33:40 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/WB/IW.scala[0m
+2024.04.23 22:33:40 INFO  time: compiled LA64 in 0.54s[0m
+2024.04.23 22:33:42 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:33:42 INFO  time: compiled LA64 in 0.53s[0m
+Apr 23, 2024 10:33:49 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2348
+Apr 23, 2024 10:33:54 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2355
+Apr 23, 2024 10:33:55 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2362
+2024.04.23 22:33:57 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:33:57 INFO  time: compiled LA64 in 82ms[0m
+2024.04.23 22:33:58 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/WB/IW.scala[0m
+2024.04.23 22:33:59 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/WB/IW.scala[0m
+Apr 23, 2024 10:34:02 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2411
+Apr 23, 2024 10:34:03 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2418
+Apr 23, 2024 10:34:09 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2425
+Apr 23, 2024 10:34:10 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2432
+2024.04.23 22:34:22 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:34:22 INFO  time: compiled LA64 in 0.57s[0m
+Apr 23, 2024 10:34:23 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2454
+Apr 23, 2024 10:34:24 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2462
+Apr 23, 2024 10:34:25 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2469
+Apr 23, 2024 10:34:26 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2476
+Apr 23, 2024 10:34:29 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2490
+Apr 23, 2024 10:34:34 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2505
+Apr 23, 2024 10:34:34 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2512
+Apr 23, 2024 10:34:36 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2519
+Apr 23, 2024 10:34:38 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2533
+2024.04.23 22:34:40 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:34:40 INFO  time: compiled LA64 in 0.53s[0m
+Apr 23, 2024 10:35:10 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2584
+2024.04.23 22:35:21 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:35:21 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/IE.scala[0m
+2024.04.23 22:35:21 INFO  time: compiled LA64 in 0.71s[0m
+2024.04.23 22:35:28 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:35:28 INFO  time: compiled LA64 in 0.53s[0m
+2024.04.23 22:35:29 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:35:29 INFO  time: compiled LA64 in 0.51s[0m
+Apr 23, 2024 10:35:35 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2623
+Apr 23, 2024 10:35:36 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2630
+Apr 23, 2024 10:35:37 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2637
+2024.04.23 22:35:43 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:35:43 INFO  time: compiled LA64 in 99ms[0m
+2024.04.23 22:35:45 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:35:45 INFO  time: compiled LA64 in 0.11s[0m
+Apr 23, 2024 10:36:36 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2695
+Apr 23, 2024 10:36:39 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2713
+Apr 23, 2024 10:36:40 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2721
+Apr 23, 2024 10:36:40 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2723
+Apr 23, 2024 10:36:40 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2724
+Apr 23, 2024 10:36:41 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2728
+Apr 23, 2024 10:36:41 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2731
+2024.04.23 22:36:42 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:36:42 INFO  time: compiled LA64 in 89ms[0m
+2024.04.23 22:36:43 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:36:45 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:36:45 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:36:46 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:36:46 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala[0m
+2024.04.23 22:36:46 INFO  time: compiled LA64 in 0.56s[0m
+Apr 23, 2024 10:36:55 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2775
+Apr 23, 2024 10:37:21 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2794
+2024.04.23 22:37:33 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:37:33 INFO  time: compiled LA64 in 0.11s[0m
+2024.04.23 22:37:38 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:37:38 INFO  time: compiled LA64 in 0.12s[0m
+2024.04.23 22:37:42 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:37:42 INFO  time: compiled LA64 in 94ms[0m
+2024.04.23 22:37:49 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:37:49 INFO  time: compiled LA64 in 56ms[0m
+2024.04.23 22:37:56 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:37:56 INFO  time: compiled LA64 in 0.12s[0m
+2024.04.23 22:38:10 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:38:10 INFO  time: compiled LA64 in 67ms[0m
+2024.04.23 22:38:13 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:38:13 INFO  time: compiled LA64 in 55ms[0m
+2024.04.23 22:38:14 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:38:14 INFO  time: compiled LA64 in 0.12s[0m
+2024.04.23 22:38:16 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:38:16 INFO  time: compiled LA64 in 68ms[0m
+2024.04.23 22:38:19 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:38:19 INFO  time: compiled LA64 in 56ms[0m
+2024.04.23 22:38:20 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:38:20 INFO  time: compiled LA64 in 0.1s[0m
+2024.04.23 22:38:21 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:38:21 INFO  time: compiled LA64 in 76ms[0m
+Apr 23, 2024 10:38:28 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3043
+2024.04.23 22:38:36 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:38:36 INFO  time: compiled LA64 in 74ms[0m
+2024.04.23 22:38:38 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:38:38 INFO  time: compiled LA64 in 0.13s[0m
+Apr 23, 2024 10:38:41 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3075
+2024.04.23 22:38:43 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:38:43 INFO  time: compiled LA64 in 97ms[0m
+2024.04.23 22:38:45 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:38:45 INFO  time: compiled LA64 in 0.1s[0m
+2024.04.23 22:38:49 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:38:49 INFO  time: compiled LA64 in 96ms[0m
+Apr 23, 2024 10:38:58 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3109
+Apr 23, 2024 10:39:02 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3116
+Apr 23, 2024 10:39:05 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3124
+Apr 23, 2024 10:39:21 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3135
+Apr 23, 2024 10:39:25 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3148
+Apr 23, 2024 10:39:26 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3156
+2024.04.23 22:39:32 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:39:32 INFO  time: compiled LA64 in 0.11s[0m
+2024.04.23 22:39:40 WARN  Using indexes to guess the definition of inst_sram_addr[0m
+2024.04.23 22:39:40 WARN  Using indexes to guess the definition of inst_sram_addr[0m
+2024.04.23 22:39:41 WARN  Using indexes to guess the definition of inst_sram_we[0m
+2024.04.23 22:39:42 WARN  Using indexes to guess the definition of inst_sram_we[0m
+2024.04.23 22:39:42 WARN  Using indexes to guess the definition of inst_sram_addr[0m
+2024.04.23 22:39:42 WARN  Using indexes to guess the definition of inst_sram_addr[0m
+2024.04.23 22:39:42 WARN  Using indexes to guess the definition of inst_sram_wdata[0m
+2024.04.23 22:39:43 WARN  Using indexes to guess the definition of inst_sram_wdata[0m
+2024.04.23 22:39:43 WARN  Using indexes to guess the definition of inst_sram_wdata[0m
+2024.04.23 22:39:44 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:39:44 INFO  time: compiled LA64 in 0.62s[0m
+2024.04.23 22:39:44 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:39:44 INFO  time: compiled LA64 in 81ms[0m
+Apr 23, 2024 10:40:40 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3278
+2024.04.23 22:40:42 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:40:42 INFO  time: compiled LA64 in 90ms[0m
+2024.04.23 22:40:46 INFO  compiling la64 (2 scala sources)[0m
+2024.04.23 22:40:46 INFO  time: compiled LA64 in 0.12s[0m
+2024.04.23 22:40:53 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:40:53 INFO  time: compiled LA64 in 0.4s[0m
+2024.04.23 22:40:57 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:40:57 INFO  time: compiled LA64 in 82ms[0m
+2024.04.23 22:41:00 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:41:00 INFO  time: compiled LA64 in 0.71s[0m
+2024.04.23 22:41:04 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:41:04 INFO  time: compiled LA64 in 0.6s[0m
+2024.04.23 22:41:06 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:41:06 INFO  time: compiled LA64 in 0.88s[0m
+Apr 23, 2024 10:41:30 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3458
+Apr 23, 2024 10:41:30 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3465
+Apr 23, 2024 10:42:47 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3469
+Apr 23, 2024 10:42:54 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3489
+2024.04.23 22:44:13 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/IE.scala[0m
+2024.04.23 22:44:15 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:44:15 WARN  Could not load snapshot text for /home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/IE.scala[0m
+2024.04.23 22:44:15 INFO  time: compiled LA64 in 0.7s[0m
+Apr 23, 2024 10:44:17 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3516
+Apr 23, 2024 10:44:18 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3518
+2024.04.23 22:44:19 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:44:19 INFO  time: compiled LA64 in 0.63s[0m
+2024.04.23 22:44:24 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:44:24 INFO  time: compiled LA64 in 0.53s[0m
+2024.04.23 22:44:27 INFO  compiling la64 (1 scala source)[0m
+2024.04.23 22:44:27 INFO  time: compiled LA64 in 0.9s[0m
+Apr 23, 2024 10:47:16 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace

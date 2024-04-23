@@ -14,7 +14,7 @@
         "LOGNAME": "yuxuaan",
         "VSCODE_GIT_ASKPASS_NODE": "/home/yuxuaan/.vscode-server/bin/e170252f762678dec6ca2cc69aba1570769a5d39/node",
         "PATH": "/opt/loongarch32r-linux-gnusf-2022-05-20/bin:/home/yuxuaan/firtool-1.40.0/bin:/home/yuxuaan:/home/yuxuaan/.vscode-server/bin/e170252f762678dec6ca2cc69aba1570769a5d39/bin/remote-cli:/opt/loongarch32r-linux-gnusf-2022-05-20/bin:/home/yuxuaan/firtool-1.40.0/bin:/home/yuxuaan:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2/bin:/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2/libnvvp:/mnt/c/Program Files (x86)/Razer Chroma SDK/bin:/mnt/c/Program Files/Razer Chroma SDK/bin:/mnt/c/Program Files (x86)/Razer/ChromaBroadcast/bin:/mnt/c/Program Files/Razer/ChromaBroadcast/bin:/mnt/c/Program Files (x86)/Common Files/Oracle/Java/javapath:/mnt/c/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64/compiler:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0/:/mnt/c/Windows/System32/OpenSSH/:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/ProgramData/anaconda3:/mnt/c/ProgramData/anaconda3/Scripts:/mnt/c/ProgramData/anaconda3/Library:/mnt/c/ProgramData/anaconda3/Library/bin:/mnt/c/ProgramData/anaconda3/Library/usr/bin:/mnt/c/ProgramData/anaconda3/Library/mingw-w64/bin:/mnt/c/Program Files/NVIDIA Corporation/NVIDIA NvDLISR:/mnt/c/Program Files/Bandizip/:/mnt/c/Windows/system32/config/systemprofile/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/YuXuaan/AppData/Local/Microsoft/WindowsApps:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/e/Git/cmd:/mnt/e/Matlab/bin:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2/bin:/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2/libnvvp:/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2/include:/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2/extras/CUPTI/lib64:/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2/lib:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/Users/YuXuaan/.conda/envs/python39/Scripts:/mnt/c/Users/YuXuaan/.conda/envs/python39/Library/bin:/mnt/c/Users/YuXuaan/AppData/Local/Programs/Python/Python39/Scripts/:/mnt/c/Users/YuXuaan/AppData/Local/Programs/Python/Python39/:/mnt/e/Microsoft VS Code/bin:/mnt/e/environment varaible/mingw64/bin:/mnt/c/Users/YuXuaan/AppData/Local/GitHubDesktop/bin:/mnt/e/QQ/QQGameTempest/Hall.58139/:/snap/bin",
-        "no_proxy": "127.0.0.1,192.168.*,172.31.*,172.30.*,172.29.*,172.28.*,172.27.*,172.26.*,172.25.*,172.24.*,172.23.*,172.22.*,172.21.*,172.20.*,172.19.*,172.18.*,172.17.*,172.16.*,10.*,127.*,localhost,<local>",
+        "no_proxy": "192.168.*,172.31.*,172.30.*,172.29.*,172.28.*,172.27.*,172.26.*,172.25.*,172.24.*,172.23.*,172.22.*,172.21.*,172.20.*,172.19.*,172.18.*,172.17.*,172.16.*,10.*,127.*,localhost,<local>",
         "TERM": "xterm-256color",
         "LESSCLOSE": "/usr/bin/lesspipe %s %s",
         "VSCODE_GIT_ASKPASS_EXTRA_ARGS": "",
@@ -34,7 +34,7 @@
         "MAKE_TERMOUT": "/dev/pts/8",
         "TERM_PROGRAM_VERSION": "1.88.1",
         "PWD": "/home/yuxuaan/LA64CPU",
-        "NO_PROXY": "127.0.0.1,192.168.*,172.31.*,172.30.*,172.29.*,172.28.*,172.27.*,172.26.*,172.25.*,172.24.*,172.23.*,172.22.*,172.21.*,172.20.*,172.19.*,172.18.*,172.17.*,172.16.*,10.*,127.*,localhost,<local>",
+        "NO_PROXY": "192.168.*,172.31.*,172.30.*,172.29.*,172.28.*,172.27.*,172.26.*,172.25.*,172.24.*,172.23.*,172.22.*,172.21.*,172.20.*,172.19.*,172.18.*,172.17.*,172.16.*,10.*,127.*,localhost,<local>",
         "GIT_ASKPASS": "/home/yuxuaan/.vscode-server/bin/e170252f762678dec6ca2cc69aba1570769a5d39/extensions/git/dist/askpass.sh",
         "DISPLAY": ":0",
         "WAYLAND_DISPLAY": "wayland-0",
@@ -42,9 +42,9 @@
         "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
         "WSL2_GUI_APPS_ENABLED": "1",
         "HTTPS_PROXY": "http://127.0.0.1:7890",
-        "VSCODE_IPC_HOOK_CLI": "/run/user/1000/vscode-ipc-0bee3459-8fbb-417d-998d-777b1d023837.sock",
+        "VSCODE_IPC_HOOK_CLI": "/run/user/1000/vscode-ipc-75c21b06-ebce-4bde-b208-4c6ee894baaa.sock",
         "WSLENV": "VSCODE_WSL_EXT_LOCATION/up"
     },
-    "valueHash": 961844114,
-    "inputsHash": 35385516
+    "valueHash": 1464893445,
+    "inputsHash": 2006884897
 }

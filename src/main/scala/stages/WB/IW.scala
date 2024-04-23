@@ -11,10 +11,10 @@ class IW_IO extends Bundle with Parameters {
   val to   = DecoupledIO(new info)
 
   // ** to debug_sign
-  val debug_wb_pc       = Output(UInt(32.W))
+  val debug_wb_pc       = Output(UInt(ADDR_WIDTH.W))
   val debug_wb_rf_we    = Output(UInt(4.W))
-  val debug_wb_rf_wnum  = Output(UInt(5.W))
-  val debug_wb_rf_wdata = Output(UInt(32.W))
+  val debug_wb_rf_wnum  = Output(UInt(ADDR_WIDTH_REG.W))
+  val debug_wb_rf_wdata = Output(UInt(DATA_WIDTH.W))
 
   // ** to rf
   val rf_bus = Output(new rf_bus)

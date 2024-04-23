@@ -13,7 +13,7 @@ class IE_IO extends Bundle with Parameters {
 
   // ** to sram
   val data_sram_en    = Output(Bool())
-  val data_sram_we    = Output(UInt(INST_WIDTH_B.W))
+  val data_sram_we    = Output(UInt(DATA_WIDTH_B.W))
   val data_sram_addr  = Output(UInt(ADDR_WIDTH.W))
   val data_sram_wdata = Output(UInt(INST_WIDTH.W))
 }
@@ -38,7 +38,7 @@ class IE extends Module with Parameters {
   io.to.bits     := to_info
 
   io.data_sram_en    := true.B
-  io.data_sram_we    := Mux(es_mem_we && io.to.valid, 15.U(4.W), 0.U)
+  io.data_sram_we    := Fill(DATA_WIDTH_B, es_mem_we & io.to.valid)
   io.data_sram_addr  := alu_result
-  io.data_sram_wdata := info.rkd_value
+  io.data_sram_wdata := info.rkd_value //只有st的rd被写入
 }
