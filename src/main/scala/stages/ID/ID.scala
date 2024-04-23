@@ -121,48 +121,25 @@ object LA64_ALUInst extends InstType with Parameters {
 }
 
 class ID_IO extends Bundle with Parameters {
-    //allow in
-    val es_allowin = Input(Bool())
-    val ds_allowin = Output(Bool())
-
-    //from fs
-    val fs_to_ds_valid = Input(Bool()) 
-    val fs_to_ds_bus = Input(UInt(FS_TO_DS_BUS_WIDTH.W)) 
+    val from = Flipped(DecoupledIO(new info))
+    val to = DecoupledIO(new info)
 
     //** from writeback
-    val ws_to_rf_bus = Input(UInt(WS_TO_RF_BUS_WIDTH.W))
+    val ws_to_rf_bus = Input(UInt(38.W))
 
-    //to execute
-    val ds_to_es_valid = Output(Bool()) 
-    // val ds_to_es_bus = Output(UInt(DS_TO_ES_BUS_WIDTH.W)) 
-    val ds_to_es_bus = Output(new ds_to_es_bus)
-
-    //** to fs
-    // val br_bus = Output(UInt(BR_BUS_WIDTH.W))
-    val br_taken = Output(Bool())
-    val br_target = Output(UInt(ADDR_WIDTH.W))
-
+    //** to if
+    val br_bus = Output(new br_bus)
 }
 
 class ID extends Module with Parameters with InstType{
     val io = IO(new ID_IO)
 
     //与上一流水级握手，获取上一流水级信息
-    val fs_to_ds_bus_r = RegInit(0.U(FS_TO_DS_BUS_WIDTH.W))
-    val ds_valid = RegInit(false.B)
-    val ds_ready_go = true.B
-    io.ds_allowin := !ds_valid || ds_ready_go && io.es_allowin
-    io.ds_to_es_valid := ds_valid && ds_ready_go
-    when (io.ds_allowin) {
-        ds_valid := io.fs_to_ds_valid
-    }
-    when (io.fs_to_ds_valid && io.ds_allowin) {
-        fs_to_ds_bus_r := io.fs_to_ds_bus
-    }
+    val info = ConnectGetBus(io.from, io.to)
     
     //提取上一流水级信息
-    val ds_inst = fs_to_ds_bus_r(63, 32)
-    val ds_pc = fs_to_ds_bus_r(31, 0)
+    val ds_inst = info.inst
+    val ds_pc = info.pc
 
     //提取指令基本信息
     val rd   = ds_inst( 4,  0)
@@ -188,26 +165,6 @@ class ID extends Module with Parameters with InstType{
                                               SignedExtend(Cat(i16, Fill(2, 0.U)), 32))
 
     val jirl_offs = SignedExtend(Cat(i16, Fill(2, 0.U)), 32)
-
-    // val src_reg_is_rd = (ds_inst === LA64_ALUInst.BEQ 
-    //                   || ds_inst === LA64_ALUInst.BNE 
-    //                   || ds_inst === LA64_ALUInst.ST_W)
-
-    // val src1_is_pc = (ds_inst === LA64_ALUInst.JIRL
-    //                || ds_inst === LA64_ALUInst.BL)
-    
-    // val src2_is_imm = (ds_inst === LA64_ALUInst.SLLI_W
-    //                 || ds_inst === LA64_ALUInst.SRLI_W
-    //                 || ds_inst === LA64_ALUInst.SRAI_W
-    //                 || ds_inst === LA64_ALUInst.ADDI_W
-    //                 || ds_inst === LA64_ALUInst.LD_W
-    //                 || ds_inst === LA64_ALUInst.ST_W
-    //                 || ds_inst === LA64_ALUInst.LU12I_W
-    //                 || ds_inst === LA64_ALUInst.JIRL
-    //                 || ds_inst === LA64_ALUInst.BL)
-    
-    // val src2_is_4 = (ds_inst === LA64_ALUInst.JIRL
-    //              || ds_inst === LA64_ALUInst.BL)
 
     val src1_is_pc = src1Type === Src1Type.pc
     val src2_is_4 = src2Type === Src2Type.is4
@@ -247,7 +204,7 @@ class ID extends Module with Parameters with InstType{
                  || ds_inst === LA64_ALUInst.BNE && !rj_eq_rd
                  || ds_inst === LA64_ALUInst.JIRL
                  || ds_inst === LA64_ALUInst.BL
-                 || ds_inst === LA64_ALUInst.B) && ds_valid
+                 || ds_inst === LA64_ALUInst.B) && io.to.valid
 
     val br_target = Mux((ds_inst === LA64_ALUInst.BEQ
                       || ds_inst === LA64_ALUInst.BNE
@@ -256,50 +213,24 @@ class ID extends Module with Parameters with InstType{
                         (ds_pc + br_offs),
                         (rj_value + jirl_offs))
 
-    // io.br_bus := Cat(br_taken, br_target)
-    io.br_taken := br_taken
-    io.br_target := br_target
+    io.br_bus.br_taken := br_taken
+    io.br_bus.br_target := br_target
 
     //传递信息
     val load_op = false.B // 它没用上
-    // io.ds_to_es_bus := Cat( aluOpType    ,   // 12 -> 6
-    //                         load_op      ,   // 1
-    //                         src1_is_pc   ,   // 1
-    //                         src2_is_imm  ,   // 1
-    //                         src2_is_4    ,   // 1
-    //                         gr_we        ,   // 1
-    //                         mem_we       ,   // 1
-    //                         dest         ,   // 5
-    //                         imm          ,   // 32
-    //                         rj_value     ,   // 32
-    //                         rkd_value    ,   // 32
-    //                         ds_pc        ,    // 32
-    //                         res_from_mem)
-    io.ds_to_es_bus.alu_op := aluOpType
-    io.ds_to_es_bus.es_load_op := load_op
-    io.ds_to_es_bus.src1_is_pc := src1_is_pc
-    io.ds_to_es_bus.src2_is_imm := src2_is_imm
-    io.ds_to_es_bus.src2_is_4 := src2_is_4
-    io.ds_to_es_bus.gr_we := gr_we
-    io.ds_to_es_bus.es_mem_we := mem_we
-    io.ds_to_es_bus.dest := dest
-    io.ds_to_es_bus.imm := imm
-    io.ds_to_es_bus.rj_value := rj_value
-    io.ds_to_es_bus.rkd_value := rkd_value
-    io.ds_to_es_bus.pc := ds_pc
-    io.ds_to_es_bus.res_from_mem := res_from_mem
+    val to_info = WireDefault(0.U.asTypeOf(new info))
+    to_info.alu_op := aluOpType
+    to_info.load_op := load_op
+    to_info.src1_is_pc := src1_is_pc
+    to_info.src2_is_imm := src2_is_imm
+    to_info.src2_is_4 := src2_is_4
+    to_info.gr_we := gr_we
+    to_info.mem_we := mem_we
+    to_info.dest := dest
+    to_info.imm := imm
+    to_info.rj_value := rj_value
+    to_info.rkd_value := rkd_value
+    to_info.pc := ds_pc
+    to_info.res_from_mem := res_from_mem
+    io.to.bits := to_info
 }
-
-/*
-val res = LookupTreeDefault(func(5, 0), adderRes, List(
-    LSUOpType.amoswap -> src2,
-    // LSUOpType.amoadd  -> adderRes,
-    LSUOpType.amoxor  -> xorRes,
-    LSUOpType.amoand  -> (src1 & src2),
-    LSUOpType.amoor   -> (src1 | src2),
-    LSUOpType.amomin  -> Mux(slt(0), src1, src2),
-    LSUOpType.amomax  -> Mux(slt(0), src2, src1),
-    LSUOpType.amominu -> Mux(sltu(0), src1, src2),
-    LSUOpType.amomaxu -> Mux(sltu(0), src2, src1)
-  )) 
- */

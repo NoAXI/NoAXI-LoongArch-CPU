@@ -5,6 +5,24 @@ import chisel3.util._
 
 import math._
 
+class info extends Bundle {
+    val pc              = UInt(32.W)
+    val inst            = UInt(32.W)
+    val alu_op          = UInt(6.W)
+    val load_op         = UInt(1.W)
+    val src1_is_pc      = UInt(1.W)
+    val src2_is_imm     = UInt(1.W)
+    val src2_is_4       = UInt(1.W)
+    val gr_we           = UInt(1.W)
+    val mem_we          = UInt(1.W)
+    val dest            = UInt(5.W)
+    val imm             = UInt(32.W)
+    val rj_value        = UInt(32.W)
+    val rkd_value       = UInt(32.W)
+    val res_from_mem    = UInt(1.W)
+    val alu_result      = UInt(32.W)
+}
+
 object Functions {
     def SignedExtend(x: UInt, len: Int): UInt = {
         val len_x = x.getWidth
@@ -24,6 +42,22 @@ object Functions {
             val fill = Fill(len - len_x, 0.U)
             Cat(fill, x)
         }
+    }
+
+    //前一个阶段和这个阶段握手，并获得数据
+    def ConnectGetBus (x: DecoupledIO[info], y: DecoupledIO[info]): info = {
+        val info = RegInit(0.U.asTypeOf(new info))
+        val valid = RegInit(false.B)
+        val ready_go = true.B
+        x.ready := !valid || ready_go && y.ready
+        y.valid := valid && ready_go
+        when (x.ready) {
+            valid := x.valid
+        }
+        when (x.valid && x.ready) {
+            info := x.bits
+        }
+        info
     }
 
     // object SignExt {
@@ -77,14 +111,6 @@ trait Parameters {
     val ADDR_WIDTH = 32 // 通用寄存器地址长度(not sure, maybe 是 max)
 
     val LS_TYPE_WIDTH = 3  // Load/Store 类型长度
-
-    val BR_BUS_WIDTH = 33  // 分支总线宽度
-    val FS_TO_DS_BUS_WIDTH = 64  // FecthStage to DecoderStage总线宽度
-    // val DS_TO_ES_BUS_WIDTH = 152  // DecoderStage to ExecutionStage总线宽度
-    val DS_TO_ES_BUS_WIDTH = 146  // DecoderStage to ExecutionStage总线宽度
-    val ES_TO_MS_BUS_WIDTH = 71  // ExecutionStage to MemoryStage总线宽度
-    val MS_TO_WS_BUS_WIDTH = 70  // MemoryStage to WriteBackStage总线宽度
-    val WS_TO_RF_BUS_WIDTH = 38  // WriteBackStage to Registerfile总线宽度
 }
 
 // object Instructions {

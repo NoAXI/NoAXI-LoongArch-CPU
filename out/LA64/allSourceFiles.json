@@ -1,14 +1,14 @@
 {
     "value": [
-        "ref:v0:5c48a507:/home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala",
-        "ref:v0:617caaf5:/home/yuxuaan/LA64CPU/src/main/scala/stages/IF.scala",
-        "ref:v0:c14bf18c:/home/yuxuaan/LA64CPU/src/main/scala/stages/REG.scala",
-        "ref:v0:347382e6:/home/yuxuaan/LA64CPU/src/main/scala/stages/bus.scala",
-        "ref:v0:58a0f949:/home/yuxuaan/LA64CPU/src/main/scala/stages/IM.scala",
-        "ref:v0:04249cd2:/home/yuxuaan/LA64CPU/src/main/scala/stages/ID.scala",
-        "ref:v0:652ea8b5:/home/yuxuaan/LA64CPU/src/main/scala/stages/ALU.scala",
-        "ref:v0:27c8d4ec:/home/yuxuaan/LA64CPU/src/main/scala/stages/IW.scala",
-        "ref:v0:11aa90c0:/home/yuxuaan/LA64CPU/src/main/scala/stages/IE.scala",
+        "ref:v0:be96c300:/home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala",
+        "ref:v0:2a61e59e:/home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/ALU.scala",
+        "ref:v0:65d22507:/home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/IE.scala",
+        "ref:v0:06a8abeb:/home/yuxuaan/LA64CPU/src/main/scala/stages/WB/IW.scala",
+        "ref:v0:16717659:/home/yuxuaan/LA64CPU/src/main/scala/stages/bus.scala",
+        "ref:v0:551fcc67:/home/yuxuaan/LA64CPU/src/main/scala/stages/MEM/IM.scala",
+        "ref:v0:c14bf18c:/home/yuxuaan/LA64CPU/src/main/scala/stages/ID/REG.scala",
+        "ref:v0:96a2f344:/home/yuxuaan/LA64CPU/src/main/scala/stages/ID/ID.scala",
+        "ref:v0:0f78bfc4:/home/yuxuaan/LA64CPU/src/main/scala/stages/IF/IF.scala",
         "ref:v0:a7cf3626:/home/yuxuaan/LA64CPU/src/main/scala/isa/LA64.scala",
         "ref:v0:e2bb0dc1:/home/yuxuaan/LA64CPU/src/main/scala/CPU/IDstage/Reg.scala",
         "ref:v0:11e7c3cf:/home/yuxuaan/LA64CPU/src/main/scala/CPU/IDstage/IDtop.scala",
@@ -23,8 +23,8 @@
         "ref:v0:eb13dc4d:/home/yuxuaan/LA64CPU/src/main/scala/CPU/OtherBus/OtherBus.scala",
         "ref:v0:f074c10d:/home/yuxuaan/LA64CPU/src/main/scala/CPU/WBstage/IWtop.scala",
         "ref:v0:2ac25f63:/home/yuxuaan/LA64CPU/src/main/scala/CPU/ISA.scala",
-        "ref:v0:0145e5ef:/home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala"
+        "ref:v0:65ae7161:/home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala"
     ],
-    "valueHash": -1134135776,
-    "inputsHash": -907945237
+    "valueHash": -106672641,
+    "inputsHash": -1739476446
 }
