@@ -5,11 +5,14 @@ import chisel3.util._
 
 import isa._
 import config._
+import controller._
 import config.Functions._
 
 class IM_IO extends Bundle with Parameters {
   val from = Flipped(DecoupledIO(new info))
   val to   = DecoupledIO(new info)
+
+  val ms = Output(new hazardData)
 
   // ** from data-sram
   val data_sram_rdata = Input(UInt(INST_WIDTH.W))
@@ -29,4 +32,8 @@ class IM extends Module with Parameters {
   to_info        := info
   to_info.result := Mux(ms_res_from_mem, io.data_sram_rdata, info.result)
   io.to.bits     := to_info
+
+  io.ms.we   := to_info.is_wf
+  io.ms.addr := to_info.dest
+  io.ms.data := to_info.result
 }

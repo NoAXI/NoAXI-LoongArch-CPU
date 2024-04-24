@@ -3,7 +3,7 @@
         "VSCODE_GIT_ASKPASS_MAIN": "/home/yuxuaan/.vscode-server/bin/e170252f762678dec6ca2cc69aba1570769a5d39/extensions/git/dist/askpass-main.js",
         "HTTP_PROXY": "http://127.0.0.1:7890",
         "MAKEFLAGS": "",
-        "WSL_INTEROP": "/run/WSL/437_interop",
+        "WSL_INTEROP": "/run/WSL/440_interop",
         "USER": "yuxuaan",
         "HOSTTYPE": "x86_64",
         "PULSE_SERVER": "unix:/mnt/wslg/PulseServer",
@@ -42,9 +42,9 @@
         "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
         "WSL2_GUI_APPS_ENABLED": "1",
         "HTTPS_PROXY": "http://127.0.0.1:7890",
-        "VSCODE_IPC_HOOK_CLI": "/run/user/1000/vscode-ipc-75c21b06-ebce-4bde-b208-4c6ee894baaa.sock",
+        "VSCODE_IPC_HOOK_CLI": "/run/user/1000/vscode-ipc-4e127d73-36a8-4848-a740-afecf2a8cc6b.sock",
         "WSLENV": "VSCODE_WSL_EXT_LOCATION/up"
     },
-    "valueHash": 1464893445,
-    "inputsHash": 2006884897
+    "valueHash": 1320948403,
+    "inputsHash": -2007492577
 }

@@ -5,11 +5,15 @@ import chisel3.util._
 
 import isa._
 import config._
+import controller._
 import config.Functions._
 
 class ID_IO extends Bundle with Parameters {
   val from = Flipped(DecoupledIO(new info))
   val to   = DecoupledIO(new info)
+
+  val ds_reg_info = Output(new dsRegInfo)
+  val ds_reg_data = Input(new dsRegData)
 
   // ** from writeback
   val rf_bus = Input(new rf_bus)
@@ -60,12 +64,16 @@ class ID extends Module with Parameters with InstType {
     src_type2,
     rk,
     List(
-      SrcType.rd -> rd,
-      SrcType.rd_imm -> rd
-    )
+      SrcType.rd     -> rd,
+      SrcType.rd_imm -> rd,
+    ),
   )
-  val rj_value  = reg.io.rdata1
-  val rkd_value = reg.io.rdata2
+
+  io.ds_reg_info.addr     := Seq(reg.io.raddr1, reg.io.raddr2)
+  io.ds_reg_info.ini_data := Seq(reg.io.rdata1, reg.io.rdata2)
+
+  val rj_value  = io.ds_reg_data.data(0)
+  val rkd_value = io.ds_reg_data.data(1)
 
   // 分支跳转
   io.br_bus.br_taken := MuxCase(
@@ -85,13 +93,13 @@ class ID extends Module with Parameters with InstType {
       OffType.off_rj_or_direct -> (MuxCase(
         0.U,
         Seq(
-          (inst === LA32.JIRL) -> (rj_value + imm),
+          (inst === LA32.JIRL)                          -> (rj_value + imm),
           (inst === LA32.BEQ && rj_value === rkd_value) -> (info.pc + imm),
           (inst === LA32.BNE && rj_value =/= rkd_value) -> (info.pc + imm),
         ),
       )),
       OffType.off_pc -> (info.pc + SignedExtend(Cat(imm, Fill(2, 0.U)), DATA_WIDTH)),
-    )
+    ),
   )
 
   // 传递信息
@@ -103,18 +111,18 @@ class ID extends Module with Parameters with InstType {
     src_type1,
     rj_value,
     List(
-      SrcType.pc -> (info.pc)
-    )
+      SrcType.pc -> (info.pc),
+    ),
   )
   to_info.src2 := MateDefault(
     src_type2,
     rkd_value,
     List(
-      SrcType.is4     -> (4.U),
-      SrcType.imm     -> imm,
-      SrcType.rd_imm  -> imm,
-      SrcType.rk      -> rkd_value,
-      SrcType.rd      -> rkd_value,
+      SrcType.is4    -> (4.U),
+      SrcType.imm    -> imm,
+      SrcType.rd_imm -> imm,
+      SrcType.rk     -> rkd_value,
+      SrcType.rd     -> rkd_value,
     ),
   )
 

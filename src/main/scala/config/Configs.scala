@@ -27,9 +27,10 @@ object Functions {
   def ConnectGetBus(x: DecoupledIO[info], y: DecoupledIO[info]): info = {
     val info     = RegInit(0.U.asTypeOf(new info))
     val valid    = RegInit(false.B)
-    val ready_go = true.B
-    x.ready := !valid || ready_go && y.ready
-    y.valid := valid && ready_go
+    // val ready_go = true.B
+    // x.ready := !valid || ready_go && y.ready
+    x.ready := !valid || y.ready
+    y.valid := valid
     when(x.ready) {
       valid := x.valid
     }

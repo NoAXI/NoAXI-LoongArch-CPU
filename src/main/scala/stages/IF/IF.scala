@@ -30,9 +30,9 @@ class IF extends Module with Parameters {
   // 分支 or 正常 PCReg的跳转
   val fs_pc   = RegInit(START_ADDR.U(ADDR_WIDTH.W))
   val next_pc = Mux(io.br_bus.br_taken, io.br_bus.br_target, fs_pc + 4.U)
-  // when (io.br_bus.br_taken) { //分支的时候停止流水
-  //     io.fs_to_ds_valid := false.B
-  // }
+  when (io.br_bus.br_taken) { //分支的时候停止流水
+      io.to.valid := false.B
+  }
   when(io.from.valid && io.from.ready) {
     fs_pc := next_pc
   }

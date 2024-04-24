@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 
 import config._
+import controller._
 
 class Top_IO extends Bundle with Parameters {
   // inst sram interface
@@ -30,11 +31,12 @@ class Top_IO extends Bundle with Parameters {
 class Top extends Module with Parameters {
   val io = IO(new Top_IO)
 
-  val fs = Module(new IF)
-  val ds = Module(new ID)
-  val es = Module(new IE)
-  val ms = Module(new IM)
-  val ws = Module(new IW)
+  val fs   = Module(new IF)
+  val ds   = Module(new ID)
+  val es   = Module(new IE)
+  val ms   = Module(new IM)
+  val ws   = Module(new IW)
+  val ctrl = Module(new controller)
 
   fs.io.from.valid      := !reset.asBool
   fs.io.from.bits       := RegInit(0.U.asTypeOf(new info))
@@ -45,6 +47,7 @@ class Top extends Module with Parameters {
   ds.io.rf_bus <> ws.io.rf_bus
 
   es.io.from <> ds.io.to
+  es.io.ds_reg_info := ds.io.ds_reg_info
 
   ms.io.from            <> es.io.to
   ms.io.data_sram_rdata := io.data_sram_rdata //
@@ -66,6 +69,12 @@ class Top extends Module with Parameters {
   io.debug_wb_rf_we    <> ws.io.debug_wb_rf_we
   io.debug_wb_rf_wnum  <> ws.io.debug_wb_rf_wnum
   io.debug_wb_rf_wdata <> ws.io.debug_wb_rf_wdata
+
+  ctrl.io.es          <> es.io.es
+  ctrl.io.ms          <> ms.io.ms
+  ctrl.io.ws          <> ws.io.ws
+  ctrl.io.ds_reg_info <> ds.io.ds_reg_info
+  ds.io.ds_reg_data   <> ctrl.io.ds_reg_data
 }
 
 object main extends App {
