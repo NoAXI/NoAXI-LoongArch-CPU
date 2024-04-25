@@ -51,6 +51,10 @@ object Functions {
     if (aLen >= len) a(len - 1, 0) else Cat(0.U((len - aLen).W), a)
   }
 
+  def Extend(a: UInt, len: Int, typ: UInt) = {
+    Mux(typ === SrcType.immu, UnSignedExtend(a, len), SignedExtend(a, len))
+  }
+
   def lookup[T <: Data](key: UInt, default: T, map: Array[(BitPat, T)]): T = {
     val result = WireDefault(default)
     for ((pattern, value) <- map) {

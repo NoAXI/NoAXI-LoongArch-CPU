@@ -38,11 +38,11 @@ class ID extends Module with Parameters with InstType {
     0.U,
     List(
       Inst2RI8  -> inst(17, 10),
-      Inst2RI12 -> SignedExtend(inst(21, 10), 32),
+      Inst2RI12 -> Extend(inst(21, 10), DATA_WIDTH, src_type2),
       Inst2RI14 -> inst(23, 10),
-      Inst2RI16 -> SignedExtend(Cat(inst(25, 10), Fill(2, 0.U)), DATA_WIDTH),
-      Inst2RI20 -> SignedExtend(Cat(inst(24, 5), Fill(12, 0.U)), DATA_WIDTH),
-      Inst2RI26 -> SignedExtend(Cat(inst(9, 0), inst(25, 10)), DATA_WIDTH),
+      Inst2RI16 -> Extend(Cat(inst(25, 10), Fill(2, 0.U)), DATA_WIDTH, src_type2),
+      Inst2RI20 -> Extend(Cat(inst(24, 5), Fill(12, 0.U)), DATA_WIDTH, src_type2),
+      Inst2RI26 -> Extend(Cat(inst(9, 0), inst(25, 10)), DATA_WIDTH, src_type2),
       Inst2RUI5 -> inst(14, 10),
       Inst2RUI6 -> inst(15, 10),
       Inst1RI21 -> inst(31, 10),
@@ -118,11 +118,12 @@ class ID extends Module with Parameters with InstType {
     src_type2,
     rkd_value,
     List(
-      SrcType.is4    -> (4.U),
-      SrcType.imm    -> imm,
-      SrcType.rd_imm -> imm,
-      SrcType.rk     -> rkd_value,
-      SrcType.rd     -> rkd_value,
+      SrcType.is4     -> (4.U),
+      SrcType.imm     -> imm,
+      SrcType.immu    -> imm,
+      SrcType.rd_imm  -> imm,
+      SrcType.rk      -> rkd_value,
+      SrcType.rd      -> rkd_value,
     ),
   )
 

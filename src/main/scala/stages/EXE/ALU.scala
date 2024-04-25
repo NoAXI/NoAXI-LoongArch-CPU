@@ -35,6 +35,6 @@ class ALU extends Module with Parameters {
       AluOpType.srl   -> (io.alu_src1 >> (io.alu_src2(4, 0))),
       AluOpType.sra   -> (Cat(Fill(32, io.alu_src1(31)), io.alu_src1) >> (io.alu_src2(4, 0)))(DATA_WIDTH - 1, 0),
       AluOpType.lui   -> (io.alu_src2),
-    )
+    ),
   )
 }

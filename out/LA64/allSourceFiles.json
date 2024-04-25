@@ -1,18 +1,20 @@
 {
     "value": [
         "ref:v0:f42b994f:/home/yuxuaan/LA64CPU/src/main/scala/stages/Top.scala",
-        "ref:v0:79015f5d:/home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/ALU.scala",
-        "ref:v0:22785220:/home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/IE.scala",
+        "ref:v0:49ef440a:/home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/DIV.scala",
+        "ref:v0:049ace02:/home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/MUL.scala",
+        "ref:v0:0cb9066e:/home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/ALU.scala",
+        "ref:v0:5b75f061:/home/yuxuaan/LA64CPU/src/main/scala/stages/EXE/IE.scala",
         "ref:v0:9c6b0762:/home/yuxuaan/LA64CPU/src/main/scala/stages/WB/IW.scala",
         "ref:v0:7928abcb:/home/yuxuaan/LA64CPU/src/main/scala/stages/MEM/IM.scala",
         "ref:v0:8dc3e50c:/home/yuxuaan/LA64CPU/src/main/scala/stages/ID/REG.scala",
-        "ref:v0:1abbbad6:/home/yuxuaan/LA64CPU/src/main/scala/stages/ID/ID.scala",
+        "ref:v0:82f638b0:/home/yuxuaan/LA64CPU/src/main/scala/stages/ID/ID.scala",
         "ref:v0:a61085df:/home/yuxuaan/LA64CPU/src/main/scala/stages/IF/IF.scala",
-        "ref:v0:baf96601:/home/yuxuaan/LA64CPU/src/main/scala/isa/LA32.scala",
+        "ref:v0:a44023e9:/home/yuxuaan/LA64CPU/src/main/scala/isa/LA32.scala",
         "ref:v0:01d38df6:/home/yuxuaan/LA64CPU/src/main/scala/bus/bus.scala",
         "ref:v0:a2b7f860:/home/yuxuaan/LA64CPU/src/main/scala/controller/controller.scala",
-        "ref:v0:f5e3e6fb:/home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala"
+        "ref:v0:e47349a4:/home/yuxuaan/LA64CPU/src/main/scala/config/Configs.scala"
     ],
-    "valueHash": 856294786,
-    "inputsHash": -292104651
+    "valueHash": 2007707963,
+    "inputsHash": 1047116938
 }
