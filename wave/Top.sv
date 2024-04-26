@@ -721,105 +721,105 @@ endmodule
 
 // external module UnsignedDiv
 
-module DIV(	// src/main/scala/stages/EXE/DIV.scala:61:7
-  input         clock,	// src/main/scala/stages/EXE/DIV.scala:61:7
-                reset,	// src/main/scala/stages/EXE/DIV.scala:61:7
-  input  [1:0]  io_div_op,	// src/main/scala/stages/EXE/DIV.scala:62:14
-  input  [31:0] io_div_src1,	// src/main/scala/stages/EXE/DIV.scala:62:14
-                io_div_src2,	// src/main/scala/stages/EXE/DIV.scala:62:14
-  output [31:0] io_div_result,	// src/main/scala/stages/EXE/DIV.scala:62:14
-  input         io_start,	// src/main/scala/stages/EXE/DIV.scala:62:14
-  output        io_complete	// src/main/scala/stages/EXE/DIV.scala:62:14
+module DIV(	// src/main/scala/stages/EXE/DIV.scala:69:7
+  input         clock,	// src/main/scala/stages/EXE/DIV.scala:69:7
+                reset,	// src/main/scala/stages/EXE/DIV.scala:69:7
+  input  [1:0]  io_div_op,	// src/main/scala/stages/EXE/DIV.scala:70:14
+  input  [31:0] io_div_src1,	// src/main/scala/stages/EXE/DIV.scala:70:14
+                io_div_src2,	// src/main/scala/stages/EXE/DIV.scala:70:14
+  output [31:0] io_div_result,	// src/main/scala/stages/EXE/DIV.scala:70:14
+  input         io_start,	// src/main/scala/stages/EXE/DIV.scala:70:14
+  output        io_complete	// src/main/scala/stages/EXE/DIV.scala:70:14
 );
 
-  wire             _unsigned_div_s_axis_dividend_tready;	// src/main/scala/stages/EXE/DIV.scala:92:28
-  wire             _unsigned_div_s_axis_divisor_tready;	// src/main/scala/stages/EXE/DIV.scala:92:28
-  wire             _unsigned_div_m_axis_dout_tvalid;	// src/main/scala/stages/EXE/DIV.scala:92:28
-  wire [63:0]      _unsigned_div_m_axis_dout_tdata;	// src/main/scala/stages/EXE/DIV.scala:92:28
-  wire             _signed_div_s_axis_dividend_tready;	// src/main/scala/stages/EXE/DIV.scala:64:26
-  wire             _signed_div_s_axis_divisor_tready;	// src/main/scala/stages/EXE/DIV.scala:64:26
-  wire             _signed_div_m_axis_dout_tvalid;	// src/main/scala/stages/EXE/DIV.scala:64:26
-  wire [63:0]      _signed_div_m_axis_dout_tdata;	// src/main/scala/stages/EXE/DIV.scala:64:26
-  reg              sent_0;	// src/main/scala/stages/EXE/DIV.scala:66:33
-  reg              sent_1;	// src/main/scala/stages/EXE/DIV.scala:66:33
-  wire             _signed_div_io_s_axis_dividend_tvalid_T_1 = io_start & ~sent_0;	// src/main/scala/stages/EXE/DIV.scala:66:33, :89:{52,55}
-  wire             _signed_div_io_s_axis_divisor_tvalid_T_1 = io_start & ~sent_1;	// src/main/scala/stages/EXE/DIV.scala:66:33, :90:{52,55}
-  reg              sent2_0;	// src/main/scala/stages/EXE/DIV.scala:94:34
-  reg              sent2_1;	// src/main/scala/stages/EXE/DIV.scala:94:34
-  wire             _unsigned_div_io_s_axis_dividend_tvalid_T_1 = io_start & ~sent2_0;	// src/main/scala/stages/EXE/DIV.scala:94:34, :117:{54,57}
-  wire             _unsigned_div_io_s_axis_divisor_tvalid_T_1 = io_start & ~sent2_1;	// src/main/scala/stages/EXE/DIV.scala:94:34, :118:{54,57}
+  wire             _unsigned_div_s_axis_dividend_tready;	// src/main/scala/stages/EXE/DIV.scala:73:28
+  wire             _unsigned_div_s_axis_divisor_tready;	// src/main/scala/stages/EXE/DIV.scala:73:28
+  wire             _unsigned_div_m_axis_dout_tvalid;	// src/main/scala/stages/EXE/DIV.scala:73:28
+  wire [63:0]      _unsigned_div_m_axis_dout_tdata;	// src/main/scala/stages/EXE/DIV.scala:73:28
+  wire             _signed_div_s_axis_dividend_tready;	// src/main/scala/stages/EXE/DIV.scala:72:26
+  wire             _signed_div_s_axis_divisor_tready;	// src/main/scala/stages/EXE/DIV.scala:72:26
+  wire             _signed_div_m_axis_dout_tvalid;	// src/main/scala/stages/EXE/DIV.scala:72:26
+  wire [63:0]      _signed_div_m_axis_dout_tdata;	// src/main/scala/stages/EXE/DIV.scala:72:26
+  reg              sent_0;	// src/main/scala/stages/EXE/DIV.scala:49:35
+  reg              sent_1;	// src/main/scala/stages/EXE/DIV.scala:49:35
+  wire             _signed_div_io_s_axis_dividend_tvalid_T_1 = io_start & ~sent_0;	// src/main/scala/stages/EXE/DIV.scala:49:35, :64:{45,48}
+  wire             _signed_div_io_s_axis_divisor_tvalid_T_1 = io_start & ~sent_1;	// src/main/scala/stages/EXE/DIV.scala:49:35, :65:{45,48}
+  reg              sent_0_1;	// src/main/scala/stages/EXE/DIV.scala:49:35
+  reg              sent_1_1;	// src/main/scala/stages/EXE/DIV.scala:49:35
+  wire             _unsigned_div_io_s_axis_dividend_tvalid_T_1 = io_start & ~sent_0_1;	// src/main/scala/stages/EXE/DIV.scala:49:35, :64:{45,48}
+  wire             _unsigned_div_io_s_axis_divisor_tvalid_T_1 = io_start & ~sent_1_1;	// src/main/scala/stages/EXE/DIV.scala:49:35, :65:{45,48}
   wire [3:0][31:0] _GEN =
     {{_unsigned_div_m_axis_dout_tdata[31:0]},
      {_signed_div_m_axis_dout_tdata[31:0]},
      {_unsigned_div_m_axis_dout_tdata[63:32]},
-     {_signed_div_m_axis_dout_tdata[63:32]}};	// src/main/scala/config/Configs.scala:70:28, src/main/scala/stages/EXE/DIV.scala:64:26, :92:28, :124:56, :125:58, :126:56, :127:58
-  always @(posedge clock) begin	// src/main/scala/stages/EXE/DIV.scala:61:7
-    if (reset) begin	// src/main/scala/stages/EXE/DIV.scala:61:7
-      sent_0 <= 1'h0;	// src/main/scala/stages/EXE/DIV.scala:61:7, :66:33
-      sent_1 <= 1'h0;	// src/main/scala/stages/EXE/DIV.scala:61:7, :66:33
-      sent2_0 <= 1'h0;	// src/main/scala/stages/EXE/DIV.scala:61:7, :94:34
-      sent2_1 <= 1'h0;	// src/main/scala/stages/EXE/DIV.scala:61:7, :94:34
+     {_signed_div_m_axis_dout_tdata[63:32]}};	// src/main/scala/config/Configs.scala:70:28, src/main/scala/stages/EXE/DIV.scala:72:26, :73:28, :82:56, :83:58, :84:56, :85:58
+  always @(posedge clock) begin	// src/main/scala/stages/EXE/DIV.scala:69:7
+    if (reset) begin	// src/main/scala/stages/EXE/DIV.scala:69:7
+      sent_0 <= 1'h0;	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
+      sent_1 <= 1'h0;	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
+      sent_0_1 <= 1'h0;	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
+      sent_1_1 <= 1'h0;	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
     end
-    else begin	// src/main/scala/stages/EXE/DIV.scala:61:7
+    else begin	// src/main/scala/stages/EXE/DIV.scala:69:7
       sent_0 <=
         _signed_div_io_s_axis_dividend_tvalid_T_1 & _signed_div_s_axis_dividend_tready
-        | ~_signed_div_m_axis_dout_tvalid & sent_0;	// src/main/scala/stages/EXE/DIV.scala:64:26, :66:33, :77:{45,86}, :78:13, :79:48, :80:13, :89:52
+        | ~_signed_div_m_axis_dout_tvalid & sent_0;	// src/main/scala/stages/EXE/DIV.scala:49:35, :52:{37,68}, :53:15, :54:40, :55:15, :64:45, :72:26
       sent_1 <=
         _signed_div_io_s_axis_divisor_tvalid_T_1 & _signed_div_s_axis_divisor_tready
-        | ~_signed_div_m_axis_dout_tvalid & sent_1;	// src/main/scala/stages/EXE/DIV.scala:64:26, :66:33, :79:48, :80:13, :83:{44,84}, :84:13, :85:48, :86:13, :90:52
-      sent2_0 <=
+        | ~_signed_div_m_axis_dout_tvalid & sent_1;	// src/main/scala/stages/EXE/DIV.scala:49:35, :54:40, :55:15, :58:{36,66}, :59:15, :60:40, :61:15, :65:45, :72:26
+      sent_0_1 <=
         _unsigned_div_io_s_axis_dividend_tvalid_T_1 & _unsigned_div_s_axis_dividend_tready
-        | ~_unsigned_div_m_axis_dout_tvalid & sent2_0;	// src/main/scala/stages/EXE/DIV.scala:92:28, :94:34, :105:{47,90}, :106:14, :107:50, :108:14, :117:54
-      sent2_1 <=
+        | ~_unsigned_div_m_axis_dout_tvalid & sent_0_1;	// src/main/scala/stages/EXE/DIV.scala:49:35, :52:{37,68}, :53:15, :54:40, :55:15, :64:45, :73:28
+      sent_1_1 <=
         _unsigned_div_io_s_axis_divisor_tvalid_T_1 & _unsigned_div_s_axis_divisor_tready
-        | ~_unsigned_div_m_axis_dout_tvalid & sent2_1;	// src/main/scala/stages/EXE/DIV.scala:92:28, :94:34, :107:50, :108:14, :111:{46,88}, :112:14, :113:50, :114:14, :118:54
+        | ~_unsigned_div_m_axis_dout_tvalid & sent_1_1;	// src/main/scala/stages/EXE/DIV.scala:49:35, :54:40, :55:15, :58:{36,66}, :59:15, :60:40, :61:15, :65:45, :73:28
     end
   end // always @(posedge)
-  `ifdef ENABLE_INITIAL_REG_	// src/main/scala/stages/EXE/DIV.scala:61:7
-    `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/stages/EXE/DIV.scala:61:7
-      `FIRRTL_BEFORE_INITIAL	// src/main/scala/stages/EXE/DIV.scala:61:7
+  `ifdef ENABLE_INITIAL_REG_	// src/main/scala/stages/EXE/DIV.scala:69:7
+    `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/stages/EXE/DIV.scala:69:7
+      `FIRRTL_BEFORE_INITIAL	// src/main/scala/stages/EXE/DIV.scala:69:7
     `endif // FIRRTL_BEFORE_INITIAL
-    initial begin	// src/main/scala/stages/EXE/DIV.scala:61:7
-      automatic logic [31:0] _RANDOM[0:0];	// src/main/scala/stages/EXE/DIV.scala:61:7
-      `ifdef INIT_RANDOM_PROLOG_	// src/main/scala/stages/EXE/DIV.scala:61:7
-        `INIT_RANDOM_PROLOG_	// src/main/scala/stages/EXE/DIV.scala:61:7
+    initial begin	// src/main/scala/stages/EXE/DIV.scala:69:7
+      automatic logic [31:0] _RANDOM[0:0];	// src/main/scala/stages/EXE/DIV.scala:69:7
+      `ifdef INIT_RANDOM_PROLOG_	// src/main/scala/stages/EXE/DIV.scala:69:7
+        `INIT_RANDOM_PROLOG_	// src/main/scala/stages/EXE/DIV.scala:69:7
       `endif // INIT_RANDOM_PROLOG_
-      `ifdef RANDOMIZE_REG_INIT	// src/main/scala/stages/EXE/DIV.scala:61:7
-        _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/stages/EXE/DIV.scala:61:7
-        sent_0 = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/stages/EXE/DIV.scala:61:7, :66:33
-        sent_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/stages/EXE/DIV.scala:61:7, :66:33
-        sent2_0 = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/stages/EXE/DIV.scala:61:7, :66:33, :94:34
-        sent2_1 = _RANDOM[/*Zero width*/ 1'b0][3];	// src/main/scala/stages/EXE/DIV.scala:61:7, :66:33, :94:34
+      `ifdef RANDOMIZE_REG_INIT	// src/main/scala/stages/EXE/DIV.scala:69:7
+        _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/stages/EXE/DIV.scala:69:7
+        sent_0 = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
+        sent_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
+        sent_0_1 = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
+        sent_1_1 = _RANDOM[/*Zero width*/ 1'b0][3];	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
       `endif // RANDOMIZE_REG_INIT
     end // initial
-    `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/stages/EXE/DIV.scala:61:7
-      `FIRRTL_AFTER_INITIAL	// src/main/scala/stages/EXE/DIV.scala:61:7
+    `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/stages/EXE/DIV.scala:69:7
+      `FIRRTL_AFTER_INITIAL	// src/main/scala/stages/EXE/DIV.scala:69:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  SignedDiv signed_div (	// src/main/scala/stages/EXE/DIV.scala:64:26
+  SignedDiv signed_div (	// src/main/scala/stages/EXE/DIV.scala:72:26
     .aclk                   (clock),
-    .s_axis_dividend_tvalid (_signed_div_io_s_axis_dividend_tvalid_T_1),	// src/main/scala/stages/EXE/DIV.scala:89:52
+    .s_axis_dividend_tvalid (_signed_div_io_s_axis_dividend_tvalid_T_1),	// src/main/scala/stages/EXE/DIV.scala:64:45
     .s_axis_dividend_tready (_signed_div_s_axis_dividend_tready),
     .s_axis_dividend_tdata  (io_div_src1),
-    .s_axis_divisor_tvalid  (_signed_div_io_s_axis_divisor_tvalid_T_1),	// src/main/scala/stages/EXE/DIV.scala:90:52
+    .s_axis_divisor_tvalid  (_signed_div_io_s_axis_divisor_tvalid_T_1),	// src/main/scala/stages/EXE/DIV.scala:65:45
     .s_axis_divisor_tready  (_signed_div_s_axis_divisor_tready),
     .s_axis_divisor_tdata   (io_div_src2),
     .m_axis_dout_tvalid     (_signed_div_m_axis_dout_tvalid),
     .m_axis_dout_tdata      (_signed_div_m_axis_dout_tdata)
   );
-  UnsignedDiv unsigned_div (	// src/main/scala/stages/EXE/DIV.scala:92:28
+  UnsignedDiv unsigned_div (	// src/main/scala/stages/EXE/DIV.scala:73:28
     .aclk                   (clock),
-    .s_axis_dividend_tvalid (_unsigned_div_io_s_axis_dividend_tvalid_T_1),	// src/main/scala/stages/EXE/DIV.scala:117:54
+    .s_axis_dividend_tvalid (_unsigned_div_io_s_axis_dividend_tvalid_T_1),	// src/main/scala/stages/EXE/DIV.scala:64:45
     .s_axis_dividend_tready (_unsigned_div_s_axis_dividend_tready),
     .s_axis_dividend_tdata  (io_div_src1),
-    .s_axis_divisor_tvalid  (_unsigned_div_io_s_axis_divisor_tvalid_T_1),	// src/main/scala/stages/EXE/DIV.scala:118:54
+    .s_axis_divisor_tvalid  (_unsigned_div_io_s_axis_divisor_tvalid_T_1),	// src/main/scala/stages/EXE/DIV.scala:65:45
     .s_axis_divisor_tready  (_unsigned_div_s_axis_divisor_tready),
     .s_axis_divisor_tdata   (io_div_src2),
     .m_axis_dout_tvalid     (_unsigned_div_m_axis_dout_tvalid),
     .m_axis_dout_tdata      (_unsigned_div_m_axis_dout_tdata)
   );
-  assign io_div_result = _GEN[io_div_op];	// src/main/scala/config/Configs.scala:70:28, src/main/scala/stages/EXE/DIV.scala:61:7
-  assign io_complete = _unsigned_div_m_axis_dout_tvalid;	// src/main/scala/stages/EXE/DIV.scala:61:7, :92:28
+  assign io_div_result = _GEN[io_div_op];	// src/main/scala/config/Configs.scala:70:28, src/main/scala/stages/EXE/DIV.scala:69:7
+  assign io_complete = _unsigned_div_m_axis_dout_tvalid;	// src/main/scala/stages/EXE/DIV.scala:69:7, :73:28
 endmodule
 
 // external module SignedMul
