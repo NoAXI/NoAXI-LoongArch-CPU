@@ -3,13 +3,13 @@
         "version": "1.4.0",
         "project": {
             "name": "LA64",
-            "directory": "/home/yuxuaan/LA64CPU",
+            "directory": "/home/yuxuaan/LA32CPU",
             "workspaceDir": [
-                "/home/yuxuaan/LA64CPU"
+                "/home/yuxuaan/LA32CPU"
             ],
             "sources": [
-                "/home/yuxuaan/LA64CPU/src/main/scala",
-                "/home/yuxuaan/LA64CPU/src/main/java"
+                "/home/yuxuaan/LA32CPU/src/main/scala",
+                "/home/yuxuaan/LA32CPU/src/main/java"
             ],
             "sourcesGlobs": [],
             "sourceRoots": [],
@@ -74,11 +74,11 @@
                 "/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/xbean/xbean-reflect/3.7/xbean-reflect-3.7.jar",
                 "/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/fusesource/jansi/jansi/1.18/jansi-1.18.jar"
             ],
-            "out": "/home/yuxuaan/LA64CPU/.bloop/out/LA64",
-            "classesDir": "/home/yuxuaan/LA64CPU/.bloop/out/LA64/classes",
+            "out": "/home/yuxuaan/LA32CPU/.bloop/out/LA64",
+            "classesDir": "/home/yuxuaan/LA32CPU/.bloop/out/LA64/classes",
             "resources": [
                 [
-                    "/home/yuxuaan/LA64CPU/src/main/resources"
+                    "/home/yuxuaan/LA32CPU/src/main/resources"
                 ]
             ],
             "scala": [
@@ -121,7 +121,7 @@
                             "/usr/lib/jvm/java-8-openjdk-amd64/jre"
                         ],
                         "options": [
-                            "-Duser.dir=/home/yuxuaan/LA64CPU"
+                            "-Duser.dir=/home/yuxuaan/LA32CPU"
                         ]
                     },
                     "mainClass": [],
@@ -190,7 +190,7 @@
                     ],
                     "resources": [
                         [
-                            "/home/yuxuaan/LA64CPU/src/main/resources"
+                            "/home/yuxuaan/LA32CPU/src/main/resources"
                         ]
                     ]
                 }
@@ -1493,6 +1493,6 @@
             "sourceGenerators": []
         }
     },
-    "valueHash": 805215077,
-    "inputsHash": -304232561
+    "valueHash": -1610863276,
+    "inputsHash": 250698322
 }

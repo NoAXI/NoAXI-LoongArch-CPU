@@ -1,14 +1,14 @@
 {
     "value": {
         "LA64": [
-            "/home/yuxuaan/LA64CPU/src/main/scala",
-            "/home/yuxuaan/LA64CPU/src/main/java"
+            "/home/yuxuaan/LA32CPU/src/main/scala",
+            "/home/yuxuaan/LA32CPU/src/main/java"
         ],
         "LA64.test": [
-            "/home/yuxuaan/LA64CPU/src/test/scala",
-            "/home/yuxuaan/LA64CPU/src/test/java"
+            "/home/yuxuaan/LA32CPU/src/test/scala",
+            "/home/yuxuaan/LA32CPU/src/test/java"
         ]
     },
-    "valueHash": 1337249240,
-    "inputsHash": -1272063852
+    "valueHash": -1130625541,
+    "inputsHash": 607941783
 }

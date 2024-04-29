@@ -42,7 +42,7 @@ class ID extends Module with Parameters with InstType {
       Inst2RI14 -> inst(23, 10),
       Inst2RI16 -> Extend(Cat(inst(25, 10), Fill(2, 0.U)), DATA_WIDTH, src_type2),
       Inst2RI20 -> Extend(Cat(inst(24, 5), Fill(12, 0.U)), DATA_WIDTH, src_type2),
-      Inst2RI26 -> Extend(Cat(inst(9, 0), inst(25, 10)), DATA_WIDTH, src_type2),
+      Inst2RI26 -> SignedExtend(Cat(inst(9, 0), inst(25, 10), Fill(2, 0.U)), DATA_WIDTH),
       Inst2RUI5 -> inst(14, 10),
       Inst2RUI6 -> inst(15, 10),
       Inst1RI21 -> inst(31, 10),
@@ -76,31 +76,37 @@ class ID extends Module with Parameters with InstType {
   val rkd_value = io.ds_reg_data.data(1)
 
   // 分支跳转
-  io.br_bus.br_taken := MuxCase(
-    false.B,
-    Seq(
-      (inst === LA32.JIRL)                          -> (true.B),
-      (inst === LA32.B)                             -> (true.B),
-      (inst === LA32.BL)                            -> (true.B),
-      (inst === LA32.BEQ && rj_value === rkd_value) -> (true.B),
-      (inst === LA32.BNE && rj_value =/= rkd_value) -> (true.B),
-    ),
-  ) && io.to.valid
-  io.br_bus.br_target := MateDefault(
-    OffWhich(inst_type),
-    0.U,
+  // val br = MateDefault(
+  //   op_type,
+  //   MuxCase(
+  //     0.U,
+  //     Seq(
+  //       (inst === LA32.BL)   -> Cat(1.U(1.W), info.pc + imm),
+  //       (inst === LA32.JIRL) -> Cat(1.U(1.W), rj_value + imm),
+  //     ),
+  //   ),
+  //   List(
+  //     BruOptype.b   -> Cat(1.U(1.W), info.pc + imm),
+  //     BruOptype.beq -> Cat((rj_value === rkd_value), info.pc + imm),
+  //     BruOptype.bne -> Cat((rj_value === rkd_value).asUInt, info.pc + imm),
+  //     BruOptype.blt -> Cat((rj_value.asSInt < rkd_value.asSInt).asUInt, info.pc + imm),
+
+  //   ),
+  // )
+  // val len = br.getWidth
+  io.br_bus.br_taken := MateDefault(
+    op_type,
+    true.B,
     List(
-      OffType.off_rj_or_direct -> (MuxCase(
-        0.U,
-        Seq(
-          (inst === LA32.JIRL)                          -> (rj_value + imm),
-          (inst === LA32.BEQ && rj_value === rkd_value) -> (info.pc + imm),
-          (inst === LA32.BNE && rj_value =/= rkd_value) -> (info.pc + imm),
-        ),
-      )),
-      OffType.off_pc -> (info.pc + SignedExtend(Cat(imm, Fill(2, 0.U)), DATA_WIDTH)),
+      BruOptype.beq -> (rj_value === rkd_value),
+      BruOptype.bne -> (rj_value =/= rkd_value),
+      BruOptype.blt -> (rj_value.asSInt < rkd_value.asSInt),
+      BruOptype.bge -> (rj_value.asSInt > rkd_value.asSInt),
+      BruOptype.bltu -> (rj_value < rkd_value),
+      BruOptype.bgeu -> (rj_value > rkd_value),
     ),
-  )
+  ) && io.to.valid && (func_type === FuncType.bru) 
+  io.br_bus.br_target := Mux(inst === LA32.JIRL, rj_value + imm, info.pc + imm)
 
   // 传递信息
   val to_info = WireDefault(0.U.asTypeOf(new info))
@@ -118,12 +124,12 @@ class ID extends Module with Parameters with InstType {
     src_type2,
     rkd_value,
     List(
-      SrcType.is4     -> (4.U),
-      SrcType.imm     -> imm,
-      SrcType.immu    -> imm,
-      SrcType.rd_imm  -> imm,
-      SrcType.rk      -> rkd_value,
-      SrcType.rd      -> rkd_value,
+      SrcType.is4    -> (4.U),
+      SrcType.imm    -> imm,
+      SrcType.immu   -> imm,
+      SrcType.rd_imm -> imm,
+      SrcType.rk     -> rkd_value,
+      SrcType.rd     -> rkd_value,
     ),
   )
 

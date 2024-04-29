@@ -33,7 +33,7 @@ object OffType {
 }
 
 object FuncType {  //功能类型
-    def non     = "b000".U
+    def bru     = "b000".U
     def alu     = "b001".U
     def mem     = "b010".U
     def div     = "b011".U
@@ -43,9 +43,20 @@ object FuncType {  //功能类型
     def apply() = UInt(3.W)
 }
 
+object BruOptype {
+    def b       = "b000".U
+    def beq     = "b001".U
+    def bne     = "b010".U
+    def blt     = "b011".U
+    def bge     = "b100".U
+    def bltu    = "b101".U
+    def bgeu    = "b110".U
+    def apply() = UInt(3.W)
+}
+
 object AluOpType {
     def non     = "b000000".U
-    def add     = "b000001".U
+    def add     = "b100000".U//防止add匹配到分支的matedefault的Bruoptype
     def sub     = "b000010".U
     def slt     = "b000011".U
     def sltu    = "b000100".U
@@ -217,11 +228,15 @@ object LA32 extends InstType {
         ADDI_W    -> List(Inst2RI12,   FuncType.alu,   AluOpType.add,       IsWf.y,   SrcType.rj,   SrcType.imm     ),
         LD_W      -> List(Inst2RI12,   FuncType.mem,   MemOpType.read,      IsWf.y,   SrcType.rj,   SrcType.imm     ),
         ST_W      -> List(Inst2RI12,   FuncType.mem,   MemOpType.write,     IsWf.n,   SrcType.rj,   SrcType.rd_imm  ),
-        JIRL      -> List(Inst2RI16,   FuncType.alu,   AluOpType.add,       IsWf.y,   SrcType.pc,   SrcType.is4     ),
-        B         -> List(Inst2RI26,   FuncType.non,   AluOpType.non,       IsWf.n,   SrcType.rj,   SrcType.rk      ),
-        BL        -> List(Inst2RI26,   FuncType.alu,   AluOpType.add,       IsWf.y,   SrcType.pc,   SrcType.is4     ),
-        BEQ       -> List(Inst2RI16,   FuncType.non,   AluOpType.non,       IsWf.n,   SrcType.rj,   SrcType.rd      ),
-        BNE       -> List(Inst2RI16,   FuncType.non,   AluOpType.non,       IsWf.n,   SrcType.rj,   SrcType.rd      ),
+        JIRL      -> List(Inst2RI16,   FuncType.bru,   AluOpType.add,       IsWf.y,   SrcType.pc,   SrcType.is4     ),
+        B         -> List(Inst2RI26,   FuncType.bru,   BruOptype.b,         IsWf.n,   SrcType.rj,   SrcType.rk      ),
+        BL        -> List(Inst2RI26,   FuncType.bru,   AluOpType.add,       IsWf.y,   SrcType.pc,   SrcType.is4     ),
+        BEQ       -> List(Inst2RI16,   FuncType.bru,   BruOptype.beq,       IsWf.n,   SrcType.rj,   SrcType.rd      ),
+        BNE       -> List(Inst2RI16,   FuncType.bru,   BruOptype.bne,       IsWf.n,   SrcType.rj,   SrcType.rd      ),
+        BLT       -> List(Inst2RI16,   FuncType.bru,   BruOptype.blt,       IsWf.n,   SrcType.rj,   SrcType.rd      ),
+        BLTU      -> List(Inst2RI16,   FuncType.bru,   BruOptype.bltu,      IsWf.n,   SrcType.rj,   SrcType.rd      ),
+        BGE       -> List(Inst2RI16,   FuncType.bru,   BruOptype.bge,       IsWf.n,   SrcType.rj,   SrcType.rd      ),
+        BGEU      -> List(Inst2RI16,   FuncType.bru,   BruOptype.bgeu,      IsWf.n,   SrcType.rj,   SrcType.rd      ),
         LU12I_W   -> List(Inst2RI20,   FuncType.alu,   AluOpType.lui,       IsWf.y,   SrcType.rj,   SrcType.imm     ),
         PCADDU12I -> List(Inst2RI20,   FuncType.alu,   AluOpType.add,       IsWf.y,   SrcType.pc,   SrcType.imm     ),
         SLTI      -> List(Inst2RI12,   FuncType.alu,   AluOpType.slt,       IsWf.y,   SrcType.rj,   SrcType.imm     ),

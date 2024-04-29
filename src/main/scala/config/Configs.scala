@@ -22,6 +22,8 @@ class info extends Bundle with Parameters{
   val result = UInt(DATA_WIDTH.W)
 }
 
+class pair[A, B](val first: A, val second: B)
+
 object Functions {
   // 前一个阶段和这个阶段握手，并获得数据
   def ConnectGetBus(x: DecoupledIO[info], y: DecoupledIO[info]): info = {
