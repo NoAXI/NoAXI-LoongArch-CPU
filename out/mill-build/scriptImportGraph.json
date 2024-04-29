@@ -1,13 +1,13 @@
 {
     "value": [
         [
-            "/home/yuxuaan/LA64CPU/build.sc",
+            "/home/yuxuaan/LA32CPU/build.sc",
             [
-                264351755,
+                1607586662,
                 []
             ]
         ]
     ],
-    "valueHash": 711213234,
-    "inputsHash": -1845896811
+    "valueHash": 2070337596,
+    "inputsHash": 1122382441
 }

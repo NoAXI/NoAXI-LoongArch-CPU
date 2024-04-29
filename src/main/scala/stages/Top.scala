@@ -38,7 +38,7 @@ class Top extends Module with Parameters {
   val ws   = Module(new IW)
   val ctrl = Module(new controller)
 
-  fs.io.from.valid      := !reset.asBool
+  fs.io.from.valid      := RegNext(!reset.asBool) & !reset.asBool
   fs.io.from.bits       := RegInit(0.U.asTypeOf(new info))
   fs.io.inst_sram_rdata := io.inst_sram_rdata
   fs.io.br_bus          <> ds.io.br_bus

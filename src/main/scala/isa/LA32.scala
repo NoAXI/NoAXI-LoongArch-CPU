@@ -61,10 +61,11 @@ object AluOpType {
 }
 
 object DivOpType {
-    def s     = "b00".U
-    def u     = "b01".U
-    def smod  = "b10".U
-    def umod  = "b11".U
+    def umod  = "b00".U
+    def u     = "b10".U
+    def smod  = "b01".U
+    def s     = "b11".U
+    def signed(divOpType: UInt): Bool = divOpType(0).asBool
     def apply() = UInt(2.W)
 }
 

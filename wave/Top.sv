@@ -655,9 +655,9 @@ module ID(	// src/main/scala/stages/ID/ID.scala:25:7
                                                                                    : _GEN_27
                                                                                        ? 6'h4
                                                                                        : _GEN_28
-                                                                                           ? 6'h0
+                                                                                           ? 6'h3
                                                                                            : _GEN_29
-                                                                                               ? 6'h1
+                                                                                               ? 6'h2
                                                                                                : _GEN_30
                                                                                                    ? 6'h0
                                                                                                    : _GEN_31
@@ -665,9 +665,9 @@ module ID(	// src/main/scala/stages/ID/ID.scala:25:7
                                                                                                        : _GEN_32
                                                                                                            ? 6'h3
                                                                                                            : _GEN_33
-                                                                                                               ? 6'h2
+                                                                                                               ? 6'h1
                                                                                                                : _GEN_34
-                                                                                                                   ? 6'h3
+                                                                                                                   ? 6'h0
                                                                                                                    : 6'h3F};	// src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/config/Configs.scala:51:44, src/main/scala/stages/ID/ID.scala:25:7, :109:21
   assign io_to_bits_is_wf =
     _GEN | _GEN_0 | _GEN_1 | _GEN_2 | _GEN_3 | _GEN_4 | _GEN_5 | _GEN_6 | _GEN_7 | _GEN_8
@@ -717,137 +717,87 @@ module ID(	// src/main/scala/stages/ID/ID.scala:25:7
           : 32'h0;	// src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/config/Configs.scala:28:{27,40}, :46:23, :70:28, src/main/scala/isa/LA32.scala:25:50, src/main/scala/stages/ID/ID.scala:25:7, :43:49, :85:38, :86:38, :96:{17,70}, :97:{17,30,69}, :98:{17,30}, :101:34
 endmodule
 
-// external module SignedDiv
-
-// external module UnsignedDiv
-
-module DIV(	// src/main/scala/stages/EXE/DIV.scala:69:7
-  input         clock,	// src/main/scala/stages/EXE/DIV.scala:69:7
-                reset,	// src/main/scala/stages/EXE/DIV.scala:69:7
-  input  [1:0]  io_div_op,	// src/main/scala/stages/EXE/DIV.scala:70:14
-  input  [31:0] io_div_src1,	// src/main/scala/stages/EXE/DIV.scala:70:14
-                io_div_src2,	// src/main/scala/stages/EXE/DIV.scala:70:14
-  output [31:0] io_div_result,	// src/main/scala/stages/EXE/DIV.scala:70:14
-  input         io_start,	// src/main/scala/stages/EXE/DIV.scala:70:14
-  output        io_complete	// src/main/scala/stages/EXE/DIV.scala:70:14
+module DIV(	// src/main/scala/stages/EXE/DIV.scala:70:7
+  input         clock,	// src/main/scala/stages/EXE/DIV.scala:70:7
+                reset,	// src/main/scala/stages/EXE/DIV.scala:70:7
+  input  [1:0]  io_div_op,	// src/main/scala/stages/EXE/DIV.scala:71:14
+  input  [31:0] io_div_src1,	// src/main/scala/stages/EXE/DIV.scala:71:14
+                io_div_src2,	// src/main/scala/stages/EXE/DIV.scala:71:14
+  output [31:0] io_div_result,	// src/main/scala/stages/EXE/DIV.scala:71:14
+  input         io_start,	// src/main/scala/stages/EXE/DIV.scala:71:14
+  output        io_complete	// src/main/scala/stages/EXE/DIV.scala:71:14
 );
 
-  wire             _unsigned_div_s_axis_dividend_tready;	// src/main/scala/stages/EXE/DIV.scala:73:28
-  wire             _unsigned_div_s_axis_divisor_tready;	// src/main/scala/stages/EXE/DIV.scala:73:28
-  wire             _unsigned_div_m_axis_dout_tvalid;	// src/main/scala/stages/EXE/DIV.scala:73:28
-  wire [63:0]      _unsigned_div_m_axis_dout_tdata;	// src/main/scala/stages/EXE/DIV.scala:73:28
-  wire             _signed_div_s_axis_dividend_tready;	// src/main/scala/stages/EXE/DIV.scala:72:26
-  wire             _signed_div_s_axis_divisor_tready;	// src/main/scala/stages/EXE/DIV.scala:72:26
-  wire             _signed_div_m_axis_dout_tvalid;	// src/main/scala/stages/EXE/DIV.scala:72:26
-  wire [63:0]      _signed_div_m_axis_dout_tdata;	// src/main/scala/stages/EXE/DIV.scala:72:26
-  reg              sent_0;	// src/main/scala/stages/EXE/DIV.scala:49:35
-  reg              sent_1;	// src/main/scala/stages/EXE/DIV.scala:49:35
-  wire             _signed_div_io_s_axis_dividend_tvalid_T_1 = io_start & ~sent_0;	// src/main/scala/stages/EXE/DIV.scala:49:35, :64:{45,48}
-  wire             _signed_div_io_s_axis_divisor_tvalid_T_1 = io_start & ~sent_1;	// src/main/scala/stages/EXE/DIV.scala:49:35, :65:{45,48}
-  reg              sent_0_1;	// src/main/scala/stages/EXE/DIV.scala:49:35
-  reg              sent_1_1;	// src/main/scala/stages/EXE/DIV.scala:49:35
-  wire             _unsigned_div_io_s_axis_dividend_tvalid_T_1 = io_start & ~sent_0_1;	// src/main/scala/stages/EXE/DIV.scala:49:35, :64:{45,48}
-  wire             _unsigned_div_io_s_axis_divisor_tvalid_T_1 = io_start & ~sent_1_1;	// src/main/scala/stages/EXE/DIV.scala:49:35, :65:{45,48}
-  wire [3:0][31:0] _GEN =
-    {{_unsigned_div_m_axis_dout_tdata[31:0]},
-     {_signed_div_m_axis_dout_tdata[31:0]},
-     {_unsigned_div_m_axis_dout_tdata[63:32]},
-     {_signed_div_m_axis_dout_tdata[63:32]}};	// src/main/scala/config/Configs.scala:70:28, src/main/scala/stages/EXE/DIV.scala:72:26, :73:28, :82:56, :83:58, :84:56, :85:58
-  always @(posedge clock) begin	// src/main/scala/stages/EXE/DIV.scala:69:7
-    if (reset) begin	// src/main/scala/stages/EXE/DIV.scala:69:7
-      sent_0 <= 1'h0;	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
-      sent_1 <= 1'h0;	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
-      sent_0_1 <= 1'h0;	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
-      sent_1_1 <= 1'h0;	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
+  reg [3:0]  cnt;	// src/main/scala/stages/EXE/DIV.scala:93:22
+  reg [31:0] quotient;	// src/main/scala/stages/EXE/DIV.scala:116:28
+  reg [31:0] remainder;	// src/main/scala/stages/EXE/DIV.scala:117:28
+  always @(posedge clock) begin	// src/main/scala/stages/EXE/DIV.scala:70:7
+    if (reset) begin	// src/main/scala/stages/EXE/DIV.scala:70:7
+      cnt <= 4'h0;	// src/main/scala/stages/EXE/DIV.scala:93:22
+      quotient <= 32'h0;	// src/main/scala/stages/EXE/DIV.scala:116:28
+      remainder <= 32'h0;	// src/main/scala/stages/EXE/DIV.scala:116:28, :117:28
     end
-    else begin	// src/main/scala/stages/EXE/DIV.scala:69:7
-      sent_0 <=
-        _signed_div_io_s_axis_dividend_tvalid_T_1 & _signed_div_s_axis_dividend_tready
-        | ~_signed_div_m_axis_dout_tvalid & sent_0;	// src/main/scala/stages/EXE/DIV.scala:49:35, :52:{37,68}, :53:15, :54:40, :55:15, :64:45, :72:26
-      sent_1 <=
-        _signed_div_io_s_axis_divisor_tvalid_T_1 & _signed_div_s_axis_divisor_tready
-        | ~_signed_div_m_axis_dout_tvalid & sent_1;	// src/main/scala/stages/EXE/DIV.scala:49:35, :54:40, :55:15, :58:{36,66}, :59:15, :60:40, :61:15, :65:45, :72:26
-      sent_0_1 <=
-        _unsigned_div_io_s_axis_dividend_tvalid_T_1 & _unsigned_div_s_axis_dividend_tready
-        | ~_unsigned_div_m_axis_dout_tvalid & sent_0_1;	// src/main/scala/stages/EXE/DIV.scala:49:35, :52:{37,68}, :53:15, :54:40, :55:15, :64:45, :73:28
-      sent_1_1 <=
-        _unsigned_div_io_s_axis_divisor_tvalid_T_1 & _unsigned_div_s_axis_divisor_tready
-        | ~_unsigned_div_m_axis_dout_tvalid & sent_1_1;	// src/main/scala/stages/EXE/DIV.scala:49:35, :54:40, :55:15, :58:{36,66}, :59:15, :60:40, :61:15, :65:45, :73:28
+    else if (io_start) begin	// src/main/scala/stages/EXE/DIV.scala:71:14
+      automatic logic [31:0] dividend_abs =
+        io_div_src1[31] & io_div_op[0] ? 32'h0 - io_div_src1 : io_div_src1;	// src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/isa/LA32.scala:68:50, src/main/scala/stages/EXE/DIV.scala:104:{38,43}, :107:{27,46}, :116:28
+      automatic logic [31:0] divisor_abs =
+        io_div_src2[31] & io_div_op[0] ? 32'h0 - io_div_src2 : io_div_src2;	// src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/isa/LA32.scala:68:50, src/main/scala/stages/EXE/DIV.scala:105:{38,43}, :108:{27,45}, :116:28
+      automatic logic [31:0] quotient_abs = dividend_abs / divisor_abs;	// src/main/scala/stages/EXE/DIV.scala:107:27, :108:27, :113:38
+      automatic logic [31:0] _remainder_abs_T_1 =
+        dividend_abs - quotient_abs * divisor_abs;	// src/main/scala/stages/EXE/DIV.scala:107:27, :108:27, :113:38, :114:{38,53}
+      cnt <= cnt + 4'h1;	// src/main/scala/stages/EXE/DIV.scala:93:22, :97:29
+      quotient <=
+        (io_div_src1[31] ^ io_div_src2[31]) & io_div_op[0]
+          ? 32'h0 - quotient_abs
+          : quotient_abs;	// src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/isa/LA32.scala:68:50, src/main/scala/stages/EXE/DIV.scala:104:38, :105:38, :110:{45,64}, :113:38, :116:28, :120:{23,42}
+      remainder <=
+        io_div_src1[31] & io_div_op[0] ? 32'h0 - _remainder_abs_T_1 : _remainder_abs_T_1;	// src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/isa/LA32.scala:68:50, src/main/scala/stages/EXE/DIV.scala:104:38, :111:44, :114:38, :116:28, :117:28, :121:{23,43}
     end
+    else if (cnt[3])	// src/main/scala/stages/EXE/DIV.scala:93:22, :124:26
+      cnt <= 4'h0;	// src/main/scala/stages/EXE/DIV.scala:93:22
   end // always @(posedge)
-  `ifdef ENABLE_INITIAL_REG_	// src/main/scala/stages/EXE/DIV.scala:69:7
-    `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/stages/EXE/DIV.scala:69:7
-      `FIRRTL_BEFORE_INITIAL	// src/main/scala/stages/EXE/DIV.scala:69:7
+  `ifdef ENABLE_INITIAL_REG_	// src/main/scala/stages/EXE/DIV.scala:70:7
+    `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/stages/EXE/DIV.scala:70:7
+      `FIRRTL_BEFORE_INITIAL	// src/main/scala/stages/EXE/DIV.scala:70:7
     `endif // FIRRTL_BEFORE_INITIAL
-    initial begin	// src/main/scala/stages/EXE/DIV.scala:69:7
-      automatic logic [31:0] _RANDOM[0:0];	// src/main/scala/stages/EXE/DIV.scala:69:7
-      `ifdef INIT_RANDOM_PROLOG_	// src/main/scala/stages/EXE/DIV.scala:69:7
-        `INIT_RANDOM_PROLOG_	// src/main/scala/stages/EXE/DIV.scala:69:7
+    initial begin	// src/main/scala/stages/EXE/DIV.scala:70:7
+      automatic logic [31:0] _RANDOM[0:2];	// src/main/scala/stages/EXE/DIV.scala:70:7
+      `ifdef INIT_RANDOM_PROLOG_	// src/main/scala/stages/EXE/DIV.scala:70:7
+        `INIT_RANDOM_PROLOG_	// src/main/scala/stages/EXE/DIV.scala:70:7
       `endif // INIT_RANDOM_PROLOG_
-      `ifdef RANDOMIZE_REG_INIT	// src/main/scala/stages/EXE/DIV.scala:69:7
-        _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/stages/EXE/DIV.scala:69:7
-        sent_0 = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
-        sent_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
-        sent_0_1 = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
-        sent_1_1 = _RANDOM[/*Zero width*/ 1'b0][3];	// src/main/scala/stages/EXE/DIV.scala:49:35, :69:7
+      `ifdef RANDOMIZE_REG_INIT	// src/main/scala/stages/EXE/DIV.scala:70:7
+        for (logic [1:0] i = 2'h0; i < 2'h3; i += 2'h1) begin
+          _RANDOM[i] = `RANDOM;	// src/main/scala/stages/EXE/DIV.scala:70:7
+        end	// src/main/scala/stages/EXE/DIV.scala:70:7
+        cnt = _RANDOM[2'h0][3:0];	// src/main/scala/stages/EXE/DIV.scala:70:7, :93:22
+        quotient = {_RANDOM[2'h0][31:4], _RANDOM[2'h1][3:0]};	// src/main/scala/stages/EXE/DIV.scala:70:7, :93:22, :116:28
+        remainder = {_RANDOM[2'h1][31:4], _RANDOM[2'h2][3:0]};	// src/main/scala/stages/EXE/DIV.scala:70:7, :116:28, :117:28
       `endif // RANDOMIZE_REG_INIT
     end // initial
-    `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/stages/EXE/DIV.scala:69:7
-      `FIRRTL_AFTER_INITIAL	// src/main/scala/stages/EXE/DIV.scala:69:7
+    `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/stages/EXE/DIV.scala:70:7
+      `FIRRTL_AFTER_INITIAL	// src/main/scala/stages/EXE/DIV.scala:70:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  SignedDiv signed_div (	// src/main/scala/stages/EXE/DIV.scala:72:26
-    .aclk                   (clock),
-    .s_axis_dividend_tvalid (_signed_div_io_s_axis_dividend_tvalid_T_1),	// src/main/scala/stages/EXE/DIV.scala:64:45
-    .s_axis_dividend_tready (_signed_div_s_axis_dividend_tready),
-    .s_axis_dividend_tdata  (io_div_src1),
-    .s_axis_divisor_tvalid  (_signed_div_io_s_axis_divisor_tvalid_T_1),	// src/main/scala/stages/EXE/DIV.scala:65:45
-    .s_axis_divisor_tready  (_signed_div_s_axis_divisor_tready),
-    .s_axis_divisor_tdata   (io_div_src2),
-    .m_axis_dout_tvalid     (_signed_div_m_axis_dout_tvalid),
-    .m_axis_dout_tdata      (_signed_div_m_axis_dout_tdata)
-  );
-  UnsignedDiv unsigned_div (	// src/main/scala/stages/EXE/DIV.scala:73:28
-    .aclk                   (clock),
-    .s_axis_dividend_tvalid (_unsigned_div_io_s_axis_dividend_tvalid_T_1),	// src/main/scala/stages/EXE/DIV.scala:64:45
-    .s_axis_dividend_tready (_unsigned_div_s_axis_dividend_tready),
-    .s_axis_dividend_tdata  (io_div_src1),
-    .s_axis_divisor_tvalid  (_unsigned_div_io_s_axis_divisor_tvalid_T_1),	// src/main/scala/stages/EXE/DIV.scala:65:45
-    .s_axis_divisor_tready  (_unsigned_div_s_axis_divisor_tready),
-    .s_axis_divisor_tdata   (io_div_src2),
-    .m_axis_dout_tvalid     (_unsigned_div_m_axis_dout_tvalid),
-    .m_axis_dout_tdata      (_unsigned_div_m_axis_dout_tdata)
-  );
-  assign io_div_result = _GEN[io_div_op];	// src/main/scala/config/Configs.scala:70:28, src/main/scala/stages/EXE/DIV.scala:69:7
-  assign io_complete = _unsigned_div_m_axis_dout_tvalid;	// src/main/scala/stages/EXE/DIV.scala:69:7, :73:28
+  assign io_div_result = io_div_op == 2'h0 | io_div_op == 2'h1 ? remainder : quotient;	// src/main/scala/config/Configs.scala:70:28, src/main/scala/stages/EXE/DIV.scala:70:7, :116:28, :117:28
+  assign io_complete = cnt[3];	// src/main/scala/stages/EXE/DIV.scala:70:7, :93:22, :124:26
 endmodule
 
-// external module SignedMul
-
-module MUL(	// src/main/scala/stages/EXE/MUL.scala:28:7
-  input         clock,	// src/main/scala/stages/EXE/MUL.scala:28:7
-  input  [1:0]  io_mul_op,	// src/main/scala/stages/EXE/MUL.scala:29:14
-  input  [31:0] io_mul_src1,	// src/main/scala/stages/EXE/MUL.scala:29:14
-                io_mul_src2,	// src/main/scala/stages/EXE/MUL.scala:29:14
-  output [31:0] io_mul_result	// src/main/scala/stages/EXE/MUL.scala:29:14
+module MUL(	// src/main/scala/stages/EXE/MUL.scala:29:7
+  input  [1:0]  io_mul_op,	// src/main/scala/stages/EXE/MUL.scala:30:14
+  input  [31:0] io_mul_src1,	// src/main/scala/stages/EXE/MUL.scala:30:14
+                io_mul_src2,	// src/main/scala/stages/EXE/MUL.scala:30:14
+  output [31:0] io_mul_result	// src/main/scala/stages/EXE/MUL.scala:30:14
 );
 
-  wire [65:0] _signed_mul_P;	// src/main/scala/stages/EXE/MUL.scala:31:26
-  wire        _GEN = io_mul_op == 2'h2 | ~(|io_mul_op);	// src/main/scala/stages/EXE/MUL.scala:34:{18,38,51}
-  wire [63:0] _io_mul_result_T_4 = {32'h0, io_mul_src1} * {32'h0, io_mul_src2};	// src/main/scala/stages/EXE/MUL.scala:48:39
-  SignedMul signed_mul (	// src/main/scala/stages/EXE/MUL.scala:31:26
-    .CLK (clock),
-    .CE  (1'h1),	// src/main/scala/stages/EXE/MUL.scala:33:21
-    .A   ({_GEN & io_mul_src1[31], io_mul_src1}),	// src/main/scala/stages/EXE/MUL.scala:34:{38,71}, :35:{21,27,39}, :38:{21,27}
-    .B   ({_GEN & io_mul_src2[31], io_mul_src2}),	// src/main/scala/stages/EXE/MUL.scala:34:{38,71}, :36:{21,27,39}, :39:{21,27}
-    .P   (_signed_mul_P)
-  );
-  assign io_mul_result =
-    io_mul_op == 2'h1
-      ? _io_mul_result_T_4[31:0]
-      : (&io_mul_op)
-          ? _io_mul_result_T_4[63:32]
-          : (|io_mul_op) ? _signed_mul_P[63:32] : _signed_mul_P[31:0];	// src/main/scala/config/Configs.scala:70:28, src/main/scala/stages/EXE/MUL.scala:28:7, :31:26, :34:51, :46:41, :47:41, :48:{39,53}, :49:53
+  wire [63:0]      _signed_result_T_2 =
+    {{32{io_mul_src1[31]}}, io_mul_src1} * {{32{io_mul_src2[31]}}, io_mul_src2};	// src/main/scala/stages/EXE/MUL.scala:55:47
+  wire [63:0]      unsigned_result = {32'h0, io_mul_src1} * {32'h0, io_mul_src2};	// src/main/scala/stages/EXE/MUL.scala:56:39
+  wire [3:0][32:0] _GEN =
+    {{{1'h0, unsigned_result[63:32]}},
+     {{1'h0, _signed_result_T_2[63:32]}},
+     {{1'h0, unsigned_result[31:0]}},
+     {_signed_result_T_2[32:0]}};	// src/main/scala/config/Configs.scala:70:28, src/main/scala/stages/EXE/MUL.scala:55:{47,69}, :56:39, :61:41, :62:41, :63:43, :64:43
+  assign io_mul_result = _GEN[io_mul_op][31:0];	// src/main/scala/config/Configs.scala:70:28, src/main/scala/stages/EXE/MUL.scala:29:7, :57:19
 endmodule
 
 module ALU(	// src/main/scala/stages/EXE/ALU.scala:17:7
@@ -1030,7 +980,6 @@ module IE(	// src/main/scala/stages/EXE/IE.scala:25:7
     .io_complete   (_div_io_complete)
   );
   MUL mul (	// src/main/scala/stages/EXE/IE.scala:58:19
-    .clock         (clock),
     .io_mul_op     (info_op_type[1:0]),	// src/main/scala/config/Configs.scala:28:27, src/main/scala/stages/EXE/IE.scala:41:19
     .io_mul_src1   (info_src1),	// src/main/scala/config/Configs.scala:28:27
     .io_mul_src2   (info_src2),	// src/main/scala/config/Configs.scala:28:27
@@ -1327,10 +1276,31 @@ module Top(	// src/main/scala/stages/Top.scala:31:7
   wire        _fs_io_to_valid;	// src/main/scala/stages/Top.scala:34:20
   wire [31:0] _fs_io_to_bits_pc;	// src/main/scala/stages/Top.scala:34:20
   wire [31:0] _fs_io_to_bits_inst;	// src/main/scala/stages/Top.scala:34:20
+  reg         fs_io_from_valid_REG;	// src/main/scala/stages/Top.scala:41:35
+  always @(posedge clock)	// src/main/scala/stages/Top.scala:31:7
+    fs_io_from_valid_REG <= ~reset;	// src/main/scala/stages/Top.scala:41:{35,36}
+  `ifdef ENABLE_INITIAL_REG_	// src/main/scala/stages/Top.scala:31:7
+    `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/stages/Top.scala:31:7
+      `FIRRTL_BEFORE_INITIAL	// src/main/scala/stages/Top.scala:31:7
+    `endif // FIRRTL_BEFORE_INITIAL
+    initial begin	// src/main/scala/stages/Top.scala:31:7
+      automatic logic [31:0] _RANDOM[0:0];	// src/main/scala/stages/Top.scala:31:7
+      `ifdef INIT_RANDOM_PROLOG_	// src/main/scala/stages/Top.scala:31:7
+        `INIT_RANDOM_PROLOG_	// src/main/scala/stages/Top.scala:31:7
+      `endif // INIT_RANDOM_PROLOG_
+      `ifdef RANDOMIZE_REG_INIT	// src/main/scala/stages/Top.scala:31:7
+        _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/stages/Top.scala:31:7
+        fs_io_from_valid_REG = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/stages/Top.scala:31:7, :41:35
+      `endif // RANDOMIZE_REG_INIT
+    end // initial
+    `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/stages/Top.scala:31:7
+      `FIRRTL_AFTER_INITIAL	// src/main/scala/stages/Top.scala:31:7
+    `endif // FIRRTL_AFTER_INITIAL
+  `endif // ENABLE_INITIAL_REG_
   IF fs (	// src/main/scala/stages/Top.scala:34:20
     .clock               (clock),
     .reset               (reset),
-    .io_from_valid       (~reset),	// src/main/scala/stages/Top.scala:41:28
+    .io_from_valid       (fs_io_from_valid_REG & ~reset),	// src/main/scala/stages/Top.scala:41:{35,36,51}
     .io_to_ready         (_ds_io_from_ready),	// src/main/scala/stages/Top.scala:35:20
     .io_to_valid         (_fs_io_to_valid),
     .io_to_bits_pc       (_fs_io_to_bits_pc),
@@ -1457,6 +1427,6 @@ module Top(	// src/main/scala/stages/Top.scala:31:7
   );
   assign io_inst_sram_we = 4'h0;	// src/main/scala/stages/Top.scala:31:7, :34:20
   assign io_inst_sram_wdata = 32'h0;	// src/main/scala/stages/Top.scala:31:7, :34:20, :35:20
-  assign io_data_sram_en = 1'h1;	// src/main/scala/stages/Top.scala:31:7, :36:20, :37:20, :38:20
+  assign io_data_sram_en = 1'h1;	// src/main/scala/stages/Top.scala:31:7
 endmodule
 

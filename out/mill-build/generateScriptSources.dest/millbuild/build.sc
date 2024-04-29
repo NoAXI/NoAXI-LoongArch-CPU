@@ -4,9 +4,9 @@ import _root_.mill.runner.MillBuildRootModule
 
 object MiscInfo_build {
   implicit lazy val millBuildRootModuleInfo: _root_.mill.runner.MillBuildRootModule.Info = _root_.mill.runner.MillBuildRootModule.Info(
-    Vector("/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunjce_provider.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/zipfs.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/cldrdata.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/icedtea-sound.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunec.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/dnsns.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/nashorn.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/java-atk-wrapper.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunpkcs11.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/jaccess.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/libatk-wrapper.so", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/localedata.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/resources.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jsse.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jce.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/charsets.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jfr.jar", "/home/yuxuaan/LA64CPU/out/mill-launcher/0.11.7.jar").map(_root_.os.Path(_)),
-    _root_.os.Path("/home/yuxuaan/LA64CPU"),
-    _root_.os.Path("/home/yuxuaan/LA64CPU"),
+    Vector("/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunjce_provider.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/zipfs.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/cldrdata.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/icedtea-sound.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunec.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/dnsns.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/nashorn.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/java-atk-wrapper.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/sunpkcs11.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/jaccess.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/libatk-wrapper.so", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/localedata.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/resources.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jsse.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jce.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/charsets.jar", "/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jfr.jar", "/home/yuxuaan/LA32CPU/out/mill-launcher/0.11.7.jar").map(_root_.os.Path(_)),
+    _root_.os.Path("/home/yuxuaan/LA32CPU"),
+    _root_.os.Path("/home/yuxuaan/LA32CPU"),
   )
   implicit lazy val millBaseModuleInfo: _root_.mill.main.RootModule.Info = _root_.mill.main.RootModule.Info(
     millBuildRootModuleInfo.projectRoot,
@@ -17,7 +17,7 @@ import MiscInfo_build.{millBuildRootModuleInfo, millBaseModuleInfo}
 object build extends build
 class build extends _root_.mill.main.RootModule {
 
-//MILL_ORIGINAL_FILE_PATH=/home/yuxuaan/LA64CPU/build.sc
+//MILL_ORIGINAL_FILE_PATH=/home/yuxuaan/LA32CPU/build.sc
 //MILL_USER_CODE_START_MARKER
 // // import Mill dependency
 // import mill._
