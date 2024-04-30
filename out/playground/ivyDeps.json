@@ -11,7 +11,7 @@
                     },
                     "attributes": {}
                 },
-                "version": "5.0.0",
+                "version": "7.0.0-M1",
                 "configuration": {
                     "value": "default(compile)"
                 },
@@ -40,6 +40,6 @@
             "force": false
         }
     ],
-    "valueHash": -106139680,
-    "inputsHash": 738276237
+    "valueHash": 1501321024,
+    "inputsHash": 242823038
 }

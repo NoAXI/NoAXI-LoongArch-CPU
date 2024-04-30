@@ -13,6 +13,7 @@ class info extends Bundle with Parameters{
   val func_type = FuncType()
   val op_type   = UInt(10.W)
   val is_wf     = Bool()
+  val piece     = UInt(2.W)
 
   val dest      = UInt(ADDR_WIDTH_REG.W)
   val rkd_value = UInt(DATA_WIDTH.W)
@@ -55,6 +56,10 @@ object Functions {
 
   def Extend(a: UInt, len: Int, typ: UInt) = {
     Mux(typ === SrcType.immu, UnSignedExtend(a, len), SignedExtend(a, len))
+  }
+
+  def Extend(a: UInt, len: Int, typ: Bool) = {
+    Mux(typ, SignedExtend(a, len), UnSignedExtend(a, len))
   }
 
   def lookup[T <: Data](key: UInt, default: T, map: Array[(BitPat, T)]): T = {

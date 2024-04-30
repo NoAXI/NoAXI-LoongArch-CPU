@@ -28,8 +28,8 @@ class IE extends Module with Parameters {
   // 与上一流水级握手，获取上一流水级信息
   val info = ConnectGetBus(io.from, io.to)
 
-  val es_mem_we = info.func_type === FuncType.mem && info.op_type === MemOpType.write
-  val es_mem_re = info.func_type === FuncType.mem && info.op_type === MemOpType.read
+  val es_mem_re = info.func_type === FuncType.mem && MemOpType.isread(info.op_type)
+  val es_mem_we = info.func_type === FuncType.mem && !es_mem_re
 
   when(es_mem_re && io.ds_reg_info.addr.exists(_ === info.dest)) {
     io.from.ready := false.B
@@ -61,8 +61,8 @@ class IE extends Module with Parameters {
   mul.io.mul_src2 := info.src2
 
   when(info.func_type === FuncType.mul) {
-    io.from.ready := false.B
-    is_cal        := false.B
+    io.from.ready  := false.B
+    is_cal         := false.B
     info.func_type := FuncType.nonmul
   }
 
@@ -76,15 +76,16 @@ class IE extends Module with Parameters {
     info.func_type,
     alu.io.alu_result,
     List(
-      FuncType.div -> div.io.div_result,
+      FuncType.div    -> div.io.div_result,
       FuncType.nondiv -> div.io.div_result,
-      FuncType.mul -> mul.io.mul_result,
+      FuncType.mul    -> mul.io.mul_result,
       FuncType.nonmul -> mul.io.mul_result,
     ),
   )
 
   val to_info = WireDefault(0.U.asTypeOf(new info))
   to_info        := info
+  to_info.piece  := result(1, 0)
   to_info.result := result
   to_info.is_wf  := info.is_wf && is_cal
   io.to.bits     := to_info
@@ -93,8 +94,28 @@ class IE extends Module with Parameters {
   io.es.addr := to_info.dest
   io.es.data := to_info.result
 
-  io.data_sram_en    := true.B
-  io.data_sram_we    := Fill(DATA_WIDTH_B, es_mem_we & io.to.valid)
-  io.data_sram_addr  := result
-  io.data_sram_wdata := info.rkd_value // 只有st的rd被写入
+  io.data_sram_en := true.B
+  io.data_sram_we := Mux(
+    io.to.valid && es_mem_we,
+    MateDefault(
+      info.op_type,
+      0.U,
+      List(
+        MemOpType.writeb -> ("b0001".U << to_info.piece),
+        MemOpType.writeh -> ("b0011".U << to_info.piece),
+        MemOpType.writew -> "b1111".U,
+      ),
+    ),
+    0.U,
+  )
+  io.data_sram_addr := result
+  io.data_sram_wdata := MateDefault(
+    info.op_type,
+    0.U,
+    List(
+      MemOpType.writeb -> Fill(4, info.rkd_value(7, 0)),
+      MemOpType.writeh -> Fill(2, info.rkd_value(15, 0)),
+      MemOpType.writew -> info.rkd_value,
+    ),
+  )
 }

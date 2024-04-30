@@ -1,8 +1,8 @@
 {
     "value": {
         "analysisFile": "/home/yuxuaan/LA32CPU/out/LA64/compile.dest/zinc",
-        "classes": "ref:v0:d37076b1:/home/yuxuaan/LA32CPU/out/LA64/compile.dest/classes"
+        "classes": "ref:v0:2792cda1:/home/yuxuaan/LA32CPU/out/LA64/compile.dest/classes"
     },
-    "valueHash": 277568177,
-    "inputsHash": 1562891905
+    "valueHash": 1423584222,
+    "inputsHash": -1880593333
 }

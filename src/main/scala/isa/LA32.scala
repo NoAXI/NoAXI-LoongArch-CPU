@@ -56,18 +56,18 @@ object BruOptype {
 
 object AluOpType {
     def non     = "b000000".U
-    def add     = "b100000".U//防止add匹配到分支的matedefault的Bruoptype
-    def sub     = "b000010".U
-    def slt     = "b000011".U
-    def sltu    = "b000100".U
-    def and     = "b000101".U
-    def nor     = "b000110".U
-    def or      = "b000111".U
-    def xor     = "b001000".U
-    def sll     = "b001001".U
-    def srl     = "b001010".U
-    def sra     = "b001011".U
-    def lui     = "b001100".U
+    def add     = "b100000".U//防止匹配到分支的matedefault的Bruoptype和其他匹配问题
+    def sub     = "b100010".U
+    def slt     = "b100011".U
+    def sltu    = "b100100".U
+    def and     = "b100101".U
+    def nor     = "b100110".U
+    def or      = "b100111".U
+    def xor     = "b101000".U
+    def sll     = "b101001".U
+    def srl     = "b101010".U
+    def sra     = "b101011".U
+    def lui     = "b101100".U
     def apply() = UInt(6.W)
 }
 
@@ -89,9 +89,22 @@ object MulOpType {
 }
 
 object MemOpType {
-    def read    = "b0".U
-    def write   = "b1".U
-    def apply() = UInt(1.W)
+    def readw     = "b1100".U
+    
+    def readh     = "b1011".U
+    def readhu    = "b1010".U
+
+    def readb     = "b1001".U
+    def readbu    = "b1000".U
+
+    def h         = "b01".U
+    def b         = "b00".U
+
+    def writew    = "b0000".U
+    def writeh    = "b0001".U
+    def writeb    = "b0010".U
+    def isread(memOpType: UInt): Bool = memOpType(3)
+    def apply()  = UInt(4.W)
 }
 
 object DecOpType {
@@ -187,14 +200,14 @@ object LA32 extends InstType {
     def SCW         = BitPat("b00100001????????????????????????")
 
     // load-store
-    def LDB         = BitPat("b0010100000??????????????????????")
-    def LDH         = BitPat("b0010100001??????????????????????")
+    def LD_B        = BitPat("b0010100000??????????????????????")
+    def LD_H        = BitPat("b0010100001??????????????????????")
     def LD_W        = BitPat("b0010100010??????????????????????")
-    def STB         = BitPat("b0010100100??????????????????????")
-    def STH         = BitPat("b0010100101??????????????????????")
+    def ST_B        = BitPat("b0010100100??????????????????????")
+    def ST_H        = BitPat("b0010100101??????????????????????")
     def ST_W        = BitPat("b0010100110??????????????????????")
-    def LDBU        = BitPat("b0010101000??????????????????????")
-    def LDHU        = BitPat("b0010101001??????????????????????")
+    def LD_BU        = BitPat("b0010101000??????????????????????")
+    def LD_HU        = BitPat("b0010101001??????????????????????")
     
     // branch
     def JIRL        = BitPat("b010011??????????????????????????")
@@ -226,8 +239,14 @@ object LA32 extends InstType {
         SRA_W     -> List(Inst3R,      FuncType.alu,   AluOpType.sra,       IsWf.y,   SrcType.rj,   SrcType.rk      ),
         SRAI_W    -> List(Inst2RUI5,   FuncType.alu,   AluOpType.sra,       IsWf.y,   SrcType.rj,   SrcType.imm     ),
         ADDI_W    -> List(Inst2RI12,   FuncType.alu,   AluOpType.add,       IsWf.y,   SrcType.rj,   SrcType.imm     ),
-        LD_W      -> List(Inst2RI12,   FuncType.mem,   MemOpType.read,      IsWf.y,   SrcType.rj,   SrcType.imm     ),
-        ST_W      -> List(Inst2RI12,   FuncType.mem,   MemOpType.write,     IsWf.n,   SrcType.rj,   SrcType.rd_imm  ),
+        LD_W      -> List(Inst2RI12,   FuncType.mem,   MemOpType.readw,     IsWf.y,   SrcType.rj,   SrcType.imm     ),
+        LD_H      -> List(Inst2RI12,   FuncType.mem,   MemOpType.readh,     IsWf.y,   SrcType.rj,   SrcType.imm     ),
+        LD_B      -> List(Inst2RI12,   FuncType.mem,   MemOpType.readb,     IsWf.y,   SrcType.rj,   SrcType.imm     ),
+        LD_BU     -> List(Inst2RI12,   FuncType.mem,   MemOpType.readbu,    IsWf.y,   SrcType.rj,   SrcType.imm     ),
+        LD_HU     -> List(Inst2RI12,   FuncType.mem,   MemOpType.readhu,    IsWf.y,   SrcType.rj,   SrcType.imm     ),
+        ST_W      -> List(Inst2RI12,   FuncType.mem,   MemOpType.writew,    IsWf.n,   SrcType.rj,   SrcType.rd_imm  ),
+        ST_H      -> List(Inst2RI12,   FuncType.mem,   MemOpType.writeh,    IsWf.n,   SrcType.rj,   SrcType.rd_imm  ),
+        ST_B      -> List(Inst2RI12,   FuncType.mem,   MemOpType.writeb,    IsWf.n,   SrcType.rj,   SrcType.rd_imm  ),
         JIRL      -> List(Inst2RI16,   FuncType.bru,   AluOpType.add,       IsWf.y,   SrcType.pc,   SrcType.is4     ),
         B         -> List(Inst2RI26,   FuncType.bru,   BruOptype.b,         IsWf.n,   SrcType.rj,   SrcType.rk      ),
         BL        -> List(Inst2RI26,   FuncType.bru,   AluOpType.add,       IsWf.y,   SrcType.pc,   SrcType.is4     ),

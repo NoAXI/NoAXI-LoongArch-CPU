@@ -60,8 +60,8 @@
         "qref:v1:6cc36184:/home/yuxuaan/.cache/coursier/v1/https/repo1.maven.org/maven2/org/fusesource/jansi/jansi/1.18/jansi-1.18.jar",
         "ref:v0:c984eca8:/home/yuxuaan/LA32CPU/compile-resources",
         "ref:v0:c984eca8:/home/yuxuaan/LA32CPU/src/main/resources",
-        "ref:v0:d37076b1:/home/yuxuaan/LA32CPU/out/LA64/compile.dest/classes"
+        "ref:v0:2792cda1:/home/yuxuaan/LA32CPU/out/LA64/compile.dest/classes"
     ],
-    "valueHash": -1912262830,
-    "inputsHash": 1762837139
+    "valueHash": 1442283265,
+    "inputsHash": -397045438
 }

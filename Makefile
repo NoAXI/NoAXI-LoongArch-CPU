@@ -1,7 +1,7 @@
 simulator_path = ../test/soc-simulator
 myCPU_path = /mnt/f/CPU/lab_Loongarch/mycpu_env/myCPU
 func_path = /mnt/f/CPU/lab_Loongarch/mycpu_env/func
-EXP = 10
+EXP = 11
 
 sim:
 	mill _.run

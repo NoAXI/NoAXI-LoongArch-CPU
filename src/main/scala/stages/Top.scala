@@ -81,3 +81,7 @@ object main extends App {
   emitVerilog(new Top(), Array("--target-dir", "wave"))
   println("ok!")
 }
+
+// object Elaborate extends App {
+//   circt.stage.ChiselStage.emitSystemVerilogFile(new Top(), args, Array("--target-dir", "wave"))
+// }

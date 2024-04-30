@@ -24,14 +24,46 @@ class IM extends Module with Parameters {
   // 与上一流水级握手，获取上一流水级信息
   val info = ConnectGetBus(io.from, io.to)
 
-  // 取出上级流水级缓存内容
-  val ms_res_from_mem = info.func_type === FuncType.mem && info.op_type === MemOpType.read
-
   // 传递信息
   val to_info = WireDefault(0.U.asTypeOf(new info))
-  to_info        := info
-  to_info.result := Mux(ms_res_from_mem, io.data_sram_rdata, info.result)
-  io.to.bits     := to_info
+  to_info := info
+  to_info.result := Mux(
+    info.func_type === FuncType.mem && MemOpType.isread(info.op_type),  // 是否是读操作
+    MateDefault(
+      info.op_type(2, 1),  // 看是h类型还是b类型
+      io.data_sram_rdata,  // 默认是readw
+      List(
+        MemOpType.b -> Extend(
+          MateDefault(
+            info.piece,
+            0.U,
+            List(
+              "b00".U -> io.data_sram_rdata(7, 0),
+              "b01".U -> io.data_sram_rdata(15, 8),
+              "b10".U -> io.data_sram_rdata(23, 16),
+              "b11".U -> io.data_sram_rdata(31, 24),
+            ),
+          ),
+          DATA_WIDTH,
+          info.op_type(0).asBool,
+        ),
+        MemOpType.h -> Extend(
+          MateDefault(
+            info.piece,
+            0.U,
+            List(
+              "b00".U -> io.data_sram_rdata(15, 0),
+              "b10".U -> io.data_sram_rdata(31, 16),
+            ),
+          ),
+          DATA_WIDTH,
+          info.op_type(0).asBool,
+        ),
+      ),
+    ),
+    info.result,
+  )
+  io.to.bits := to_info
 
   io.ms.we   := to_info.is_wf
   io.ms.addr := to_info.dest

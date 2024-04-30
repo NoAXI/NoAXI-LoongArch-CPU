@@ -76,24 +76,6 @@ class ID extends Module with Parameters with InstType {
   val rkd_value = io.ds_reg_data.data(1)
 
   // 分支跳转
-  // val br = MateDefault(
-  //   op_type,
-  //   MuxCase(
-  //     0.U,
-  //     Seq(
-  //       (inst === LA32.BL)   -> Cat(1.U(1.W), info.pc + imm),
-  //       (inst === LA32.JIRL) -> Cat(1.U(1.W), rj_value + imm),
-  //     ),
-  //   ),
-  //   List(
-  //     BruOptype.b   -> Cat(1.U(1.W), info.pc + imm),
-  //     BruOptype.beq -> Cat((rj_value === rkd_value), info.pc + imm),
-  //     BruOptype.bne -> Cat((rj_value === rkd_value).asUInt, info.pc + imm),
-  //     BruOptype.blt -> Cat((rj_value.asSInt < rkd_value.asSInt).asUInt, info.pc + imm),
-
-  //   ),
-  // )
-  // val len = br.getWidth
   io.br_bus.br_taken := MateDefault(
     op_type,
     true.B,
