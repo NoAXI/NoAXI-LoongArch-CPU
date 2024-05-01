@@ -1,12 +1,13 @@
 simulator_path = ../test/soc-simulator
 myCPU_path = /mnt/f/CPU/lab_Loongarch/mycpu_env/myCPU
 func_path = /mnt/f/CPU/lab_Loongarch/mycpu_env/func
+generate_path = ./systemVerilog
 EXP = 11
 
 sim:
-	mill _.run
+	@mill -i _.runMain Elaborate --target-dir $(generate_path)
 	@echo -e "\e[32mGenerate Verilog completed. \e[0m"
-	@cd wave && cp Top.sv $(myCPU_path)
+	@cd $(generate_path) && cp Top.sv $(myCPU_path)
 	@cd $(simulator_path) && make clean
 	@cd $(simulator_path) && make
 	@echo -e "\e[32mlab$(EXP) Simulating... \e[0m"
@@ -14,8 +15,8 @@ sim:
 	@echo -e "\e[32mlab$(EXP) Simulate completed. \e[0m"
 
 generate:
-	mill _.run
-	@cd wave && cp Top.sv $(myCPU_path)
+	@mill -i _.runMain Elaborate --target-dir $(generate_path)
+	@cd $(generate_path) && cp Top.sv $(myCPU_path)
 	@echo -e "\e[32mGenerate Verilog completed. \e[0m"
 
 wav:
