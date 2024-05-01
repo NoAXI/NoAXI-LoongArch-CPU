@@ -1,7 +1,0 @@
-{
-    "value": [
-        "-Xplugin:/home/yuxuaan/.cache/coursier/v1/https/repo.scala-sbt.org/scalasbt/maven-releases/org/chipsalliance/chisel-plugin_2.13.12/7.0.0-M1/chisel-plugin_2.13.12-7.0.0-M1.jar"
-    ],
-    "valueHash": -339420457,
-    "inputsHash": -1822153765
-}

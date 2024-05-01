@@ -1,9 +1,0 @@
-{
-    "value": [
-        "ref:v0:c984eca8:/home/yuxuaan/LA32CPU/compile-resources",
-        "ref:v0:c984eca8:/home/yuxuaan/LA32CPU/src/main/resources",
-        "ref:v0:2792cda1:/home/yuxuaan/LA32CPU/out/LA64/compile.dest/classes"
-    ],
-    "valueHash": -91021089,
-    "inputsHash": 557901880
-}

@@ -1,5 +1,0 @@
-[0m[[0m[0minfo[0m] [0m[0mcompiling 1 Scala source to /home/yuxuaan/Chisel_CPU_Learning/LA64CPU/out/RV32/compile.dest/classes ...[0m
-[0m[[0m[31merror[0m] [0m[0m/home/yuxuaan/Chisel_CPU_Learning/LA64CPU/src/main/scala/components/ALU.scala:64:9: Unmatched closing brace '}' ignored here[0m
-[0m[[0m[31merror[0m] [0m[0m        }[0m
-[0m[[0m[31merror[0m] [0m[0m        ^[0m
-[0m[[0m[31merror[0m] [0m[0mone error found[0m
