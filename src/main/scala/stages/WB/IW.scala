@@ -67,7 +67,7 @@ class IW extends Module with Parameters {
   io.ws.data := to_info.result
   io.csr_ws.we := to_info.csr_we
   io.csr_ws.addr := to_info.csr_addr
-  io.csr_ws.data := to_info.csr_val
+  io.csr_ws.data := to_info.rkd_value
 
   // 例外
   when(info.func_type === FuncType.exc && info.op_type === ExcOpType.sys) {

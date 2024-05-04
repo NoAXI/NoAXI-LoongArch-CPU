@@ -81,5 +81,5 @@ class IM extends Module with Parameters {
   io.ms.data := to_info.result
   io.csr_ms.we := to_info.csr_we
   io.csr_ms.addr := to_info.csr_addr
-  io.csr_ms.data := to_info.csr_val
+  io.csr_ms.data := to_info.rkd_value
 }

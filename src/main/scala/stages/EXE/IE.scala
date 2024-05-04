@@ -107,12 +107,12 @@ class IE extends Module with Parameters {
   io.es.data := to_info.result
   io.csr_es.we := to_info.csr_we
   io.csr_es.addr := to_info.csr_addr
-  io.csr_es.data := to_info.csr_val
+  io.csr_es.data := to_info.rkd_value
 
 
   io.data_sram_en := true.B
   io.data_sram_we := Mux(
-    io.to.valid && es_mem_we,
+    io.to.valid && es_mem_we && (!io.has_exc),
     MateDefault(
       info.op_type,
       0.U,
