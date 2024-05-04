@@ -36,6 +36,7 @@ class Top extends Module with Parameters {
   val es   = Module(new IE)
   val ms   = Module(new IM)
   val ws   = Module(new IW)
+  val csr  = Module(new CSR)
   val ctrl = Module(new controller)
 
   fs.io.from.valid      := RegNext(!reset.asBool) & !reset.asBool
@@ -43,10 +44,12 @@ class Top extends Module with Parameters {
   fs.io.inst_sram_rdata := io.inst_sram_rdata
   fs.io.br_bus          <> ds.io.br_bus
 
-  ds.io.from   <> fs.io.to
-  ds.io.rf_bus <> ws.io.rf_bus
+  ds.io.from      <> fs.io.to
+  ds.io.rf_bus    <> ws.io.rf_bus
+  ds.io.rcsr_bus  <> ws.io.rcsr_bus
+  ds.io.csr_rdata := csr.io.rdata
 
-  es.io.from <> ds.io.to
+  es.io.from        <> ds.io.to
   es.io.ds_reg_info := ds.io.ds_reg_info
 
   ms.io.from            <> es.io.to
@@ -54,6 +57,11 @@ class Top extends Module with Parameters {
 
   ws.io.from     <> ms.io.to
   ws.io.to.ready := true.B
+
+  csr.io.re     := ds.io.csr_re
+  csr.io.raddr  := ds.io.csr_raddr
+  csr.io.rf_bus := ds.io.rcsr_bus
+  csr.io.info   := ws.io.to.bits
 
   io.inst_sram_en    <> fs.io.inst_sram_en
   io.inst_sram_we    <> fs.io.inst_sram_we
@@ -81,4 +89,3 @@ object main extends App {
   emitVerilog(new Top(), Array("--target-dir", "wave"))
   println("ok!")
 }
-

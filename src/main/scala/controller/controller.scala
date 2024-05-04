@@ -37,9 +37,9 @@ class controller extends Module {
     io.ds_reg_data.data(i) := MuxCase(
       io.ds_reg_info.ini_data(i),
       List(
-        (addr === io.es.addr && io.es.we) -> io.es.data,
-        (addr === io.ms.addr && io.ms.we) -> io.ms.data,
-        (addr === io.ws.addr && io.ws.we) -> io.ws.data,
+        (addr === io.es.addr && io.es.we && addr =/= 0.U) -> io.es.data,
+        (addr === io.ms.addr && io.ms.we && addr =/= 0.U) -> io.ms.data,
+        (addr === io.ws.addr && io.ws.we && addr =/= 0.U) -> io.ws.data,
       ),
     )
   }

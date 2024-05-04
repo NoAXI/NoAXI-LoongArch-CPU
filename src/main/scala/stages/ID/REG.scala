@@ -6,10 +6,10 @@ import chisel3.util._
 import config._
 
 class REG_IO extends Bundle with Parameters {
-  val raddr1 = Input(UInt(5.W))
-  val raddr2 = Input(UInt(5.W))
-  val rdata1 = Output(UInt(32.W))
-  val rdata2 = Output(UInt(32.W))
+  val raddr1 = Input(UInt(ADDR_WIDTH_REG.W))
+  val raddr2 = Input(UInt(ADDR_WIDTH_REG.W))
+  val rdata1 = Output(UInt(DATA_WIDTH.W))
+  val rdata2 = Output(UInt(DATA_WIDTH.W))
   val rf_bus = Input(new rf_bus)
 }
 

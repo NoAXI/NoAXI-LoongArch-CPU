@@ -6,7 +6,7 @@ import chisel3.util._
 import math._
 import isa._
 
-class info extends Bundle with Parameters{
+class info extends Bundle with Parameters {
   val pc   = UInt(ADDR_WIDTH.W)
   val inst = UInt(INST_WIDTH.W)
 
@@ -21,6 +21,12 @@ class info extends Bundle with Parameters{
   val src1   = UInt(DATA_WIDTH.W)
   val src2   = UInt(DATA_WIDTH.W)
   val result = UInt(DATA_WIDTH.W)
+
+  // val exception = Bool() // 普通例外
+  // val ecode     = UInt(15.W)
+  val csr_val = UInt(DATA_WIDTH.W)
+  val csr_addr = UInt(14.W)
+  val csr_mask = UInt(DATA_WIDTH.W)
 }
 
 class pair[A, B](val first: A, val second: B)
@@ -28,8 +34,8 @@ class pair[A, B](val first: A, val second: B)
 object Functions {
   // 前一个阶段和这个阶段握手，并获得数据
   def ConnectGetBus(x: DecoupledIO[info], y: DecoupledIO[info]): info = {
-    val info     = RegInit(0.U.asTypeOf(new info))
-    val valid    = RegInit(false.B)
+    val info  = RegInit(0.U.asTypeOf(new info))
+    val valid = RegInit(false.B)
     // val ready_go = true.B
     // x.ready := !valid || ready_go && y.ready
     x.ready := !valid || y.ready
@@ -72,13 +78,22 @@ object Functions {
     result
   }
 
+  def writeMask(mask: UInt, data: UInt, wdata: UInt): UInt = {
+    val len = wdata.getWidth
+    val result = WireDefault(data)
+    for (i <- 0 until len) {
+      result(i) := Mux(mask(i), wdata(i), data(i))
+    }
+    result
+  }
+
   // 没怎么看懂
   def MateDefault[T <: Data](key: UInt, default: T, map: Iterable[(UInt, T)]): T =
     MuxLookup(key, default)(map.toSeq)
 }
 
 trait Parameters {
-  val DATA_WIDTH = 32
+  val DATA_WIDTH   = 32
   val DATA_WIDTH_B = 32 / 8
 
   val INST_WIDTH   = 32     // 指令长度
@@ -92,4 +107,6 @@ trait Parameters {
   val ADDR_WIDTH_REG = 5
 
   val LS_TYPE_WIDTH = 3 // Load/Store 类型长度
+
+  val ALL_MASK = "b1111_1111_1111_1111_1111_1111_1111_1111"
 }

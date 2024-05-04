@@ -80,6 +80,7 @@ class IE extends Module with Parameters {
       FuncType.nondiv -> div.io.div_result,
       FuncType.mul    -> mul.io.mul_result,
       FuncType.nonmul -> mul.io.mul_result,
+      FuncType.csr    -> info.csr_val
     ),
   )
 

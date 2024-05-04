@@ -2,7 +2,7 @@ simulator_path = ../test/soc-simulator
 myCPU_path = /mnt/f/CPU/lab_Loongarch/mycpu_env/myCPU
 func_path = /mnt/f/CPU/lab_Loongarch/mycpu_env/func
 generate_path = ./systemVerilog
-EXP = 11
+EXP = 12
 
 sim:
 	@mill -i _.runMain Elaborate --target-dir $(generate_path)
@@ -29,4 +29,5 @@ set:
 	@cd $(func_path) && sed -i '0,/EXP = [0-9]\{1,2\}/s//EXP = $(EXP)/' Makefile
 	@cd $(func_path) && make
 
-	
+compile:
+	mill -i _.runMain Elaborate --target-dir $(generate_path)

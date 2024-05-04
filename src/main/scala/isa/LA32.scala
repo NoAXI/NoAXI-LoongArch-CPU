@@ -4,25 +4,26 @@ import chisel3._
 import chisel3.util._
 
 trait InstType {  // 指令类型
-    def Inst2R      = "b00_00_0010".U
-    def Inst3R      = "b00_00_0011".U
-    def Inst4R      = "b00_00_0100".U
+    def Inst2R      = "b0010".U
+    def Inst3R      = "b0011".U
+    def Inst4R      = "b0100".U
 
-    def Inst2RI8    = "b00_00_0000".U
-    def Inst2RI12   = "b00_00_0001".U //至少ori的立即数需要零拓展
-    def Inst2RI14   = "b00_00_0101".U
-    def Inst2RI16   = "b01_00_0110".U
-    def Inst2RI20   = "b00_00_0111".U // add
-    def Inst2RI26   = "b10_00_1000".U // add
-    def Inst2RUI5   = "b00_00_1001".U // add
-    def Inst2RUI6   = "b00_00_1010".U // add
+    def Inst2RI8    = "b0000".U
+    def Inst2RI12   = "b0001".U //至少ori的立即数需要零拓展
+    def Inst2RI14   = "b0101".U
+    def Inst2RI16   = "b0110".U
+    def Inst2RI20   = "b0111".U // add
+    def Inst2RI26   = "b1000".U // add
+    def Inst2RUI5   = "b1001".U // add
+    def Inst2RUI6   = "b1010".U // add
 
-    def Inst1RI21   = "b00_01_0000".U
-    def Inst1RCSR   = "b00_01_0001".U //add
-    def InstI26     = "b00_01_0010".U
+    def Inst1RI21   = "b1011".U
+    def Inst0Rcode  = "b1100".U //add
+    def InstI26     = "b1101".U
+    def InstCSR14   = "b1110".U //add
 
     // def IsWriteReg(instType: UInt): Bool = !instType(4)  // 是否写寄存器
-    def OffWhich(instType: UInt): UInt = instType(7, 6)  // 偏移的形式地址是什么类型
+    // def OffWhich(instType: UInt): UInt = instType(7, 6)  // 偏移的形式地址是什么类型
     def apply() = UInt(7.W) 
 }
 
@@ -40,6 +41,7 @@ object FuncType {  //功能类型
     def mul     = "b100".U
     def nondiv  = "b101".U
     def nonmul  = "b110".U
+    def csr     = "b111".U
     def apply() = UInt(3.W)
 }
 
@@ -107,10 +109,11 @@ object MemOpType {
     def apply()  = UInt(4.W)
 }
 
-object DecOpType {
-    def branch  = "b0".U
-    def jump    = "b1".U
-    def apply() = UInt(1.W)
+object CsrOpType {
+    def rd    = "b00".U
+    def wr   = "b01".U
+    def xchg    = "b10".U
+    def apply() = UInt(2.W)
 }
 
 object IsWf {
@@ -206,8 +209,8 @@ object LA32 extends InstType {
     def ST_B        = BitPat("b0010100100??????????????????????")
     def ST_H        = BitPat("b0010100101??????????????????????")
     def ST_W        = BitPat("b0010100110??????????????????????")
-    def LD_BU        = BitPat("b0010101000??????????????????????")
-    def LD_HU        = BitPat("b0010101001??????????????????????")
+    def LD_BU       = BitPat("b0010101000??????????????????????")
+    def LD_HU       = BitPat("b0010101001??????????????????????")
     
     // branch
     def JIRL        = BitPat("b010011??????????????????????????")
@@ -267,5 +270,66 @@ object LA32 extends InstType {
         MULH_WU   -> List(Inst3R,      FuncType.mul,   MulOpType.uhigh,     IsWf.y,   SrcType.rj,   SrcType.rk      ),
         MOD_W     -> List(Inst3R,      FuncType.div,   DivOpType.smod,      IsWf.y,   SrcType.rj,   SrcType.rk      ),
         MOD_WU    -> List(Inst3R,      FuncType.div,   DivOpType.umod,      IsWf.y,   SrcType.rj,   SrcType.rk      ),
+        SYSCALL   -> List(Inst0Rcode,  FuncType.alu,   AluOpType.add,       IsWf.n,   SrcType.is4,  SrcType.is4     ),
+        CSRRD     -> List(InstCSR14,   FuncType.csr,   CsrOpType.rd,        IsWf.y,   SrcType.rj,   SrcType.rd      ),
+        CSRWR     -> List(InstCSR14,   FuncType.csr,   CsrOpType.wr,        IsWf.y,   SrcType.rj,   SrcType.rd      ),
+        CSRXCHG   -> List(InstCSR14,   FuncType.csr,   CsrOpType.xchg,      IsWf.y,   SrcType.rj,   SrcType.rd      ),
     )
 }
+
+// CSR(控制状态寄存器) 手册P123
+object CSR {
+    val CRMD        = 0x0.U(14.W)
+    val PRMD        = 0x1.U(14.W)
+    val EUEN        = 0x2.U(14.W)
+    val ECFG        = 0x4.U(14.W)
+    val ESTAT       = 0x5.U(14.W)
+    val ERA         = 0x6.U(14.W)
+    val BADV        = 0x7.U(14.W)
+    val EENTRY      = 0xc.U(14.W)
+    val TLBIDX      = 0x10.U(14.W)
+    val TLBEHI      = 0x11.U(14.W)
+    val TLBELO0     = 0x12.U(14.W)
+    val TLBELO1     = 0x13.U(14.W)
+    val ASID        = 0x18.U(14.W)
+    val PGDL        = 0x19.U(14.W)
+    val PGDH        = 0x1a.U(14.W)
+    val PGD         = 0x1b.U(14.W)
+    val CPUID       = 0x20.U(14.W)
+    val SAVE0       = 0x30.U(14.W)
+    val SAVE1       = 0x31.U(14.W)
+    val SAVE2       = 0x32.U(14.W)
+    val SAVE3       = 0x33.U(14.W)
+    val TID         = 0x40.U(14.W)
+    val TCFG        = 0x41.U(14.W)
+    val TVAL        = 0x42.U(14.W)
+    val TICLR       = 0x44.U(14.W)
+    val LLBCTL      = 0x60.U(14.W)
+    val TLBRENTRY   = 0x88.U(14.W)
+    val CTAG        = 0x98.U(14.W)
+    val DMW0        = 0x180.U(14.W)
+    val DMW1        = 0x181.U(14.W)
+}
+
+// 例外编码表
+object ECodes {
+    val INT     = 0x00.U(7.W) // interrupt
+    val PIL     = 0x01.U(7.W) // page illegal load
+    val PIS     = 0x02.U(7.W) // page illegal store
+    val PIF     = 0x03.U(7.W) // page illegal fetch
+    val PME     = 0x04.U(7.W) // page maintain exception
+    val PPI     = 0x07.U(7.W) // page privilege illegal
+    val ADEF    = 0x08.U(7.W) // address exception fetch
+    val ADEM    = 0x48.U(7.W) // address exception memory
+    val ALE     = 0x09.U(7.W) // address align exception
+    val SYS     = 0x0b.U(7.W) // system call
+    val BRK     = 0x0c.U(7.W) // breakpoint
+    val INE     = 0x0d.U(7.W) // instruction not exist
+    val IPE     = 0x0e.U(7.W) // instruction privilege exception
+    val FPD     = 0x0f.U(7.W) // floating point disable
+    val FPE     = 0x12.U(7.W) // floating point exception
+    val TLBR    = 0x3F.U(7.W) // TLB refill
+}
+
+//to do
+/* 优化Decoder、把流水级缓存单独拎出来、exe的ready信号由mul和div直接控制 */

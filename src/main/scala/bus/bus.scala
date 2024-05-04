@@ -7,6 +7,7 @@ import config._
 
 class rf_bus extends Bundle with Parameters {
   val we    = Bool()
+  val wmask = UInt(DATA_WIDTH.W)
   val waddr = UInt(ADDR_WIDTH_REG.W)
   val wdata = UInt(DATA_WIDTH.W)
 }
