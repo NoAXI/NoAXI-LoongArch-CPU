@@ -11,8 +11,14 @@ import config.Functions._
 class IE_IO extends Bundle with Parameters {
   val from = Flipped(DecoupledIO(new info))
   val to   = DecoupledIO(new info)
+  val flush_en    = Input(Bool())
+  val flush_apply = Output(UInt(5.W))
+
+  val this_exc = Output(Bool())
+  val has_exc = Input(Bool())
 
   val es          = Output(new hazardData)
+  val csr_es      = Output(new hazardData)
   val ds_reg_info = Input(new dsRegInfo)
 
   // ** to sram
@@ -27,6 +33,11 @@ class IE extends Module with Parameters {
 
   // 与上一流水级握手，获取上一流水级信息
   val info = ConnectGetBus(io.from, io.to)
+  when (io.flush_en || io.has_exc) {
+    info          := WireDefault(0.U.asTypeOf(new info))
+  }
+  io.flush_apply := 0.U
+  io.this_exc := info.this_exc
 
   val es_mem_re = info.func_type === FuncType.mem && MemOpType.isread(info.op_type)
   val es_mem_we = info.func_type === FuncType.mem && !es_mem_re
@@ -94,6 +105,10 @@ class IE extends Module with Parameters {
   io.es.we   := to_info.is_wf
   io.es.addr := to_info.dest
   io.es.data := to_info.result
+  io.csr_es.we := to_info.csr_we
+  io.csr_es.addr := to_info.csr_addr
+  io.csr_es.data := to_info.csr_val
+
 
   io.data_sram_en := true.B
   io.data_sram_we := Mux(

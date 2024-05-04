@@ -11,6 +11,11 @@ import config.Functions._
 class ID_IO extends Bundle with Parameters {
   val from = Flipped(DecoupledIO(new info))
   val to   = DecoupledIO(new info)
+  val flush_en    = Input(Bool())
+  val flush_apply = Output(UInt(5.W))
+
+  val this_exc = Output(Bool())
+  val has_exc = Input(Bool())
 
   val ds_reg_info = Output(new dsRegInfo)
   val ds_reg_data = Input(new dsRegData)
@@ -33,11 +38,17 @@ class ID extends Module with Parameters with InstType {
 
   // 握手
   val info = ConnectGetBus(io.from, io.to)
+  when (io.flush_en || io.has_exc) {
+    info          := WireDefault(0.U.asTypeOf(new info))
+  }
+  io.flush_apply := 0.U
 
   // 译码获取信息
   val inst = info.inst
   val List(inst_type, func_type, op_type, is_wf, src_type1, src_type2) =
-    ListLookup(inst, List("b0000000".U, "b111".U, "b111111".U, "b1".U, "b111".U, "b111".U), LA32.table)
+    ListLookup(inst, List("b0000000".U, "b111".U, "b111111".U, "b0".U, "b111".U, "b111".U), LA32.table)
+
+  io.this_exc := func_type === FuncType.exc
 
   val imm = MateDefault(
     inst_type,
@@ -81,7 +92,9 @@ class ID extends Module with Parameters with InstType {
 
   // 前递处理
   io.ds_reg_info.addr     := Seq(reg.io.raddr1, reg.io.raddr2)
+  io.ds_reg_info.csr_addr := imm(13, 0)
   io.ds_reg_info.ini_data := Seq(reg.io.rdata1, reg.io.rdata2)
+  io.ds_reg_info.csr_ini_data := io.csr_rdata
 
   val rj_value  = io.ds_reg_data.data(0)
   val rkd_value = io.ds_reg_data.data(1)
@@ -133,8 +146,12 @@ class ID extends Module with Parameters with InstType {
   to_info.dest      := Mux(inst === LA32.BL, 1.U, rd)
   to_info.rkd_value := rkd_value
   to_info.csr_addr  := imm(13, 0)
-  to_info.csr_val   := io.csr_rdata
+  // to_info.csr_val   := io.csr_rdata
+  to_info.csr_val   := io.ds_reg_data.csr_val
   to_info.csr_mask  := rj_value
+  to_info.csr_we    := func_type === FuncType.csr && (op_type === CsrOpType.wr || op_type === CsrOpType.xchg)
+  to_info.ecode     := imm(14, 0)
+  to_info.this_exc  := io.this_exc
   // to_info.can_we := MateDefault(
   //   inst_type,
   //   true.B,

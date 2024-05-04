@@ -34,15 +34,16 @@ object OffType {
 }
 
 object FuncType {  //功能类型
-    def bru     = "b000".U
-    def alu     = "b001".U
-    def mem     = "b010".U
-    def div     = "b011".U
-    def mul     = "b100".U
-    def nondiv  = "b101".U
-    def nonmul  = "b110".U
-    def csr     = "b111".U
-    def apply() = UInt(3.W)
+    def bru     = "b0000".U
+    def alu     = "b0001".U
+    def mem     = "b0010".U
+    def div     = "b0011".U
+    def mul     = "b0100".U
+    def nondiv  = "b0101".U
+    def nonmul  = "b0110".U
+    def csr     = "b0111".U
+    def exc     = "b1000".U
+    def apply() = UInt(4.W)
 }
 
 object BruOptype {
@@ -132,6 +133,12 @@ object SrcType {
     def immu    = "b110".U
     def rd_imm  = "b111".U
     def apply() = UInt(3.W)
+}
+
+object ExcOpType {
+    def sys = "b0".U
+    def ertn = "b1".U
+    def apply() = UInt(1.W)
 }
 
 object LA32 extends InstType {
@@ -270,10 +277,11 @@ object LA32 extends InstType {
         MULH_WU   -> List(Inst3R,      FuncType.mul,   MulOpType.uhigh,     IsWf.y,   SrcType.rj,   SrcType.rk      ),
         MOD_W     -> List(Inst3R,      FuncType.div,   DivOpType.smod,      IsWf.y,   SrcType.rj,   SrcType.rk      ),
         MOD_WU    -> List(Inst3R,      FuncType.div,   DivOpType.umod,      IsWf.y,   SrcType.rj,   SrcType.rk      ),
-        SYSCALL   -> List(Inst0Rcode,  FuncType.alu,   AluOpType.add,       IsWf.n,   SrcType.is4,  SrcType.is4     ),
+        SYSCALL   -> List(Inst0Rcode,  FuncType.exc,   ExcOpType.sys,       IsWf.n,   SrcType.is4,  SrcType.is4     ),
         CSRRD     -> List(InstCSR14,   FuncType.csr,   CsrOpType.rd,        IsWf.y,   SrcType.rj,   SrcType.rd      ),
         CSRWR     -> List(InstCSR14,   FuncType.csr,   CsrOpType.wr,        IsWf.y,   SrcType.rj,   SrcType.rd      ),
         CSRXCHG   -> List(InstCSR14,   FuncType.csr,   CsrOpType.xchg,      IsWf.y,   SrcType.rj,   SrcType.rd      ),
+        ERTN      -> List(Inst3R,      FuncType.exc,   ExcOpType.ertn,      IsWf.n,   SrcType.is4,  SrcType.is4     ),
     )
 }
 

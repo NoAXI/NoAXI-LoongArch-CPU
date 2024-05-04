@@ -18,8 +18,8 @@ class REG extends Module with Parameters {
 
   val rf = RegInit(VecInit(Seq.fill(32)(0.U(32.W))))
 
-  when(io.rf_bus.we && io.rf_bus.waddr =/= 0.U) {
-    rf(io.rf_bus.waddr) := io.rf_bus.wdata
+  when(io.rf_bus.we && io.rf_bus.waddr(4, 0) =/= 0.U) {
+    rf(io.rf_bus.waddr(4, 0)) := io.rf_bus.wdata
   }
 
   io.rdata1 := Mux(io.raddr1 === 0.U, 0.U, rf(io.raddr1))

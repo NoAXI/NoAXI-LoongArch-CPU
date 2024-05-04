@@ -22,10 +22,11 @@ class info extends Bundle with Parameters {
   val src2   = UInt(DATA_WIDTH.W)
   val result = UInt(DATA_WIDTH.W)
 
-  // val exception = Bool() // 普通例外
-  // val ecode     = UInt(15.W)
-  val csr_val = UInt(DATA_WIDTH.W)
+  val this_exc = Bool() // 普通例外
+  val csr_we   = Bool()
   val csr_addr = UInt(14.W)
+  val csr_val  = UInt(DATA_WIDTH.W)
+  val ecode    = UInt(15.W)
   val csr_mask = UInt(DATA_WIDTH.W)
 }
 
@@ -79,12 +80,11 @@ object Functions {
   }
 
   def writeMask(mask: UInt, data: UInt, wdata: UInt): UInt = {
-    val len = wdata.getWidth
-    val result = WireDefault(data)
-    for (i <- 0 until len) {
+    val result = VecInit((0.U(32.W)).asBools)
+    for (i <- 0 until 32) {
       result(i) := Mux(mask(i), wdata(i), data(i))
     }
-    result
+    result.asUInt
   }
 
   // 没怎么看懂
