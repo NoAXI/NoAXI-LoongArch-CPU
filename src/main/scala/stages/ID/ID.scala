@@ -9,24 +9,24 @@ import controller._
 import config.Functions._
 
 class ID_IO extends Bundle with Parameters {
-  val from = Flipped(DecoupledIO(new info))
-  val to   = DecoupledIO(new info)
+  val from        = Flipped(DecoupledIO(new info))
+  val to          = DecoupledIO(new info)
   val flush_en    = Input(Bool())
   val flush_apply = Output(UInt(5.W))
 
   val this_exc = Output(Bool())
-  val has_exc = Input(Bool())
+  val has_exc  = Input(Bool())
 
   val ds_reg_info = Output(new dsRegInfo)
   val ds_reg_data = Input(new dsRegData)
 
-  val csr_re = Output(Bool())
-  val csr_raddr = Output(UInt(14.W))
-  val csr_rdata = Input(UInt(DATA_WIDTH.W))
+  val csr_re     = Output(Bool())
+  val csr_raddr  = Output(UInt(14.W))
+  val csr_rdata  = Input(UInt(DATA_WIDTH.W))
   val csr_rf_bus = Output(new rf_bus)
 
   // ** from writeback
-  val rf_bus = Input(new rf_bus)
+  val rf_bus   = Input(new rf_bus)
   val rcsr_bus = Input(new rf_bus)
 
   // ** to if
@@ -37,9 +37,9 @@ class ID extends Module with Parameters with InstType {
   val io = IO(new ID_IO)
 
   // 握手
-  val info = ConnectGetBus(io.from, io.to)
-  when (io.flush_en || io.has_exc) {
-    info          := WireDefault(0.U.asTypeOf(new info))
+  val info    = ConnectGetBus(io.from, io.to)
+  when(io.flush_en || io.has_exc) {
+    info    := WireDefault(0.U.asTypeOf(new info))
   }
   io.flush_apply := 0.U
 
@@ -48,7 +48,17 @@ class ID extends Module with Parameters with InstType {
   val List(inst_type, func_type, op_type, is_wf, src_type1, src_type2) =
     ListLookup(inst, List("b0000000".U, "b111".U, "b111111".U, "b0".U, "b111".U, "b111".U), LA32.table)
 
-  io.this_exc := func_type === FuncType.exc
+  val exception = MuxCase(
+    ECodes.NONE,
+    List(
+      (op_type === "b111111".U && info.pc =/= 0.U)               -> ECodes.INE,//意思就是说没这个指令，并且不是flush导致的
+      (func_type === FuncType.exc && op_type === ExcOpType.brk)  -> ECodes.BRK,
+      (func_type === FuncType.exc && op_type === ExcOpType.sys)  -> ECodes.SYS,
+      (func_type === FuncType.exc && op_type === ExcOpType.ertn) -> ECodes.ertn,
+    ),
+  )
+
+  io.this_exc := Mux(info.this_exc, info.this_exc, exception =/= ECodes.NONE)
 
   val imm = MateDefault(
     inst_type,
@@ -88,12 +98,12 @@ class ID extends Module with Parameters with InstType {
     ),
   )
   io.csr_raddr := imm(13, 0)
-  io.csr_re := func_type === FuncType.csr
+  io.csr_re    := func_type === FuncType.csr
 
   // 前递处理
-  io.ds_reg_info.addr     := Seq(reg.io.raddr1, reg.io.raddr2)
-  io.ds_reg_info.csr_addr := imm(13, 0)
-  io.ds_reg_info.ini_data := Seq(reg.io.rdata1, reg.io.rdata2)
+  io.ds_reg_info.addr         := Seq(reg.io.raddr1, reg.io.raddr2)
+  io.ds_reg_info.csr_addr     := imm(13, 0)
+  io.ds_reg_info.ini_data     := Seq(reg.io.rdata1, reg.io.rdata2)
   io.ds_reg_info.csr_ini_data := io.csr_rdata
 
   val rj_value  = io.ds_reg_data.data(0)
@@ -104,14 +114,14 @@ class ID extends Module with Parameters with InstType {
     op_type,
     true.B,
     List(
-      BruOptype.beq -> (rj_value === rkd_value),
-      BruOptype.bne -> (rj_value =/= rkd_value),
-      BruOptype.blt -> (rj_value.asSInt < rkd_value.asSInt),
-      BruOptype.bge -> (rj_value.asSInt > rkd_value.asSInt),
+      BruOptype.beq  -> (rj_value === rkd_value),
+      BruOptype.bne  -> (rj_value =/= rkd_value),
+      BruOptype.blt  -> (rj_value.asSInt < rkd_value.asSInt),
+      BruOptype.bge  -> (rj_value.asSInt > rkd_value.asSInt),
       BruOptype.bltu -> (rj_value < rkd_value),
       BruOptype.bgeu -> (rj_value > rkd_value),
     ),
-  ) && io.to.valid && (func_type === FuncType.bru) 
+  ) && io.to.valid && (func_type === FuncType.bru)
   io.br_bus.br_target := Mux(inst === LA32.JIRL, rj_value + imm, info.pc + imm)
 
   // 传递信息
@@ -139,7 +149,6 @@ class ID extends Module with Parameters with InstType {
     ),
   )
 
-  val load_op = false.B // 它没用上
   to_info.func_type := func_type
   to_info.op_type   := op_type
   to_info.is_wf     := is_wf
@@ -151,5 +160,6 @@ class ID extends Module with Parameters with InstType {
   to_info.csr_we    := func_type === FuncType.csr && (op_type === CsrOpType.wr || op_type === CsrOpType.xchg)
   to_info.ecode     := imm(14, 0)
   to_info.this_exc  := io.this_exc
+  to_info.exc_type  := Mux(info.this_exc, info.exc_type, exception)
   io.to.bits        := to_info
 }

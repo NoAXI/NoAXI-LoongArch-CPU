@@ -3,6 +3,7 @@ package stages
 import chisel3._
 import chisel3.util._
 
+import isa._
 import config._
 import config.Functions._
 
@@ -11,6 +12,9 @@ class IF_IO extends Bundle with Parameters {
   val to          = DecoupledIO(new info)
   val flush_en    = Input(Bool())
   val flush_apply = Output(UInt(5.W))
+
+  val this_exc = Output(Bool())
+  val has_exc  = Input(Bool())
 
   // ** from csr
   val exc_bus = Input(new exc_bus)
@@ -31,7 +35,7 @@ class IF extends Module with Parameters {
 
   // 与下一流水级握手
   val info = ConnectGetBus(io.from, io.to)
-  when(io.flush_en) {
+  when(io.flush_en || io.has_exc) {
     info := WireDefault(0.U.asTypeOf(new info))
   }
   io.flush_apply := 0.U
@@ -46,11 +50,18 @@ class IF extends Module with Parameters {
     fs_pc := next_pc
   }
 
+  io.this_exc := fs_pc(1, 0) =/= "b00".U
+
   // 传递流水信息
   val to_info = WireDefault(0.U.asTypeOf(new info))
-  to_info.pc   := fs_pc
-  to_info.inst := io.inst_sram_rdata
-  io.to.bits   := to_info
+  to_info.exc_type := ECodes.NONE
+  to_info.pc       := fs_pc
+  to_info.inst     := io.inst_sram_rdata
+  to_info.this_exc := io.this_exc
+  when(io.this_exc) {
+    to_info.exc_type := ECodes.ADEF
+  }
+  io.to.bits := to_info
 
   // 与指令内存的接口
   io.inst_sram_en    := (io.from.valid && io.from.ready) || io.exc_bus.en

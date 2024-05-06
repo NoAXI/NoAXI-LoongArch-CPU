@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 
 import config._
+import csr._
 import controller._
 
 class Top_IO extends Bundle with Parameters {
@@ -45,6 +46,7 @@ class Top extends Module with Parameters {
   fs.io.br_bus          <> ds.io.br_bus
   fs.io.flush_en        := ctrl.io.flush_en(0)
   fs.io.exc_bus         := csr.io.exc_bus
+  fs.io.has_exc         := ds.io.this_exc || es.io.this_exc || ms.io.this_exc || ws.io.this_exc
 
   ds.io.from        <> fs.io.to
   ds.io.rf_bus      <> ws.io.rf_bus

@@ -136,9 +136,10 @@ object SrcType {
 }
 
 object ExcOpType {
-    def sys = "b0".U
-    def ertn = "b1".U
-    def apply() = UInt(1.W)
+    def sys  = "b00".U
+    def ertn = "b01".U
+    def brk  = "b10".U
+    def apply() = UInt(2.W)
 }
 
 object LA32 extends InstType {
@@ -278,6 +279,7 @@ object LA32 extends InstType {
         MOD_W     -> List(Inst3R,      FuncType.div,   DivOpType.smod,      IsWf.y,   SrcType.rj,   SrcType.rk      ),
         MOD_WU    -> List(Inst3R,      FuncType.div,   DivOpType.umod,      IsWf.y,   SrcType.rj,   SrcType.rk      ),
         SYSCALL   -> List(Inst0Rcode,  FuncType.exc,   ExcOpType.sys,       IsWf.n,   SrcType.is4,  SrcType.is4     ),
+        BREAK     -> List(Inst0Rcode,  FuncType.exc,   ExcOpType.brk,       IsWf.n,   SrcType.is4,  SrcType.is4     ),
         CSRRD     -> List(InstCSR14,   FuncType.csr,   CsrOpType.rd,        IsWf.y,   SrcType.rj,   SrcType.rd      ),
         CSRWR     -> List(InstCSR14,   FuncType.csr,   CsrOpType.wr,        IsWf.y,   SrcType.rj,   SrcType.rd      ),
         CSRXCHG   -> List(InstCSR14,   FuncType.csr,   CsrOpType.xchg,      IsWf.y,   SrcType.rj,   SrcType.rd      ),
@@ -337,6 +339,10 @@ object ECodes {
     val FPD     = 0x0f.U(7.W) // floating point disable
     val FPE     = 0x12.U(7.W) // floating point exception
     val TLBR    = 0x3F.U(7.W) // TLB refill
+    
+    // add
+    val NONE    = 0x25.U(7.W) // no exception
+    val ertn    = 0x26.U(7.W) // exception return
 }
 
 //to do

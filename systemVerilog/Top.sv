@@ -50,73 +50,77 @@
   `endif // not def ENABLE_INITIAL_MEM_
 `endif // not def SYNTHESIS
 
-module IF(	// @[src/main/scala/stages/IF/IF.scala:29:7]
-  input         clock,	// @[src/main/scala/stages/IF/IF.scala:29:7]
-                reset,	// @[src/main/scala/stages/IF/IF.scala:29:7]
-                io_from_valid,	// @[src/main/scala/stages/IF/IF.scala:30:14]
-                io_to_ready,	// @[src/main/scala/stages/IF/IF.scala:30:14]
-  output        io_to_valid,	// @[src/main/scala/stages/IF/IF.scala:30:14]
-  output [31:0] io_to_bits_pc,	// @[src/main/scala/stages/IF/IF.scala:30:14]
-                io_to_bits_inst,	// @[src/main/scala/stages/IF/IF.scala:30:14]
-  input         io_exc_bus_en,	// @[src/main/scala/stages/IF/IF.scala:30:14]
-  input  [31:0] io_exc_bus_pc,	// @[src/main/scala/stages/IF/IF.scala:30:14]
-  input         io_br_bus_br_taken,	// @[src/main/scala/stages/IF/IF.scala:30:14]
-  input  [31:0] io_br_bus_br_target,	// @[src/main/scala/stages/IF/IF.scala:30:14]
-  output        io_inst_sram_en,	// @[src/main/scala/stages/IF/IF.scala:30:14]
-  output [31:0] io_inst_sram_addr,	// @[src/main/scala/stages/IF/IF.scala:30:14]
-  input  [31:0] io_inst_sram_rdata	// @[src/main/scala/stages/IF/IF.scala:30:14]
+module IF(	// @[src/main/scala/stages/IF/IF.scala:33:7]
+  input         clock,	// @[src/main/scala/stages/IF/IF.scala:33:7]
+                reset,	// @[src/main/scala/stages/IF/IF.scala:33:7]
+                io_from_valid,	// @[src/main/scala/stages/IF/IF.scala:34:14]
+                io_to_ready,	// @[src/main/scala/stages/IF/IF.scala:34:14]
+  output        io_to_valid,	// @[src/main/scala/stages/IF/IF.scala:34:14]
+  output [31:0] io_to_bits_pc,	// @[src/main/scala/stages/IF/IF.scala:34:14]
+                io_to_bits_inst,	// @[src/main/scala/stages/IF/IF.scala:34:14]
+  output        io_to_bits_this_exc,	// @[src/main/scala/stages/IF/IF.scala:34:14]
+  output [5:0]  io_to_bits_exc_type,	// @[src/main/scala/stages/IF/IF.scala:34:14]
+  input         io_exc_bus_en,	// @[src/main/scala/stages/IF/IF.scala:34:14]
+  input  [31:0] io_exc_bus_pc,	// @[src/main/scala/stages/IF/IF.scala:34:14]
+  input         io_br_bus_br_taken,	// @[src/main/scala/stages/IF/IF.scala:34:14]
+  input  [31:0] io_br_bus_br_target,	// @[src/main/scala/stages/IF/IF.scala:34:14]
+  output        io_inst_sram_en,	// @[src/main/scala/stages/IF/IF.scala:34:14]
+  output [31:0] io_inst_sram_addr,	// @[src/main/scala/stages/IF/IF.scala:34:14]
+  input  [31:0] io_inst_sram_rdata	// @[src/main/scala/stages/IF/IF.scala:34:14]
 );
 
-  reg         info_valid;	// @[src/main/scala/config/Configs.scala:39:24]
-  wire        io_from_ready = ~info_valid | io_to_ready;	// @[src/main/scala/config/Configs.scala:39:24, :42:{16,23}]
-  wire        _io_inst_sram_en_T = io_from_valid & io_from_ready;	// @[src/main/scala/config/Configs.scala:42:23, :47:18]
-  reg  [31:0] fs_pc;	// @[src/main/scala/stages/IF/IF.scala:40:24]
-  wire [31:0] _next_pc_T = fs_pc + 32'h4;	// @[src/main/scala/stages/IF/IF.scala:40:24, :41:102]
-  always @(posedge clock) begin	// @[src/main/scala/stages/IF/IF.scala:29:7]
-    if (reset) begin	// @[src/main/scala/stages/IF/IF.scala:29:7]
-      info_valid <= 1'h0;	// @[src/main/scala/config/Configs.scala:39:24]
-      fs_pc <= 32'h1BFFFFFC;	// @[src/main/scala/stages/IF/IF.scala:40:24]
+  reg         info_valid;	// @[src/main/scala/config/Configs.scala:40:24]
+  wire        io_from_ready = ~info_valid | io_to_ready;	// @[src/main/scala/config/Configs.scala:40:24, :43:{16,23}]
+  wire        _io_inst_sram_en_T = io_from_valid & io_from_ready;	// @[src/main/scala/config/Configs.scala:43:23, :48:18]
+  reg  [31:0] fs_pc;	// @[src/main/scala/stages/IF/IF.scala:44:24]
+  wire [31:0] _next_pc_T = fs_pc + 32'h4;	// @[src/main/scala/stages/IF/IF.scala:44:24, :45:102]
+  always @(posedge clock) begin	// @[src/main/scala/stages/IF/IF.scala:33:7]
+    if (reset) begin	// @[src/main/scala/stages/IF/IF.scala:33:7]
+      info_valid <= 1'h0;	// @[src/main/scala/config/Configs.scala:40:24]
+      fs_pc <= 32'h1BFFFFFC;	// @[src/main/scala/stages/IF/IF.scala:44:24]
     end
-    else begin	// @[src/main/scala/stages/IF/IF.scala:29:7]
-      if (io_from_ready)	// @[src/main/scala/config/Configs.scala:42:23]
-        info_valid <= io_from_valid;	// @[src/main/scala/config/Configs.scala:39:24]
-      if (_io_inst_sram_en_T | io_exc_bus_en) begin	// @[src/main/scala/config/Configs.scala:47:18, src/main/scala/stages/IF/IF.scala:45:41]
-        if (io_exc_bus_en)	// @[src/main/scala/stages/IF/IF.scala:30:14]
-          fs_pc <= io_exc_bus_pc;	// @[src/main/scala/stages/IF/IF.scala:40:24]
-        else if (io_br_bus_br_taken)	// @[src/main/scala/stages/IF/IF.scala:30:14]
-          fs_pc <= io_br_bus_br_target;	// @[src/main/scala/stages/IF/IF.scala:40:24]
-        else	// @[src/main/scala/stages/IF/IF.scala:30:14]
-          fs_pc <= _next_pc_T;	// @[src/main/scala/stages/IF/IF.scala:40:24, :41:102]
+    else begin	// @[src/main/scala/stages/IF/IF.scala:33:7]
+      if (io_from_ready)	// @[src/main/scala/config/Configs.scala:43:23]
+        info_valid <= io_from_valid;	// @[src/main/scala/config/Configs.scala:40:24]
+      if (_io_inst_sram_en_T | io_exc_bus_en) begin	// @[src/main/scala/config/Configs.scala:48:18, src/main/scala/stages/IF/IF.scala:49:41]
+        if (io_exc_bus_en)	// @[src/main/scala/stages/IF/IF.scala:34:14]
+          fs_pc <= io_exc_bus_pc;	// @[src/main/scala/stages/IF/IF.scala:44:24]
+        else if (io_br_bus_br_taken)	// @[src/main/scala/stages/IF/IF.scala:34:14]
+          fs_pc <= io_br_bus_br_target;	// @[src/main/scala/stages/IF/IF.scala:44:24]
+        else	// @[src/main/scala/stages/IF/IF.scala:34:14]
+          fs_pc <= _next_pc_T;	// @[src/main/scala/stages/IF/IF.scala:44:24, :45:102]
       end
     end
   end // always @(posedge)
-  `ifdef ENABLE_INITIAL_REG_	// @[src/main/scala/stages/IF/IF.scala:29:7]
-    `ifdef FIRRTL_BEFORE_INITIAL	// @[src/main/scala/stages/IF/IF.scala:29:7]
-      `FIRRTL_BEFORE_INITIAL	// @[src/main/scala/stages/IF/IF.scala:29:7]
+  `ifdef ENABLE_INITIAL_REG_	// @[src/main/scala/stages/IF/IF.scala:33:7]
+    `ifdef FIRRTL_BEFORE_INITIAL	// @[src/main/scala/stages/IF/IF.scala:33:7]
+      `FIRRTL_BEFORE_INITIAL	// @[src/main/scala/stages/IF/IF.scala:33:7]
     `endif // FIRRTL_BEFORE_INITIAL
-    logic [31:0] _RANDOM[0:10];	// @[src/main/scala/stages/IF/IF.scala:29:7]
-    initial begin	// @[src/main/scala/stages/IF/IF.scala:29:7]
-      `ifdef INIT_RANDOM_PROLOG_	// @[src/main/scala/stages/IF/IF.scala:29:7]
-        `INIT_RANDOM_PROLOG_	// @[src/main/scala/stages/IF/IF.scala:29:7]
+    logic [31:0] _RANDOM[0:10];	// @[src/main/scala/stages/IF/IF.scala:33:7]
+    initial begin	// @[src/main/scala/stages/IF/IF.scala:33:7]
+      `ifdef INIT_RANDOM_PROLOG_	// @[src/main/scala/stages/IF/IF.scala:33:7]
+        `INIT_RANDOM_PROLOG_	// @[src/main/scala/stages/IF/IF.scala:33:7]
       `endif // INIT_RANDOM_PROLOG_
-      `ifdef RANDOMIZE_REG_INIT	// @[src/main/scala/stages/IF/IF.scala:29:7]
+      `ifdef RANDOMIZE_REG_INIT	// @[src/main/scala/stages/IF/IF.scala:33:7]
         for (logic [3:0] i = 4'h0; i < 4'hB; i += 4'h1) begin
-          _RANDOM[i] = `RANDOM;	// @[src/main/scala/stages/IF/IF.scala:29:7]
-        end	// @[src/main/scala/stages/IF/IF.scala:29:7]
-        info_valid = _RANDOM[4'h9][21];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/IF/IF.scala:29:7]
-        fs_pc = {_RANDOM[4'h9][31:22], _RANDOM[4'hA][21:0]};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/IF/IF.scala:29:7, :40:24]
+          _RANDOM[i] = `RANDOM;	// @[src/main/scala/stages/IF/IF.scala:33:7]
+        end	// @[src/main/scala/stages/IF/IF.scala:33:7]
+        info_valid = _RANDOM[4'h9][27];	// @[src/main/scala/config/Configs.scala:40:24, src/main/scala/stages/IF/IF.scala:33:7]
+        fs_pc = {_RANDOM[4'h9][31:28], _RANDOM[4'hA][27:0]};	// @[src/main/scala/config/Configs.scala:40:24, src/main/scala/stages/IF/IF.scala:33:7, :44:24]
       `endif // RANDOMIZE_REG_INIT
     end // initial
-    `ifdef FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/IF/IF.scala:29:7]
-      `FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/IF/IF.scala:29:7]
+    `ifdef FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/IF/IF.scala:33:7]
+      `FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/IF/IF.scala:33:7]
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_to_valid = ~io_br_bus_br_taken & info_valid;	// @[src/main/scala/config/Configs.scala:39:24, :43:13, src/main/scala/stages/IF/IF.scala:29:7, :42:28, :43:17]
-  assign io_to_bits_pc = fs_pc;	// @[src/main/scala/stages/IF/IF.scala:29:7, :40:24]
-  assign io_to_bits_inst = io_inst_sram_rdata;	// @[src/main/scala/stages/IF/IF.scala:29:7]
-  assign io_inst_sram_en = _io_inst_sram_en_T | io_exc_bus_en;	// @[src/main/scala/config/Configs.scala:47:18, src/main/scala/stages/IF/IF.scala:29:7, :56:58]
+  assign io_to_valid = ~io_br_bus_br_taken & info_valid;	// @[src/main/scala/config/Configs.scala:40:24, :44:13, src/main/scala/stages/IF/IF.scala:33:7, :46:28, :47:17]
+  assign io_to_bits_pc = fs_pc;	// @[src/main/scala/stages/IF/IF.scala:33:7, :44:24]
+  assign io_to_bits_inst = io_inst_sram_rdata;	// @[src/main/scala/stages/IF/IF.scala:33:7]
+  assign io_to_bits_this_exc = |(fs_pc[1:0]);	// @[src/main/scala/stages/IF/IF.scala:33:7, :44:24, :53:{23,30}]
+  assign io_to_bits_exc_type = (|(fs_pc[1:0])) ? 6'h8 : 6'h25;	// @[src/main/scala/stages/IF/IF.scala:33:7, :44:24, :53:{23,30}, :57:20, :61:21, :62:22]
+  assign io_inst_sram_en = _io_inst_sram_en_T | io_exc_bus_en;	// @[src/main/scala/config/Configs.scala:48:18, src/main/scala/stages/IF/IF.scala:33:7, :67:58]
   assign io_inst_sram_addr =
-    io_exc_bus_en ? io_exc_bus_pc : io_br_bus_br_taken ? io_br_bus_br_target : _next_pc_T;	// @[src/main/scala/stages/IF/IF.scala:29:7, :41:{20,54,102}]
+    io_exc_bus_en ? io_exc_bus_pc : io_br_bus_br_taken ? io_br_bus_br_target : _next_pc_T;	// @[src/main/scala/stages/IF/IF.scala:33:7, :45:{20,54,102}]
 endmodule
 
 module REG(	// @[src/main/scala/stages/ID/REG.scala:16:7]
@@ -466,6 +470,8 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:36:7]
   input         io_from_valid,	// @[src/main/scala/stages/ID/ID.scala:37:14]
   input  [31:0] io_from_bits_pc,	// @[src/main/scala/stages/ID/ID.scala:37:14]
                 io_from_bits_inst,	// @[src/main/scala/stages/ID/ID.scala:37:14]
+  input         io_from_bits_this_exc,	// @[src/main/scala/stages/ID/ID.scala:37:14]
+  input  [5:0]  io_from_bits_exc_type,	// @[src/main/scala/stages/ID/ID.scala:37:14]
   input         io_to_ready,	// @[src/main/scala/stages/ID/ID.scala:37:14]
   output        io_to_valid,	// @[src/main/scala/stages/ID/ID.scala:37:14]
   output [31:0] io_to_bits_pc,	// @[src/main/scala/stages/ID/ID.scala:37:14]
@@ -477,10 +483,11 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:36:7]
                 io_to_bits_src1,	// @[src/main/scala/stages/ID/ID.scala:37:14]
                 io_to_bits_src2,	// @[src/main/scala/stages/ID/ID.scala:37:14]
   output        io_to_bits_this_exc,	// @[src/main/scala/stages/ID/ID.scala:37:14]
-                io_to_bits_csr_we,	// @[src/main/scala/stages/ID/ID.scala:37:14]
+  output [5:0]  io_to_bits_exc_type,	// @[src/main/scala/stages/ID/ID.scala:37:14]
+  output        io_to_bits_csr_we,	// @[src/main/scala/stages/ID/ID.scala:37:14]
+  output [31:0] io_to_bits_csr_mask,	// @[src/main/scala/stages/ID/ID.scala:37:14]
   output [13:0] io_to_bits_csr_addr,	// @[src/main/scala/stages/ID/ID.scala:37:14]
   output [31:0] io_to_bits_csr_val,	// @[src/main/scala/stages/ID/ID.scala:37:14]
-                io_to_bits_csr_mask,	// @[src/main/scala/stages/ID/ID.scala:37:14]
   input         io_flush_en,	// @[src/main/scala/stages/ID/ID.scala:37:14]
                 io_has_exc,	// @[src/main/scala/stages/ID/ID.scala:37:14]
   output [4:0]  io_ds_reg_info_addr_0,	// @[src/main/scala/stages/ID/ID.scala:37:14]
@@ -502,89 +509,93 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:36:7]
   output [31:0] io_br_bus_br_target	// @[src/main/scala/stages/ID/ID.scala:37:14]
 );
 
-  reg  [31:0] info_pc;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [31:0] info_inst;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg         info_valid;	// @[src/main/scala/config/Configs.scala:39:24]
-  wire        io_from_ready_0 = ~info_valid | io_to_ready;	// @[src/main/scala/config/Configs.scala:39:24, :42:{16,23}]
-  wire        _GEN = info_inst[31:15] == 17'h20;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_0 = info_inst[31:15] == 17'h22;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_1 = info_inst[31:15] == 17'h24;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_2 = info_inst[31:15] == 17'h25;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_3 = info_inst[31:15] == 17'h28;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_4 = info_inst[31:15] == 17'h29;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_5 = info_inst[31:22] == 10'hD;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_6 = info_inst[31:15] == 17'h2A;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_7 = info_inst[31:22] == 10'hE;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_8 = info_inst[31:15] == 17'h2B;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_9 = info_inst[31:22] == 10'hF;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_10 = info_inst[31:15] == 17'h2E;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_11 = info_inst[31:15] == 17'h81;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_12 = info_inst[31:15] == 17'h2F;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_13 = info_inst[31:15] == 17'h89;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_14 = info_inst[31:15] == 17'h30;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_15 = info_inst[31:15] == 17'h91;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_16 = info_inst[31:22] == 10'hA;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_17 = info_inst[31:22] == 10'hA2;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_18 = info_inst[31:22] == 10'hA1;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_19 = info_inst[31:22] == 10'hA0;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_20 = info_inst[31:22] == 10'hA8;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_21 = info_inst[31:22] == 10'hA9;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_22 = info_inst[31:22] == 10'hA6;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_23 = info_inst[31:22] == 10'hA5;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_24 = info_inst[31:22] == 10'hA4;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_25 = info_inst[31:26] == 6'h13;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_26 = info_inst[31:26] == 6'h14;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_27 = info_inst[31:26] == 6'h15;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_28 = info_inst[31:26] == 6'h16;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_29 = info_inst[31:26] == 6'h17;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_30 = info_inst[31:26] == 6'h18;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_31 = info_inst[31:26] == 6'h1A;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_32 = info_inst[31:26] == 6'h19;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_33 = info_inst[31:26] == 6'h1B;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_34 = info_inst[31:25] == 7'hA;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_35 = info_inst[31:25] == 7'hE;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_36 = info_inst[31:22] == 10'h8;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_37 = info_inst[31:22] == 10'h9;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_38 = info_inst[31:15] == 17'h40;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_39 = info_inst[31:15] == 17'h42;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_40 = info_inst[31:15] == 17'h38;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_41 = info_inst[31:15] == 17'h39;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_42 = info_inst[31:15] == 17'h3A;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_43 = info_inst[31:15] == 17'h41;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_44 = info_inst[31:15] == 17'h43;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_45 = info_inst[31:15] == 17'h56;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire [12:0] _GEN_46 = {info_inst[31:24], info_inst[9:5]};	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_47 = _GEN_46 == 13'h80;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38]
-  wire        _GEN_48 = _GEN_46 == 13'h81;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38]
-  wire        _GEN_49 = info_inst[31:24] == 8'h4;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_50 = info_inst == 32'h6483800;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24]
-  wire        _GEN_51 = _GEN_47 | _GEN_48 | _GEN_49;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
-  wire        _GEN_52 = _GEN_43 | _GEN_44;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
-  wire        _GEN_53 = _GEN_38 | _GEN_39 | _GEN_40 | _GEN_41 | _GEN_42 | _GEN_52;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
-  wire        _GEN_54 = _GEN_36 | _GEN_37;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
-  wire        _GEN_55 = _GEN_28 | _GEN_29 | _GEN_30 | _GEN_31 | _GEN_32 | _GEN_33;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
-  wire        _GEN_56 = _GEN_22 | _GEN_23 | _GEN_24;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
-  wire        _GEN_57 = _GEN_17 | _GEN_18 | _GEN_19 | _GEN_20 | _GEN_21 | _GEN_56;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
-  wire        _GEN_58 = _GEN_16 | _GEN_57;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
-  wire        _GEN_59 = _GEN | _GEN_0 | _GEN_1 | _GEN_2 | _GEN_3 | _GEN_4;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
-  wire        _GEN_60 = _GEN_34 | _GEN_35 | _GEN_54;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
+  reg  [31:0] info_pc;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [31:0] info_inst;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg         info_this_exc;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [5:0]  info_exc_type;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg         info_valid;	// @[src/main/scala/config/Configs.scala:40:24]
+  wire        io_from_ready_0 = ~info_valid | io_to_ready;	// @[src/main/scala/config/Configs.scala:40:24, :43:{16,23}]
+  wire        _GEN = info_inst[31:15] == 17'h20;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_0 = info_inst[31:15] == 17'h22;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_1 = info_inst[31:15] == 17'h24;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_2 = info_inst[31:15] == 17'h25;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_3 = info_inst[31:15] == 17'h28;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_4 = info_inst[31:15] == 17'h29;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_5 = info_inst[31:22] == 10'hD;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_6 = info_inst[31:15] == 17'h2A;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_7 = info_inst[31:22] == 10'hE;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_8 = info_inst[31:15] == 17'h2B;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_9 = info_inst[31:22] == 10'hF;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_10 = info_inst[31:15] == 17'h2E;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_11 = info_inst[31:15] == 17'h81;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_12 = info_inst[31:15] == 17'h2F;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_13 = info_inst[31:15] == 17'h89;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_14 = info_inst[31:15] == 17'h30;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_15 = info_inst[31:15] == 17'h91;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_16 = info_inst[31:22] == 10'hA;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_17 = info_inst[31:22] == 10'hA2;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_18 = info_inst[31:22] == 10'hA1;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_19 = info_inst[31:22] == 10'hA0;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_20 = info_inst[31:22] == 10'hA8;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_21 = info_inst[31:22] == 10'hA9;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_22 = info_inst[31:22] == 10'hA6;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_23 = info_inst[31:22] == 10'hA5;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_24 = info_inst[31:22] == 10'hA4;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_25 = info_inst[31:26] == 6'h13;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_26 = info_inst[31:26] == 6'h14;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_27 = info_inst[31:26] == 6'h15;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_28 = info_inst[31:26] == 6'h16;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_29 = info_inst[31:26] == 6'h17;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_30 = info_inst[31:26] == 6'h18;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_31 = info_inst[31:26] == 6'h1A;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_32 = info_inst[31:26] == 6'h19;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_33 = info_inst[31:26] == 6'h1B;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_34 = info_inst[31:25] == 7'hA;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_35 = info_inst[31:25] == 7'hE;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_36 = info_inst[31:22] == 10'h8;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_37 = info_inst[31:22] == 10'h9;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_38 = info_inst[31:15] == 17'h40;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_39 = info_inst[31:15] == 17'h42;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_40 = info_inst[31:15] == 17'h38;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_41 = info_inst[31:15] == 17'h39;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_42 = info_inst[31:15] == 17'h3A;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_43 = info_inst[31:15] == 17'h41;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_44 = info_inst[31:15] == 17'h43;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_45 = info_inst[31:15] == 17'h56;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_46 = info_inst[31:15] == 17'h54;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire [12:0] _GEN_47 = {info_inst[31:24], info_inst[9:5]};	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_48 = _GEN_47 == 13'h80;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38]
+  wire        _GEN_49 = _GEN_47 == 13'h81;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38]
+  wire        _GEN_50 = info_inst[31:24] == 8'h4;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_51 = info_inst == 32'h6483800;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24]
+  wire        _GEN_52 = _GEN_48 | _GEN_49 | _GEN_50;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
+  wire        _GEN_53 = _GEN_45 | _GEN_46;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
+  wire        _GEN_54 = _GEN_43 | _GEN_44;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
+  wire        _GEN_55 = _GEN_38 | _GEN_39 | _GEN_40 | _GEN_41 | _GEN_42 | _GEN_54;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
+  wire        _GEN_56 = _GEN_36 | _GEN_37;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
+  wire        _GEN_57 = _GEN_28 | _GEN_29 | _GEN_30 | _GEN_31 | _GEN_32 | _GEN_33;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
+  wire        _GEN_58 = _GEN_22 | _GEN_23 | _GEN_24;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
+  wire        _GEN_59 = _GEN_17 | _GEN_18 | _GEN_19 | _GEN_20 | _GEN_21 | _GEN_58;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
+  wire        _GEN_60 = _GEN_16 | _GEN_59;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
+  wire        _GEN_61 = _GEN | _GEN_0 | _GEN_1 | _GEN_2 | _GEN_3 | _GEN_4;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
+  wire        _GEN_62 = _GEN_34 | _GEN_35 | _GEN_56;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
   wire [3:0]  func_type =
     _GEN | _GEN_0 | _GEN_1 | _GEN_2 | _GEN_3 | _GEN_4 | _GEN_5 | _GEN_6 | _GEN_7 | _GEN_8
     | _GEN_9 | _GEN_10 | _GEN_11 | _GEN_12 | _GEN_13 | _GEN_14 | _GEN_15 | _GEN_16
       ? 4'h1
-      : _GEN_57
+      : _GEN_59
           ? 4'h2
-          : _GEN_25 | _GEN_26 | _GEN_27 | _GEN_55
+          : _GEN_25 | _GEN_26 | _GEN_27 | _GEN_57
               ? 4'h0
-              : _GEN_60
+              : _GEN_62
                   ? 4'h1
                   : _GEN_38 | _GEN_39
                       ? 4'h3
                       : _GEN_40 | _GEN_41 | _GEN_42
                           ? 4'h4
-                          : _GEN_52
+                          : _GEN_54
                               ? 4'h3
-                              : _GEN_45 | ~(_GEN_51 | ~_GEN_50) ? 4'h8 : 4'h7;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/stages/ID/ID.scala:36:7]
+                              : _GEN_53 | ~(_GEN_52 | ~_GEN_51) ? 4'h8 : 4'h7;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/stages/ID/ID.scala:36:7]
   wire [5:0]  op_type =
     _GEN
       ? 6'h20
@@ -666,21 +677,24 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:36:7]
                                                                                                                                                               ? 6'h1
                                                                                                                                                               : _GEN_44
                                                                                                                                                                 | _GEN_45
-                                                                                                                                                                | _GEN_47
                                                                                                                                                                   ? 6'h0
-                                                                                                                                                                  : _GEN_48
-                                                                                                                                                                      ? 6'h1
-                                                                                                                                                                      : _GEN_49
-                                                                                                                                                                          ? 6'h2
-                                                                                                                                                                          : _GEN_50
+                                                                                                                                                                  : _GEN_46
+                                                                                                                                                                      ? 6'h2
+                                                                                                                                                                      : _GEN_48
+                                                                                                                                                                          ? 6'h0
+                                                                                                                                                                          : _GEN_49
                                                                                                                                                                               ? 6'h1
-                                                                                                                                                                              : 6'h3F;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/config/Configs.scala:92:28]
-  wire        _GEN_61 = _GEN_36 | _GEN_37 | _GEN_53;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
-  wire        _GEN_62 =
+                                                                                                                                                                              : _GEN_50
+                                                                                                                                                                                  ? 6'h2
+                                                                                                                                                                                  : _GEN_51
+                                                                                                                                                                                      ? 6'h1
+                                                                                                                                                                                      : 6'h3F;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:55:46, :57:46]
+  wire        _GEN_63 = _GEN_36 | _GEN_37 | _GEN_55;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
+  wire        _GEN_64 =
     _GEN_15 | _GEN_16 | _GEN_17 | _GEN_18 | _GEN_19 | _GEN_20 | _GEN_21;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
-  wire [2:0]  _GEN_63 = _GEN_50 ? 3'h0 : 3'h7;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
+  wire [2:0]  _GEN_65 = _GEN_51 ? 3'h0 : 3'h7;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
   wire [2:0]  src_type2 =
-    _GEN_59
+    _GEN_61
       ? 3'h2
       : _GEN_5
           ? 3'h6
@@ -702,9 +716,9 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:36:7]
                                           ? 3'h5
                                           : _GEN_14
                                               ? 3'h2
-                                              : _GEN_62
+                                              : _GEN_64
                                                   ? 3'h5
-                                                  : _GEN_56
+                                                  : _GEN_58
                                                       ? 3'h7
                                                       : _GEN_25
                                                           ? 3'h0
@@ -712,21 +726,32 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:36:7]
                                                               ? 3'h2
                                                               : _GEN_27
                                                                   ? 3'h0
-                                                                  : _GEN_55
+                                                                  : _GEN_57
                                                                       ? 3'h3
-                                                                      : _GEN_60
+                                                                      : _GEN_62
                                                                           ? 3'h5
-                                                                          : _GEN_53
+                                                                          : _GEN_55
                                                                               ? 3'h2
-                                                                              : _GEN_45
+                                                                              : _GEN_53
                                                                                   ? 3'h0
-                                                                                  : _GEN_51
+                                                                                  : _GEN_52
                                                                                       ? 3'h3
-                                                                                      : _GEN_63;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/config/Configs.scala:92:28]
-  wire        _to_info_src2_T_4 = src_type2 == 3'h6;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:65:13]
-  reg  [31:0] casez_tmp;	// @[src/main/scala/config/Configs.scala:92:28]
+                                                                                      : _GEN_65;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/config/Configs.scala:93:28]
+  wire        _exception_T_9 = func_type == 4'h8;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:36:7, :55:18]
+  wire        _to_info_csr_we_T_2 = op_type == 6'h2;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:55:46]
+  wire        _to_info_csr_we_T_1 = op_type == 6'h1;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:57:46]
+  wire [5:0]  exception =
+    (&op_type) & (|info_pc)
+      ? 6'hD
+      : _exception_T_9 & _to_info_csr_we_T_2
+          ? 6'hC
+          : _exception_T_9 & op_type == 6'h0
+              ? 6'hB
+              : _exception_T_9 & _to_info_csr_we_T_1 ? 6'h26 : 6'h25;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/ID/ID.scala:54:{16,32,43}, :55:{18,35,46}, :56:{35,46}, :57:{35,46}]
+  wire        _to_info_src2_T_4 = src_type2 == 3'h6;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:66:13]
+  reg  [31:0] casez_tmp;	// @[src/main/scala/config/Configs.scala:93:28]
   wire [3:0]  inst_type =
-    _GEN_59
+    _GEN_61
       ? 4'h3
       : _GEN_5
           ? 4'h1
@@ -750,88 +775,93 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:36:7]
                                               ? 4'h3
                                               : _GEN_15
                                                   ? 4'h9
-                                                  : _GEN_58
+                                                  : _GEN_60
                                                       ? 4'h1
                                                       : _GEN_25
                                                           ? 4'h6
                                                           : _GEN_26 | _GEN_27
                                                               ? 4'h8
-                                                              : _GEN_55
+                                                              : _GEN_57
                                                                   ? 4'h6
                                                                   : _GEN_34 | _GEN_35
                                                                       ? 4'h7
-                                                                      : _GEN_54
+                                                                      : _GEN_56
                                                                           ? 4'h1
-                                                                          : _GEN_53
+                                                                          : _GEN_55
                                                                               ? 4'h3
-                                                                              : _GEN_45
+                                                                              : _GEN_53
                                                                                   ? 4'hC
-                                                                                  : _GEN_51
+                                                                                  : _GEN_52
                                                                                       ? 4'hE
                                                                                       : {2'h0,
-                                                                                         {2{_GEN_50}}};	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/stages/ID/ID.scala:36:7]
-  wire [31:0] _GEN_64 = {24'h0, inst_type == 4'h0 ? info_inst[17:10] : 8'h0};	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:38:24, :92:28, src/main/scala/stages/ID/ID.scala:36:7, :57:25]
-  wire [31:0] _GEN_65 = {18'h0, info_inst[23:10]};	// @[src/main/scala/config/Configs.scala:38:24, :92:28, src/main/scala/stages/ID/ID.scala:59:25]
-  always_comb begin	// @[src/main/scala/config/Configs.scala:92:28]
-    casez (inst_type)	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:92:28]
+                                                                                         {2{_GEN_51}}};	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/stages/ID/ID.scala:36:7]
+  wire [31:0] _GEN_66 = {24'h0, inst_type == 4'h0 ? info_inst[17:10] : 8'h0};	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:39:24, :93:28, src/main/scala/stages/ID/ID.scala:36:7, :67:25]
+  wire [31:0] _GEN_67 = {18'h0, info_inst[23:10]};	// @[src/main/scala/config/Configs.scala:39:24, :93:28, src/main/scala/stages/ID/ID.scala:69:25]
+  always_comb begin	// @[src/main/scala/config/Configs.scala:93:28]
+    casez (inst_type)	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:93:28]
       4'b0000:
-        casez_tmp = _GEN_64;	// @[src/main/scala/config/Configs.scala:92:28]
+        casez_tmp = _GEN_66;	// @[src/main/scala/config/Configs.scala:93:28]
       4'b0001:
-        casez_tmp = {_to_info_src2_T_4 ? 20'h0 : {20{info_inst[21]}}, info_inst[21:10]};	// @[src/main/scala/config/Configs.scala:38:24, :55:20, :56:{44,49}, :61:44, :65:{8,13}, :92:28, src/main/scala/stages/ID/ID.scala:58:32]
+        casez_tmp = {_to_info_src2_T_4 ? 20'h0 : {20{info_inst[21]}}, info_inst[21:10]};	// @[src/main/scala/config/Configs.scala:39:24, :56:20, :57:{44,49}, :62:44, :66:{8,13}, :93:28, src/main/scala/stages/ID/ID.scala:68:32]
       4'b0010:
-        casez_tmp = _GEN_64;	// @[src/main/scala/config/Configs.scala:92:28]
+        casez_tmp = _GEN_66;	// @[src/main/scala/config/Configs.scala:93:28]
       4'b0011:
-        casez_tmp = _GEN_64;	// @[src/main/scala/config/Configs.scala:92:28]
+        casez_tmp = _GEN_66;	// @[src/main/scala/config/Configs.scala:93:28]
       4'b0100:
-        casez_tmp = _GEN_64;	// @[src/main/scala/config/Configs.scala:92:28]
+        casez_tmp = _GEN_66;	// @[src/main/scala/config/Configs.scala:93:28]
       4'b0101:
-        casez_tmp = _GEN_65;	// @[src/main/scala/config/Configs.scala:92:28]
+        casez_tmp = _GEN_67;	// @[src/main/scala/config/Configs.scala:93:28]
       4'b0110:
         casez_tmp =
-          {_to_info_src2_T_4 ? 14'h0 : {14{info_inst[25]}}, info_inst[25:10], 2'h0};	// @[src/main/scala/config/Configs.scala:38:24, :55:20, :56:{44,49}, :61:44, :65:{8,13}, :92:28, src/main/scala/stages/ID/ID.scala:60:36]
+          {_to_info_src2_T_4 ? 14'h0 : {14{info_inst[25]}}, info_inst[25:10], 2'h0};	// @[src/main/scala/config/Configs.scala:39:24, :56:20, :57:{44,49}, :62:44, :66:{8,13}, :93:28, src/main/scala/stages/ID/ID.scala:70:36]
       4'b0111:
-        casez_tmp = {info_inst[24:5], 12'h0};	// @[src/main/scala/config/Configs.scala:38:24, :92:28, src/main/scala/stages/ID/ID.scala:61:{31,36}]
+        casez_tmp = {info_inst[24:5], 12'h0};	// @[src/main/scala/config/Configs.scala:39:24, :93:28, src/main/scala/stages/ID/ID.scala:71:{31,36}]
       4'b1000:
-        casez_tmp = {{4{info_inst[9]}}, info_inst[9:0], info_inst[25:10], 2'h0};	// @[src/main/scala/config/Configs.scala:38:24, :55:20, :56:{44,49}, :92:28, src/main/scala/stages/ID/ID.scala:60:36, :62:42]
+        casez_tmp = {{4{info_inst[9]}}, info_inst[9:0], info_inst[25:10], 2'h0};	// @[src/main/scala/config/Configs.scala:39:24, :56:20, :57:{44,49}, :93:28, src/main/scala/stages/ID/ID.scala:70:36, :72:42]
       4'b1001:
-        casez_tmp = {27'h0, info_inst[14:10]};	// @[src/main/scala/config/Configs.scala:38:24, :92:28, src/main/scala/stages/ID/ID.scala:63:25]
+        casez_tmp = {27'h0, info_inst[14:10]};	// @[src/main/scala/config/Configs.scala:39:24, :93:28, src/main/scala/stages/ID/ID.scala:73:25]
       4'b1010:
-        casez_tmp = {26'h0, info_inst[15:10]};	// @[src/main/scala/config/Configs.scala:38:24, :92:28, src/main/scala/stages/ID/ID.scala:64:25]
+        casez_tmp = {26'h0, info_inst[15:10]};	// @[src/main/scala/config/Configs.scala:39:24, :93:28, src/main/scala/stages/ID/ID.scala:74:25]
       4'b1011:
-        casez_tmp = {10'h0, info_inst[31:10]};	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24, :92:28, src/main/scala/stages/ID/ID.scala:65:25]
+        casez_tmp = {10'h0, info_inst[31:10]};	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24, :93:28, src/main/scala/stages/ID/ID.scala:75:25]
       4'b1100:
-        casez_tmp = {17'h0, info_inst[14:0]};	// @[src/main/scala/config/Configs.scala:38:24, :92:28, src/main/scala/stages/ID/ID.scala:66:25]
+        casez_tmp = {17'h0, info_inst[14:0]};	// @[src/main/scala/config/Configs.scala:39:24, :93:28, src/main/scala/stages/ID/ID.scala:76:25]
       4'b1101:
-        casez_tmp = _GEN_64;	// @[src/main/scala/config/Configs.scala:92:28]
+        casez_tmp = _GEN_66;	// @[src/main/scala/config/Configs.scala:93:28]
       4'b1110:
-        casez_tmp = _GEN_65;	// @[src/main/scala/config/Configs.scala:92:28]
+        casez_tmp = _GEN_67;	// @[src/main/scala/config/Configs.scala:93:28]
       default:
-        casez_tmp = _GEN_64;	// @[src/main/scala/config/Configs.scala:92:28]
-    endcase	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:92:28]
+        casez_tmp = _GEN_66;	// @[src/main/scala/config/Configs.scala:93:28]
+    endcase	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:93:28]
   end // always_comb
-  wire        _to_info_src2_T_10 = src_type2 == 3'h3;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:92:28]
+  wire        _to_info_src2_T_10 = src_type2 == 3'h3;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:93:28]
   wire [4:0]  reg_io_raddr2 =
-    (&src_type2) | _to_info_src2_T_10 ? info_inst[4:0] : info_inst[14:10];	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:38:24, :92:28, src/main/scala/stages/ID/ID.scala:63:25, :73:16]
-  wire        io_csr_re_0 = func_type == 4'h7;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:36:7, :91:26]
-  wire        _to_info_csr_we_T_1 = op_type == 6'h1;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:92:28]
-  wire        _to_info_csr_we_T_2 = op_type == 6'h2;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:92:28]
+    (&src_type2) | _to_info_src2_T_10 ? info_inst[4:0] : info_inst[14:10];	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:39:24, :93:28, src/main/scala/stages/ID/ID.scala:73:25, :83:16]
+  wire        io_csr_re_0 = func_type == 4'h7;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:36:7, :101:29]
+  wire        _info_T = io_from_valid & io_from_ready_0;	// @[src/main/scala/config/Configs.scala:43:23, :48:18]
+  wire        _GEN_68 = io_flush_en | io_has_exc;	// @[src/main/scala/stages/ID/ID.scala:41:20]
   always @(posedge clock) begin	// @[src/main/scala/stages/ID/ID.scala:36:7]
     if (reset) begin	// @[src/main/scala/stages/ID/ID.scala:36:7]
-      info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_inst <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_valid <= 1'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_inst <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_this_exc <= 1'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_exc_type <= 6'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_valid <= 1'h0;	// @[src/main/scala/config/Configs.scala:40:24]
     end
     else begin	// @[src/main/scala/stages/ID/ID.scala:36:7]
-      if (io_flush_en | io_has_exc) begin	// @[src/main/scala/stages/ID/ID.scala:41:21]
-        info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_inst <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
+      if (_GEN_68) begin	// @[src/main/scala/stages/ID/ID.scala:41:20]
+        info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_inst <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_exc_type <= 6'h0;	// @[src/main/scala/config/Configs.scala:39:24]
       end
-      else if (io_from_valid & io_from_ready_0) begin	// @[src/main/scala/config/Configs.scala:42:23, :47:18]
-        info_pc <= io_from_bits_pc;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_inst <= io_from_bits_inst;	// @[src/main/scala/config/Configs.scala:38:24]
+      else if (_info_T) begin	// @[src/main/scala/config/Configs.scala:48:18]
+        info_pc <= io_from_bits_pc;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_inst <= io_from_bits_inst;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_exc_type <= io_from_bits_exc_type;	// @[src/main/scala/config/Configs.scala:39:24]
       end
-      if (io_from_ready_0)	// @[src/main/scala/config/Configs.scala:42:23]
-        info_valid <= io_from_valid;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_this_exc <= ~_GEN_68 & (_info_T ? io_from_bits_this_exc : info_this_exc);	// @[src/main/scala/config/Configs.scala:39:24, :48:{18,30}, :49:12, src/main/scala/stages/ID/ID.scala:41:{20,35}, :42:13]
+      if (io_from_ready_0)	// @[src/main/scala/config/Configs.scala:43:23]
+        info_valid <= io_from_valid;	// @[src/main/scala/config/Configs.scala:40:24]
     end
   end // always @(posedge)
   `ifdef ENABLE_INITIAL_REG_	// @[src/main/scala/stages/ID/ID.scala:36:7]
@@ -847,42 +877,44 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:36:7]
         for (logic [3:0] i = 4'h0; i < 4'hA; i += 4'h1) begin
           _RANDOM[i] = `RANDOM;	// @[src/main/scala/stages/ID/ID.scala:36:7]
         end	// @[src/main/scala/stages/ID/ID.scala:36:7]
-        info_pc = _RANDOM[4'h0];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/ID/ID.scala:36:7]
-        info_inst = _RANDOM[4'h1];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/ID/ID.scala:36:7]
-        info_valid = _RANDOM[4'h9][21];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/ID/ID.scala:36:7]
+        info_pc = _RANDOM[4'h0];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/ID/ID.scala:36:7]
+        info_inst = _RANDOM[4'h1];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/ID/ID.scala:36:7]
+        info_this_exc = _RANDOM[4'h6][22];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/ID/ID.scala:36:7]
+        info_exc_type = _RANDOM[4'h6][28:23];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/ID/ID.scala:36:7]
+        info_valid = _RANDOM[4'h9][27];	// @[src/main/scala/config/Configs.scala:40:24, src/main/scala/stages/ID/ID.scala:36:7]
       `endif // RANDOMIZE_REG_INIT
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/ID/ID.scala:36:7]
       `FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/ID/ID.scala:36:7]
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  REG reg_0 (	// @[src/main/scala/stages/ID/ID.scala:76:19]
+  REG reg_0 (	// @[src/main/scala/stages/ID/ID.scala:86:19]
     .clock           (clock),
     .reset           (reset),
-    .io_raddr1       (info_inst[9:5]),	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/ID/ID.scala:71:16]
-    .io_raddr2       (reg_io_raddr2),	// @[src/main/scala/config/Configs.scala:92:28]
+    .io_raddr1       (info_inst[9:5]),	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/ID/ID.scala:81:16]
+    .io_raddr2       (reg_io_raddr2),	// @[src/main/scala/config/Configs.scala:93:28]
     .io_rdata1       (io_ds_reg_info_ini_data_0),
     .io_rdata2       (io_ds_reg_info_ini_data_1),
     .io_rf_bus_we    (io_rf_bus_we),
     .io_rf_bus_waddr (io_rf_bus_waddr),
     .io_rf_bus_wdata (io_rf_bus_wdata)
-  );	// @[src/main/scala/stages/ID/ID.scala:76:19]
-  assign io_from_ready = io_from_ready_0;	// @[src/main/scala/config/Configs.scala:42:23, src/main/scala/stages/ID/ID.scala:36:7]
-  assign io_to_valid = info_valid;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/ID/ID.scala:36:7]
-  assign io_to_bits_pc = info_pc;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/ID/ID.scala:36:7]
+  );	// @[src/main/scala/stages/ID/ID.scala:86:19]
+  assign io_from_ready = io_from_ready_0;	// @[src/main/scala/config/Configs.scala:43:23, src/main/scala/stages/ID/ID.scala:36:7]
+  assign io_to_valid = info_valid;	// @[src/main/scala/config/Configs.scala:40:24, src/main/scala/stages/ID/ID.scala:36:7]
+  assign io_to_bits_pc = info_pc;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/ID/ID.scala:36:7]
   assign io_to_bits_func_type = func_type;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:36:7]
-  assign io_to_bits_op_type = {4'h0, op_type};	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:36:7, :121:21]
+  assign io_to_bits_op_type = {4'h0, op_type};	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:36:7, :131:21]
   assign io_to_bits_is_wf =
     _GEN | _GEN_0 | _GEN_1 | _GEN_2 | _GEN_3 | _GEN_4 | _GEN_5 | _GEN_6 | _GEN_7 | _GEN_8
-    | _GEN_9 | _GEN_10 | _GEN_11 | _GEN_12 | _GEN_13 | _GEN_14 | _GEN_62 | ~_GEN_56
+    | _GEN_9 | _GEN_10 | _GEN_11 | _GEN_12 | _GEN_13 | _GEN_14 | _GEN_64 | ~_GEN_58
     & (_GEN_25 | ~_GEN_26
-       & (_GEN_27 | ~_GEN_55
-          & (_GEN_34 | _GEN_35 | _GEN_61 | ~_GEN_45 & (_GEN_47 | _GEN_48 | _GEN_49))));	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/stages/ID/ID.scala:36:7]
-  assign io_to_bits_dest = info_inst[31:26] == 6'h15 ? 5'h1 : info_inst[4:0];	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/ID/ID.scala:36:7, :73:16, :146:{27,33}]
+       & (_GEN_27 | ~_GEN_57
+          & (_GEN_34 | _GEN_35 | _GEN_63 | ~_GEN_53 & (_GEN_48 | _GEN_49 | _GEN_50))));	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/stages/ID/ID.scala:36:7]
+  assign io_to_bits_dest = info_inst[31:26] == 6'h15 ? 5'h1 : info_inst[4:0];	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/ID/ID.scala:36:7, :83:16, :155:{27,33}]
   assign io_to_bits_rkd_value = io_ds_reg_data_data_1;	// @[src/main/scala/stages/ID/ID.scala:36:7]
   assign io_to_bits_src1 =
     (_GEN | _GEN_0 | _GEN_1 | _GEN_2 | _GEN_3 | _GEN_4 | _GEN_5 | _GEN_6 | _GEN_7 | _GEN_8
-     | _GEN_9 | _GEN_10 | _GEN_11 | _GEN_12 | _GEN_13 | _GEN_14 | _GEN_15 | _GEN_58
+     | _GEN_9 | _GEN_10 | _GEN_11 | _GEN_12 | _GEN_13 | _GEN_14 | _GEN_15 | _GEN_60
        ? 3'h1
        : _GEN_25
            ? 3'h4
@@ -894,28 +926,30 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:36:7]
                        ? 3'h1
                        : _GEN_35
                            ? 3'h4
-                           : _GEN_61
+                           : _GEN_63
                                ? 3'h1
-                               : _GEN_45 ? 3'h0 : _GEN_51 ? 3'h1 : _GEN_63) == 3'h4
+                               : _GEN_53 ? 3'h0 : _GEN_52 ? 3'h1 : _GEN_65) == 3'h4
       ? info_pc
-      : io_ds_reg_data_data_0;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/config/Configs.scala:38:24, :92:28, src/main/scala/stages/ID/ID.scala:36:7]
+      : io_ds_reg_data_data_0;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/config/Configs.scala:39:24, :93:28, src/main/scala/stages/ID/ID.scala:36:7]
   assign io_to_bits_src2 =
     _to_info_src2_T_10 | src_type2 == 3'h2
       ? io_ds_reg_data_data_1
       : (&src_type2) | _to_info_src2_T_4 | src_type2 == 3'h5
           ? casez_tmp
-          : src_type2 == 3'h0 ? 32'h4 : io_ds_reg_data_data_1;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:65:13, :92:28, src/main/scala/stages/ID/ID.scala:36:7]
-  assign io_to_bits_this_exc = func_type == 4'h8;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:36:7, :51:28]
-  assign io_to_bits_csr_we = io_csr_re_0 & (_to_info_csr_we_T_1 | _to_info_csr_we_T_2);	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/ID/ID.scala:36:7, :91:26, :151:{51,80}]
-  assign io_to_bits_csr_addr = casez_tmp[13:0];	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/ID/ID.scala:36:7, :90:22]
-  assign io_to_bits_csr_val = io_ds_reg_data_csr_val;	// @[src/main/scala/stages/ID/ID.scala:36:7]
+          : src_type2 == 3'h0 ? 32'h4 : io_ds_reg_data_data_1;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:66:13, :93:28, src/main/scala/stages/ID/ID.scala:36:7]
+  assign io_to_bits_this_exc =
+    info_this_exc ? info_this_exc : {exception[5], exception[3:0]} != 5'h15;	// @[src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/ID/ID.scala:36:7, :61:{21,62}]
+  assign io_to_bits_exc_type = info_this_exc ? info_exc_type : exception;	// @[src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/ID/ID.scala:36:7, :163:27]
+  assign io_to_bits_csr_we = io_csr_re_0 & (_to_info_csr_we_T_1 | _to_info_csr_we_T_2);	// @[src/main/scala/stages/ID/ID.scala:36:7, :55:46, :57:46, :101:29, :160:{51,80}]
   assign io_to_bits_csr_mask = io_ds_reg_data_data_0;	// @[src/main/scala/stages/ID/ID.scala:36:7]
-  assign io_ds_reg_info_addr_0 = info_inst[9:5];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/ID/ID.scala:36:7, :71:16]
-  assign io_ds_reg_info_addr_1 = reg_io_raddr2;	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/ID/ID.scala:36:7]
-  assign io_ds_reg_info_csr_addr = casez_tmp[13:0];	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/ID/ID.scala:36:7, :90:22]
+  assign io_to_bits_csr_addr = casez_tmp[13:0];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:36:7, :100:22]
+  assign io_to_bits_csr_val = io_ds_reg_data_csr_val;	// @[src/main/scala/stages/ID/ID.scala:36:7]
+  assign io_ds_reg_info_addr_0 = info_inst[9:5];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/ID/ID.scala:36:7, :81:16]
+  assign io_ds_reg_info_addr_1 = reg_io_raddr2;	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:36:7]
+  assign io_ds_reg_info_csr_addr = casez_tmp[13:0];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:36:7, :100:22]
   assign io_ds_reg_info_csr_ini_data = io_csr_rdata;	// @[src/main/scala/stages/ID/ID.scala:36:7]
-  assign io_csr_re = io_csr_re_0;	// @[src/main/scala/stages/ID/ID.scala:36:7, :91:26]
-  assign io_csr_raddr = casez_tmp[13:0];	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/ID/ID.scala:36:7, :90:22]
+  assign io_csr_re = io_csr_re_0;	// @[src/main/scala/stages/ID/ID.scala:36:7, :101:29]
+  assign io_csr_raddr = casez_tmp[13:0];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:36:7, :100:22]
   assign io_br_bus_br_taken =
     (op_type == 6'h6
        ? io_ds_reg_data_data_0 > io_ds_reg_data_data_1
@@ -929,9 +963,9 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:36:7]
                        ? io_ds_reg_data_data_0 != io_ds_reg_data_data_1
                        : ~_to_info_csr_we_T_1
                          | io_ds_reg_data_data_0 == io_ds_reg_data_data_1) & info_valid
-    & func_type == 4'h0;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:39:24, :92:28, src/main/scala/stages/ID/ID.scala:36:7, :107:34, :108:34, :109:41, :110:41, :111:35, :112:35, :114:{5,20,34}]
+    & func_type == 4'h0;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:40:24, :93:28, src/main/scala/stages/ID/ID.scala:36:7, :55:46, :57:46, :117:35, :118:35, :119:42, :120:42, :121:35, :122:35, :124:{5,20,34}]
   assign io_br_bus_br_target =
-    info_inst[31:26] == 6'h13 ? io_ds_reg_data_data_0 + casez_tmp : info_pc + casez_tmp;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:38:24, :92:28, src/main/scala/stages/ID/ID.scala:36:7, :115:{29,35,59,74}]
+    info_inst[31:26] == 6'h13 ? io_ds_reg_data_data_0 + casez_tmp : info_pc + casez_tmp;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:39:24, :93:28, src/main/scala/stages/ID/ID.scala:36:7, :125:{29,35,59,74}]
 endmodule
 
 module DIV(	// @[src/main/scala/stages/EXE/DIV.scala:70:7]
@@ -994,7 +1028,7 @@ module DIV(	// @[src/main/scala/stages/EXE/DIV.scala:70:7]
       `FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/EXE/DIV.scala:70:7]
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_div_result = io_div_op == 2'h0 | io_div_op == 2'h1 ? remainder : quotient;	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/EXE/DIV.scala:70:7, :116:28, :117:28]
+  assign io_div_result = io_div_op == 2'h0 | io_div_op == 2'h1 ? remainder : quotient;	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/EXE/DIV.scala:70:7, :116:28, :117:28]
   assign io_complete = cnt[3];	// @[src/main/scala/stages/EXE/DIV.scala:70:7, :93:22, :124:26]
 endmodule
 
@@ -1005,23 +1039,23 @@ module MUL(	// @[src/main/scala/stages/EXE/MUL.scala:29:7]
   output [31:0] io_mul_result	// @[src/main/scala/stages/EXE/MUL.scala:30:14]
 );
 
-  reg  [32:0] casez_tmp;	// @[src/main/scala/config/Configs.scala:92:28]
+  reg  [32:0] casez_tmp;	// @[src/main/scala/config/Configs.scala:93:28]
   wire [63:0] _signed_result_T_2 =
     {{32{io_mul_src1[31]}}, io_mul_src1} * {{32{io_mul_src2[31]}}, io_mul_src2};	// @[src/main/scala/stages/EXE/MUL.scala:55:47]
   wire [63:0] unsigned_result = {32'h0, io_mul_src1} * {32'h0, io_mul_src2};	// @[src/main/scala/stages/EXE/MUL.scala:56:39]
-  always_comb begin	// @[src/main/scala/config/Configs.scala:92:28]
-    casez (io_mul_op)	// @[src/main/scala/config/Configs.scala:92:28]
+  always_comb begin	// @[src/main/scala/config/Configs.scala:93:28]
+    casez (io_mul_op)	// @[src/main/scala/config/Configs.scala:93:28]
       2'b00:
-        casez_tmp = _signed_result_T_2[32:0];	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/EXE/MUL.scala:55:{47,69}, :62:41]
+        casez_tmp = _signed_result_T_2[32:0];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/EXE/MUL.scala:55:{47,69}, :62:41]
       2'b01:
-        casez_tmp = {1'h0, unsigned_result[31:0]};	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/EXE/MUL.scala:56:39, :64:43]
+        casez_tmp = {1'h0, unsigned_result[31:0]};	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/EXE/MUL.scala:56:39, :64:43]
       2'b10:
-        casez_tmp = {1'h0, _signed_result_T_2[63:32]};	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/EXE/MUL.scala:55:{47,69}, :61:41]
+        casez_tmp = {1'h0, _signed_result_T_2[63:32]};	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/EXE/MUL.scala:55:{47,69}, :61:41]
       default:
-        casez_tmp = {1'h0, unsigned_result[63:32]};	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/EXE/MUL.scala:56:39, :63:43]
-    endcase	// @[src/main/scala/config/Configs.scala:92:28]
+        casez_tmp = {1'h0, unsigned_result[63:32]};	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/EXE/MUL.scala:56:39, :63:43]
+    endcase	// @[src/main/scala/config/Configs.scala:93:28]
   end // always_comb
-  assign io_mul_result = casez_tmp[31:0];	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/EXE/MUL.scala:29:7, :57:19]
+  assign io_mul_result = casez_tmp[31:0];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/EXE/MUL.scala:29:7, :57:19]
 endmodule
 
 module ALU(	// @[src/main/scala/stages/EXE/ALU.scala:17:7]
@@ -1065,7 +1099,7 @@ module ALU(	// @[src/main/scala/stages/EXE/ALU.scala:17:7]
                                                 | io_alu_op == 6'h8 | io_alu_op == 6'h9
                                                 | io_alu_op == 6'h20
                                                   ? io_alu_src1 + io_alu_src2
-                                                  : 32'h0;	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/EXE/ALU.scala:17:7, :24:53, :33:53, :34:51, :35:44, :36:40, :37:{28,42}, :39:40, :40:{40,55}, :41:40, :42:{72,95}]
+                                                  : 32'h0;	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/EXE/ALU.scala:17:7, :24:53, :33:53, :34:51, :35:44, :36:40, :37:{28,42}, :39:40, :40:{40,55}, :41:40, :42:{72,95}]
 endmodule
 
 module IE(	// @[src/main/scala/stages/EXE/IE.scala:31:7]
@@ -1082,10 +1116,11 @@ module IE(	// @[src/main/scala/stages/EXE/IE.scala:31:7]
                 io_from_bits_src1,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
                 io_from_bits_src2,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
   input         io_from_bits_this_exc,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
-                io_from_bits_csr_we,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
+  input  [5:0]  io_from_bits_exc_type,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
+  input         io_from_bits_csr_we,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
+  input  [31:0] io_from_bits_csr_mask,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
   input  [13:0] io_from_bits_csr_addr,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
   input  [31:0] io_from_bits_csr_val,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
-                io_from_bits_csr_mask,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
   output        io_to_valid,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
   output [31:0] io_to_bits_pc,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
   output [3:0]  io_to_bits_func_type,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
@@ -1096,9 +1131,10 @@ module IE(	// @[src/main/scala/stages/EXE/IE.scala:31:7]
   output [31:0] io_to_bits_rkd_value,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
                 io_to_bits_result,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
   output        io_to_bits_this_exc,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
-                io_to_bits_csr_we,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
-  output [13:0] io_to_bits_csr_addr,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
+  output [5:0]  io_to_bits_exc_type,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
+  output        io_to_bits_csr_we,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
   output [31:0] io_to_bits_csr_mask,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
+  output [13:0] io_to_bits_csr_addr,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
   input         io_flush_en,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
   output        io_this_exc,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
   input         io_has_exc,	// @[src/main/scala/stages/EXE/IE.scala:32:14]
@@ -1119,27 +1155,28 @@ module IE(	// @[src/main/scala/stages/EXE/IE.scala:31:7]
   wire [31:0] _mul_io_mul_result;	// @[src/main/scala/stages/EXE/IE.scala:69:19]
   wire [31:0] _div_io_div_result;	// @[src/main/scala/stages/EXE/IE.scala:51:19]
   wire        _div_io_complete;	// @[src/main/scala/stages/EXE/IE.scala:51:19]
-  reg  [31:0] info_pc;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [3:0]  info_func_type;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [9:0]  info_op_type;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg         info_is_wf;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [4:0]  info_dest;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [31:0] info_rkd_value;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [31:0] info_src1;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [31:0] info_src2;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg         info_this_exc;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg         info_csr_we;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [13:0] info_csr_addr;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [31:0] info_csr_val;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [31:0] info_csr_mask;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg         info_valid;	// @[src/main/scala/config/Configs.scala:39:24]
-  wire        _es_mem_we_T = info_func_type == 4'h2;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7, :42:34]
-  wire        es_mem_re = _es_mem_we_T & info_op_type[3];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/isa/LA32.scala:109:50, src/main/scala/stages/EXE/IE.scala:42:{34,51}]
+  reg  [31:0] info_pc;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [3:0]  info_func_type;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [9:0]  info_op_type;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg         info_is_wf;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [4:0]  info_dest;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [31:0] info_rkd_value;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [31:0] info_src1;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [31:0] info_src2;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg         info_this_exc;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [5:0]  info_exc_type;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg         info_csr_we;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [31:0] info_csr_mask;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [13:0] info_csr_addr;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [31:0] info_csr_val;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg         info_valid;	// @[src/main/scala/config/Configs.scala:40:24]
+  wire        _es_mem_we_T = info_func_type == 4'h2;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7, :42:34]
+  wire        es_mem_re = _es_mem_we_T & info_op_type[3];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/isa/LA32.scala:109:50, src/main/scala/stages/EXE/IE.scala:42:{34,51}]
   wire        _GEN =
-    es_mem_re & (io_ds_reg_info_addr_0 == info_dest | io_ds_reg_info_addr_1 == info_dest);	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:42:51, :45:{18,47,50}]
-  wire        div_io_start = info_func_type == 4'h3;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7, :55:37]
-  wire        _result_T_4 = info_func_type == 4'h4;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7, :74:23]
-  wire        _GEN_0 = _result_T_4 | div_io_start | _GEN;	// @[src/main/scala/config/Configs.scala:42:13, src/main/scala/stages/EXE/IE.scala:45:{18,66}, :46:19, :55:37, :60:41, :61:19, :74:{23,41}, :75:20]
+    es_mem_re & (io_ds_reg_info_addr_0 == info_dest | io_ds_reg_info_addr_1 == info_dest);	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:42:51, :45:{18,47,50}]
+  wire        div_io_start = info_func_type == 4'h3;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7, :55:37]
+  wire        _result_T_4 = info_func_type == 4'h4;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7, :74:23]
+  wire        _GEN_0 = _result_T_4 | div_io_start | _GEN;	// @[src/main/scala/config/Configs.scala:43:13, src/main/scala/stages/EXE/IE.scala:45:{18,66}, :46:19, :55:37, :60:41, :61:19, :74:{23,41}, :75:20]
   wire [31:0] result =
     info_func_type == 4'h7
       ? info_csr_val
@@ -1147,67 +1184,70 @@ module IE(	// @[src/main/scala/stages/EXE/IE.scala:31:7]
           ? _mul_io_mul_result
           : info_func_type == 4'h5 | div_io_start
               ? _div_io_div_result
-              : _alu_io_alu_result;	// @[src/main/scala/config/Configs.scala:38:24, :92:28, src/main/scala/stages/EXE/IE.scala:31:7, :51:19, :55:37, :69:19, :74:23, :81:19]
-  wire        to_info_is_wf = info_is_wf & ~_result_T_4 & ~div_io_start;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:55:37, :58:27, :60:41, :62:19, :74:{23,41}, :76:20, :102:32]
-  wire [4:0]  _io_data_sram_we_T_4 = 5'h3 << result[1:0];	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/EXE/IE.scala:100:27, :122:40]
-  wire        _io_data_sram_wdata_T_5 = info_op_type == 10'h2;	// @[src/main/scala/config/Configs.scala:38:24, :92:28]
-  wire        _io_data_sram_wdata_T_7 = info_op_type == 10'h1;	// @[src/main/scala/config/Configs.scala:38:24, :92:28]
-  wire        _io_data_sram_wdata_T_9 = info_op_type == 10'h0;	// @[src/main/scala/config/Configs.scala:38:24, :92:28]
-  wire        _info_T = io_from_valid & ~_GEN_0;	// @[src/main/scala/config/Configs.scala:42:13, :47:18, src/main/scala/stages/EXE/IE.scala:45:66, :46:19, :60:41, :61:19, :74:41, :75:20]
-  wire        _GEN_1 = _GEN | io_flush_en | io_has_exc;	// @[src/main/scala/config/Configs.scala:47:30, src/main/scala/stages/EXE/IE.scala:36:{21,36}, :37:19, :45:{18,66}, :47:19]
+              : _alu_io_alu_result;	// @[src/main/scala/config/Configs.scala:39:24, :93:28, src/main/scala/stages/EXE/IE.scala:31:7, :51:19, :55:37, :69:19, :74:23, :81:19]
+  wire        to_info_is_wf = info_is_wf & ~_result_T_4 & ~div_io_start;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:55:37, :58:27, :60:41, :62:19, :74:{23,41}, :76:20, :102:32]
+  wire [4:0]  _io_data_sram_we_T_4 = 5'h3 << result[1:0];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/EXE/IE.scala:100:27, :122:40]
+  wire        _io_data_sram_wdata_T_5 = info_op_type == 10'h2;	// @[src/main/scala/config/Configs.scala:39:24, :93:28]
+  wire        _io_data_sram_wdata_T_7 = info_op_type == 10'h1;	// @[src/main/scala/config/Configs.scala:39:24, :93:28]
+  wire        _io_data_sram_wdata_T_9 = info_op_type == 10'h0;	// @[src/main/scala/config/Configs.scala:39:24, :93:28]
+  wire        _info_T = io_from_valid & ~_GEN_0;	// @[src/main/scala/config/Configs.scala:43:13, :48:18, src/main/scala/stages/EXE/IE.scala:45:66, :46:19, :60:41, :61:19, :74:41, :75:20]
+  wire        _GEN_1 = _GEN | io_flush_en | io_has_exc;	// @[src/main/scala/config/Configs.scala:48:30, src/main/scala/stages/EXE/IE.scala:36:{21,36}, :37:19, :45:{18,66}, :47:19]
   always @(posedge clock) begin	// @[src/main/scala/stages/EXE/IE.scala:31:7]
     if (reset) begin	// @[src/main/scala/stages/EXE/IE.scala:31:7]
-      info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_func_type <= 4'h0;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-      info_op_type <= 10'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_is_wf <= 1'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_dest <= 5'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_rkd_value <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_src1 <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_src2 <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_this_exc <= 1'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_csr_we <= 1'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_csr_addr <= 14'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_csr_val <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_csr_mask <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_valid <= 1'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_func_type <= 4'h0;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+      info_op_type <= 10'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_is_wf <= 1'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_dest <= 5'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_rkd_value <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_src1 <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_src2 <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_this_exc <= 1'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_exc_type <= 6'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_csr_we <= 1'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_csr_mask <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_csr_addr <= 14'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_csr_val <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_valid <= 1'h0;	// @[src/main/scala/config/Configs.scala:40:24]
     end
     else begin	// @[src/main/scala/stages/EXE/IE.scala:31:7]
-      if (_GEN_1) begin	// @[src/main/scala/config/Configs.scala:47:30, src/main/scala/stages/EXE/IE.scala:36:{21,36}, :37:19, :45:66, :47:19]
-        info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_op_type <= 10'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_dest <= 5'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_rkd_value <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_src1 <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_src2 <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_csr_addr <= 14'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_csr_val <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_csr_mask <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
+      if (_GEN_1) begin	// @[src/main/scala/config/Configs.scala:48:30, src/main/scala/stages/EXE/IE.scala:36:{21,36}, :37:19, :45:66, :47:19]
+        info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_op_type <= 10'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_dest <= 5'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_rkd_value <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_src1 <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_src2 <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_exc_type <= 6'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_csr_mask <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_csr_addr <= 14'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_csr_val <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
       end
-      else if (_info_T) begin	// @[src/main/scala/config/Configs.scala:47:18]
-        info_pc <= io_from_bits_pc;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_op_type <= io_from_bits_op_type;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_dest <= io_from_bits_dest;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_rkd_value <= io_from_bits_rkd_value;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_src1 <= io_from_bits_src1;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_src2 <= io_from_bits_src2;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_csr_addr <= io_from_bits_csr_addr;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_csr_val <= io_from_bits_csr_val;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_csr_mask <= io_from_bits_csr_mask;	// @[src/main/scala/config/Configs.scala:38:24]
+      else if (_info_T) begin	// @[src/main/scala/config/Configs.scala:48:18]
+        info_pc <= io_from_bits_pc;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_op_type <= io_from_bits_op_type;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_dest <= io_from_bits_dest;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_rkd_value <= io_from_bits_rkd_value;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_src1 <= io_from_bits_src1;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_src2 <= io_from_bits_src2;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_exc_type <= io_from_bits_exc_type;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_csr_mask <= io_from_bits_csr_mask;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_csr_addr <= io_from_bits_csr_addr;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_csr_val <= io_from_bits_csr_val;	// @[src/main/scala/config/Configs.scala:39:24]
       end
       if (_result_T_4)	// @[src/main/scala/stages/EXE/IE.scala:74:23]
-        info_func_type <= 4'h6;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_func_type <= 4'h6;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
       else if (div_io_start & _div_io_complete)	// @[src/main/scala/stages/EXE/IE.scala:45:66, :51:19, :55:37, :60:41, :63:27, :64:22]
-        info_func_type <= 4'h5;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-      else if (_GEN_1)	// @[src/main/scala/config/Configs.scala:47:30, src/main/scala/stages/EXE/IE.scala:36:{21,36}, :37:19, :45:66, :47:19]
-        info_func_type <= 4'h0;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-      else if (_info_T)	// @[src/main/scala/config/Configs.scala:47:18]
-        info_func_type <= io_from_bits_func_type;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_is_wf <= ~_GEN_1 & (_info_T ? io_from_bits_is_wf : info_is_wf);	// @[src/main/scala/config/Configs.scala:38:24, :47:{18,30}, :48:12, src/main/scala/stages/EXE/IE.scala:36:{21,36}, :37:19, :45:66, :47:19]
-      info_this_exc <= ~_GEN_1 & (_info_T ? io_from_bits_this_exc : info_this_exc);	// @[src/main/scala/config/Configs.scala:38:24, :47:{18,30}, :48:12, src/main/scala/stages/EXE/IE.scala:36:{21,36}, :37:19, :45:66, :47:19]
-      info_csr_we <= ~_GEN_1 & (_info_T ? io_from_bits_csr_we : info_csr_we);	// @[src/main/scala/config/Configs.scala:38:24, :47:{18,30}, :48:12, src/main/scala/stages/EXE/IE.scala:36:{21,36}, :37:19, :45:66, :47:19]
-      if (~_GEN_0)	// @[src/main/scala/config/Configs.scala:42:13, src/main/scala/stages/EXE/IE.scala:45:66, :46:19, :60:41, :61:19, :74:41, :75:20]
-        info_valid <= io_from_valid;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_func_type <= 4'h5;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+      else if (_GEN_1)	// @[src/main/scala/config/Configs.scala:48:30, src/main/scala/stages/EXE/IE.scala:36:{21,36}, :37:19, :45:66, :47:19]
+        info_func_type <= 4'h0;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+      else if (_info_T)	// @[src/main/scala/config/Configs.scala:48:18]
+        info_func_type <= io_from_bits_func_type;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_is_wf <= ~_GEN_1 & (_info_T ? io_from_bits_is_wf : info_is_wf);	// @[src/main/scala/config/Configs.scala:39:24, :48:{18,30}, :49:12, src/main/scala/stages/EXE/IE.scala:36:{21,36}, :37:19, :45:66, :47:19]
+      info_this_exc <= ~_GEN_1 & (_info_T ? io_from_bits_this_exc : info_this_exc);	// @[src/main/scala/config/Configs.scala:39:24, :48:{18,30}, :49:12, src/main/scala/stages/EXE/IE.scala:36:{21,36}, :37:19, :45:66, :47:19]
+      info_csr_we <= ~_GEN_1 & (_info_T ? io_from_bits_csr_we : info_csr_we);	// @[src/main/scala/config/Configs.scala:39:24, :48:{18,30}, :49:12, src/main/scala/stages/EXE/IE.scala:36:{21,36}, :37:19, :45:66, :47:19]
+      if (~_GEN_0)	// @[src/main/scala/config/Configs.scala:43:13, src/main/scala/stages/EXE/IE.scala:45:66, :46:19, :60:41, :61:19, :74:41, :75:20]
+        info_valid <= io_from_valid;	// @[src/main/scala/config/Configs.scala:40:24]
     end
   end // always @(posedge)
   `ifdef ENABLE_INITIAL_REG_	// @[src/main/scala/stages/EXE/IE.scala:31:7]
@@ -1223,20 +1263,21 @@ module IE(	// @[src/main/scala/stages/EXE/IE.scala:31:7]
         for (logic [3:0] i = 4'h0; i < 4'hA; i += 4'h1) begin
           _RANDOM[i] = `RANDOM;	// @[src/main/scala/stages/EXE/IE.scala:31:7]
         end	// @[src/main/scala/stages/EXE/IE.scala:31:7]
-        info_pc = _RANDOM[4'h0];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-        info_func_type = _RANDOM[4'h2][3:0];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-        info_op_type = _RANDOM[4'h2][13:4];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-        info_is_wf = _RANDOM[4'h2][14];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-        info_dest = _RANDOM[4'h2][21:17];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-        info_rkd_value = {_RANDOM[4'h2][31:22], _RANDOM[4'h3][21:0]};	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-        info_src1 = {_RANDOM[4'h3][31:22], _RANDOM[4'h4][21:0]};	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-        info_src2 = {_RANDOM[4'h4][31:22], _RANDOM[4'h5][21:0]};	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-        info_this_exc = _RANDOM[4'h6][22];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-        info_csr_we = _RANDOM[4'h6][23];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-        info_csr_addr = {_RANDOM[4'h6][31:24], _RANDOM[4'h7][5:0]};	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-        info_csr_val = {_RANDOM[4'h7][31:6], _RANDOM[4'h8][5:0]};	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-        info_csr_mask = {_RANDOM[4'h8][31:21], _RANDOM[4'h9][20:0]};	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-        info_valid = _RANDOM[4'h9][21];	// @[src/main/scala/config/Configs.scala:38:24, :39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_pc = _RANDOM[4'h0];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_func_type = _RANDOM[4'h2][3:0];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_op_type = _RANDOM[4'h2][13:4];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_is_wf = _RANDOM[4'h2][14];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_dest = _RANDOM[4'h2][21:17];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_rkd_value = {_RANDOM[4'h2][31:22], _RANDOM[4'h3][21:0]};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_src1 = {_RANDOM[4'h3][31:22], _RANDOM[4'h4][21:0]};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_src2 = {_RANDOM[4'h4][31:22], _RANDOM[4'h5][21:0]};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_this_exc = _RANDOM[4'h6][22];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_exc_type = _RANDOM[4'h6][28:23];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_csr_we = _RANDOM[4'h6][29];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_csr_mask = {_RANDOM[4'h6][31:30], _RANDOM[4'h7][29:0]};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_csr_addr = {_RANDOM[4'h7][31:30], _RANDOM[4'h8][11:0]};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_csr_val = {_RANDOM[4'h8][31:12], _RANDOM[4'h9][11:0]};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+        info_valid = _RANDOM[4'h9][27];	// @[src/main/scala/config/Configs.scala:39:24, :40:24, src/main/scala/stages/EXE/IE.scala:31:7]
       `endif // RANDOMIZE_REG_INIT
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/EXE/IE.scala:31:7]
@@ -1246,46 +1287,47 @@ module IE(	// @[src/main/scala/stages/EXE/IE.scala:31:7]
   DIV div (	// @[src/main/scala/stages/EXE/IE.scala:51:19]
     .clock         (clock),
     .reset         (reset),
-    .io_div_op     (info_op_type[1:0]),	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:52:19]
-    .io_div_src1   (info_src1),	// @[src/main/scala/config/Configs.scala:38:24]
-    .io_div_src2   (info_src2),	// @[src/main/scala/config/Configs.scala:38:24]
+    .io_div_op     (info_op_type[1:0]),	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:52:19]
+    .io_div_src1   (info_src1),	// @[src/main/scala/config/Configs.scala:39:24]
+    .io_div_src2   (info_src2),	// @[src/main/scala/config/Configs.scala:39:24]
     .io_div_result (_div_io_div_result),
     .io_start      (div_io_start),	// @[src/main/scala/stages/EXE/IE.scala:55:37]
     .io_complete   (_div_io_complete)
   );	// @[src/main/scala/stages/EXE/IE.scala:51:19]
   MUL mul (	// @[src/main/scala/stages/EXE/IE.scala:69:19]
-    .io_mul_op     (info_op_type[1:0]),	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:52:19]
-    .io_mul_src1   (info_src1),	// @[src/main/scala/config/Configs.scala:38:24]
-    .io_mul_src2   (info_src2),	// @[src/main/scala/config/Configs.scala:38:24]
+    .io_mul_op     (info_op_type[1:0]),	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:52:19]
+    .io_mul_src1   (info_src1),	// @[src/main/scala/config/Configs.scala:39:24]
+    .io_mul_src2   (info_src2),	// @[src/main/scala/config/Configs.scala:39:24]
     .io_mul_result (_mul_io_mul_result)
   );	// @[src/main/scala/stages/EXE/IE.scala:69:19]
   ALU alu (	// @[src/main/scala/stages/EXE/IE.scala:81:19]
-    .io_alu_op     (info_op_type[5:0]),	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:82:19]
-    .io_alu_src1   (info_src1),	// @[src/main/scala/config/Configs.scala:38:24]
-    .io_alu_src2   (info_src2),	// @[src/main/scala/config/Configs.scala:38:24]
+    .io_alu_op     (info_op_type[5:0]),	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:82:19]
+    .io_alu_src1   (info_src1),	// @[src/main/scala/config/Configs.scala:39:24]
+    .io_alu_src2   (info_src2),	// @[src/main/scala/config/Configs.scala:39:24]
     .io_alu_result (_alu_io_alu_result)
   );	// @[src/main/scala/stages/EXE/IE.scala:81:19]
-  assign io_from_ready = ~_GEN_0;	// @[src/main/scala/config/Configs.scala:42:13, src/main/scala/stages/EXE/IE.scala:31:7, :45:66, :46:19, :60:41, :61:19, :74:41, :75:20]
-  assign io_to_valid = info_valid;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
-  assign io_to_bits_pc = info_pc;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-  assign io_to_bits_func_type = info_func_type;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-  assign io_to_bits_op_type = info_op_type;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_from_ready = ~_GEN_0;	// @[src/main/scala/config/Configs.scala:43:13, src/main/scala/stages/EXE/IE.scala:31:7, :45:66, :46:19, :60:41, :61:19, :74:41, :75:20]
+  assign io_to_valid = info_valid;	// @[src/main/scala/config/Configs.scala:40:24, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_to_bits_pc = info_pc;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_to_bits_func_type = info_func_type;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_to_bits_op_type = info_op_type;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
   assign io_to_bits_is_wf = to_info_is_wf;	// @[src/main/scala/stages/EXE/IE.scala:31:7, :60:41, :74:41, :76:20, :102:32]
-  assign io_to_bits_piece = result[1:0];	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/EXE/IE.scala:31:7, :100:27]
-  assign io_to_bits_dest = info_dest;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-  assign io_to_bits_rkd_value = info_rkd_value;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-  assign io_to_bits_result = result;	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/EXE/IE.scala:31:7]
-  assign io_to_bits_this_exc = info_this_exc;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-  assign io_to_bits_csr_we = info_csr_we;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-  assign io_to_bits_csr_addr = info_csr_addr;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-  assign io_to_bits_csr_mask = info_csr_mask;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-  assign io_this_exc = info_this_exc;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_to_bits_piece = result[1:0];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/EXE/IE.scala:31:7, :100:27]
+  assign io_to_bits_dest = info_dest;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_to_bits_rkd_value = info_rkd_value;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_to_bits_result = result;	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_to_bits_this_exc = info_this_exc;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_to_bits_exc_type = info_exc_type;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_to_bits_csr_we = info_csr_we;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_to_bits_csr_mask = info_csr_mask;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_to_bits_csr_addr = info_csr_addr;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_this_exc = info_this_exc;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
   assign io_es_we = to_info_is_wf;	// @[src/main/scala/stages/EXE/IE.scala:31:7, :60:41, :74:41, :76:20, :102:32]
-  assign io_es_addr = info_dest;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-  assign io_es_data = result;	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/EXE/IE.scala:31:7]
-  assign io_csr_es_we = info_csr_we;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
-  assign io_csr_es_addr = info_csr_addr[4:0];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7, :110:18]
-  assign io_csr_es_data = info_rkd_value;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_es_addr = info_dest;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_es_data = result;	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_csr_es_we = info_csr_we;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
+  assign io_csr_es_addr = info_csr_addr[4:0];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7, :110:18]
+  assign io_csr_es_data = info_rkd_value;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/EXE/IE.scala:31:7]
   assign io_data_sram_we =
     info_valid & _es_mem_we_T & ~es_mem_re & ~io_has_exc
       ? (_io_data_sram_wdata_T_9
@@ -1293,14 +1335,14 @@ module IE(	// @[src/main/scala/stages/EXE/IE.scala:31:7]
            : _io_data_sram_wdata_T_7
                ? _io_data_sram_we_T_4[3:0]
                : _io_data_sram_wdata_T_5 ? 4'h1 << result[1:0] : 4'h0)
-      : 4'h0;	// @[src/main/scala/config/Configs.scala:39:24, :92:28, src/main/scala/stages/EXE/IE.scala:31:7, :42:{34,51}, :43:{51,54}, :100:27, :115:25, :116:{17,30,34}, :121:40, :122:40]
-  assign io_data_sram_addr = result;	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/EXE/IE.scala:31:7]
+      : 4'h0;	// @[src/main/scala/config/Configs.scala:40:24, :93:28, src/main/scala/stages/EXE/IE.scala:31:7, :42:{34,51}, :43:{51,54}, :100:27, :115:25, :116:{17,30,34}, :121:40, :122:40]
+  assign io_data_sram_addr = result;	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/EXE/IE.scala:31:7]
   assign io_data_sram_wdata =
     _io_data_sram_wdata_T_9
       ? info_rkd_value
       : _io_data_sram_wdata_T_7
           ? {2{info_rkd_value[15:0]}}
-          : _io_data_sram_wdata_T_5 ? {2{{2{info_rkd_value[7:0]}}}} : 32'h0;	// @[src/main/scala/config/Configs.scala:38:24, :92:28, src/main/scala/stages/EXE/IE.scala:31:7, :133:{31,49}, :134:{31,49}]
+          : _io_data_sram_wdata_T_5 ? {2{{2{info_rkd_value[7:0]}}}} : 32'h0;	// @[src/main/scala/config/Configs.scala:39:24, :93:28, src/main/scala/stages/EXE/IE.scala:31:7, :133:{31,49}, :134:{31,49}]
 endmodule
 
 module IM(	// @[src/main/scala/stages/MEM/IM.scala:27:7]
@@ -1316,21 +1358,22 @@ module IM(	// @[src/main/scala/stages/MEM/IM.scala:27:7]
   input  [31:0] io_from_bits_rkd_value,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
                 io_from_bits_result,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
   input         io_from_bits_this_exc,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
-                io_from_bits_csr_we,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
-  input  [13:0] io_from_bits_csr_addr,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
+  input  [5:0]  io_from_bits_exc_type,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
+  input         io_from_bits_csr_we,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
   input  [31:0] io_from_bits_csr_mask,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
+  input  [13:0] io_from_bits_csr_addr,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
   output        io_to_valid,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
   output [31:0] io_to_bits_pc,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
-  output [3:0]  io_to_bits_func_type,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
   output [9:0]  io_to_bits_op_type,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
   output        io_to_bits_is_wf,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
   output [4:0]  io_to_bits_dest,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
   output [31:0] io_to_bits_rkd_value,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
                 io_to_bits_result,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
   output        io_to_bits_this_exc,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
-                io_to_bits_csr_we,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
-  output [13:0] io_to_bits_csr_addr,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
+  output [5:0]  io_to_bits_exc_type,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
+  output        io_to_bits_csr_we,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
   output [31:0] io_to_bits_csr_mask,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
+  output [13:0] io_to_bits_csr_addr,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
   input         io_flush_en,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
   output        io_this_exc,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
   input         io_has_exc,	// @[src/main/scala/stages/MEM/IM.scala:28:14]
@@ -1343,36 +1386,37 @@ module IM(	// @[src/main/scala/stages/MEM/IM.scala:27:7]
   input  [31:0] io_data_sram_rdata	// @[src/main/scala/stages/MEM/IM.scala:28:14]
 );
 
-  reg  [31:0] info_pc;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [3:0]  info_func_type;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [9:0]  info_op_type;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg         info_is_wf;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [1:0]  info_piece;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [4:0]  info_dest;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [31:0] info_rkd_value;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [31:0] info_result;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg         info_this_exc;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg         info_csr_we;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [13:0] info_csr_addr;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [31:0] info_csr_mask;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg         info_valid;	// @[src/main/scala/config/Configs.scala:39:24]
-  reg  [7:0]  casez_tmp;	// @[src/main/scala/config/Configs.scala:92:28]
-  always_comb begin	// @[src/main/scala/config/Configs.scala:92:28]
-    casez (info_piece)	// @[src/main/scala/config/Configs.scala:38:24, :92:28]
+  reg  [31:0] info_pc;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [3:0]  info_func_type;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [9:0]  info_op_type;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg         info_is_wf;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [1:0]  info_piece;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [4:0]  info_dest;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [31:0] info_rkd_value;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [31:0] info_result;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg         info_this_exc;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [5:0]  info_exc_type;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg         info_csr_we;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [31:0] info_csr_mask;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [13:0] info_csr_addr;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg         info_valid;	// @[src/main/scala/config/Configs.scala:40:24]
+  reg  [7:0]  casez_tmp;	// @[src/main/scala/config/Configs.scala:93:28]
+  always_comb begin	// @[src/main/scala/config/Configs.scala:93:28]
+    casez (info_piece)	// @[src/main/scala/config/Configs.scala:39:24, :93:28]
       2'b00:
-        casez_tmp = io_data_sram_rdata[7:0];	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/MEM/IM.scala:52:44]
+        casez_tmp = io_data_sram_rdata[7:0];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/MEM/IM.scala:52:44]
       2'b01:
-        casez_tmp = io_data_sram_rdata[15:8];	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/MEM/IM.scala:53:44]
+        casez_tmp = io_data_sram_rdata[15:8];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/MEM/IM.scala:53:44]
       2'b10:
-        casez_tmp = io_data_sram_rdata[23:16];	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/MEM/IM.scala:54:44]
+        casez_tmp = io_data_sram_rdata[23:16];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/MEM/IM.scala:54:44]
       default:
-        casez_tmp = io_data_sram_rdata[31:24];	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/stages/MEM/IM.scala:55:44]
-    endcase	// @[src/main/scala/config/Configs.scala:38:24, :92:28]
+        casez_tmp = io_data_sram_rdata[31:24];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/MEM/IM.scala:55:44]
+    endcase	// @[src/main/scala/config/Configs.scala:39:24, :93:28]
   end // always_comb
   wire [15:0] _to_info_result_T_24 =
     info_piece == 2'h2
       ? io_data_sram_rdata[31:16]
-      : info_piece == 2'h0 ? io_data_sram_rdata[15:0] : 16'h0;	// @[src/main/scala/config/Configs.scala:38:24, :92:28, src/main/scala/stages/MEM/IM.scala:66:44, :67:44]
+      : info_piece == 2'h0 ? io_data_sram_rdata[15:0] : 16'h0;	// @[src/main/scala/config/Configs.scala:39:24, :93:28, src/main/scala/stages/MEM/IM.scala:66:44, :67:44]
   wire [31:0] to_info_result =
     info_func_type == 4'h2 & info_op_type[3]
       ? (info_op_type[2:1] == 2'h1
@@ -1380,51 +1424,54 @@ module IM(	// @[src/main/scala/stages/MEM/IM.scala:27:7]
            : info_op_type[2:1] == 2'h0
                ? {{24{info_op_type[0] & casez_tmp[7]}}, casez_tmp}
                : io_data_sram_rdata)
-      : info_result;	// @[src/main/scala/config/Configs.scala:38:24, :55:20, :56:{44,49}, :61:44, :69:8, :92:28, src/main/scala/isa/LA32.scala:109:50, src/main/scala/stages/MEM/IM.scala:27:7, :41:24, :42:{20,37}, :44:19, :59:23]
+      : info_result;	// @[src/main/scala/config/Configs.scala:39:24, :56:20, :57:{44,49}, :62:44, :70:8, :93:28, src/main/scala/isa/LA32.scala:109:50, src/main/scala/stages/MEM/IM.scala:27:7, :41:24, :42:{20,37}, :44:19, :59:23]
   wire        _GEN = io_flush_en | io_has_exc;	// @[src/main/scala/stages/MEM/IM.scala:32:21]
   always @(posedge clock) begin	// @[src/main/scala/stages/MEM/IM.scala:27:7]
     if (reset) begin	// @[src/main/scala/stages/MEM/IM.scala:27:7]
-      info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_func_type <= 4'h0;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-      info_op_type <= 10'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_is_wf <= 1'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_piece <= 2'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_dest <= 5'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_rkd_value <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_result <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_this_exc <= 1'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_csr_we <= 1'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_csr_addr <= 14'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_csr_mask <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_valid <= 1'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_func_type <= 4'h0;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+      info_op_type <= 10'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_is_wf <= 1'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_piece <= 2'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_dest <= 5'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_rkd_value <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_result <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_this_exc <= 1'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_exc_type <= 6'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_csr_we <= 1'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_csr_mask <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_csr_addr <= 14'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_valid <= 1'h0;	// @[src/main/scala/config/Configs.scala:40:24]
     end
     else begin	// @[src/main/scala/stages/MEM/IM.scala:27:7]
       if (_GEN) begin	// @[src/main/scala/stages/MEM/IM.scala:32:21]
-        info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_func_type <= 4'h0;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-        info_op_type <= 10'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_piece <= 2'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_dest <= 5'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_rkd_value <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_result <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_csr_addr <= 14'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_csr_mask <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
+        info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_func_type <= 4'h0;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+        info_op_type <= 10'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_piece <= 2'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_dest <= 5'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_rkd_value <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_result <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_exc_type <= 6'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_csr_mask <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_csr_addr <= 14'h0;	// @[src/main/scala/config/Configs.scala:39:24]
       end
       else if (io_from_valid) begin	// @[src/main/scala/stages/MEM/IM.scala:28:14]
-        info_pc <= io_from_bits_pc;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_func_type <= io_from_bits_func_type;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_op_type <= io_from_bits_op_type;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_piece <= io_from_bits_piece;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_dest <= io_from_bits_dest;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_rkd_value <= io_from_bits_rkd_value;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_result <= io_from_bits_result;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_csr_addr <= io_from_bits_csr_addr;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_csr_mask <= io_from_bits_csr_mask;	// @[src/main/scala/config/Configs.scala:38:24]
+        info_pc <= io_from_bits_pc;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_func_type <= io_from_bits_func_type;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_op_type <= io_from_bits_op_type;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_piece <= io_from_bits_piece;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_dest <= io_from_bits_dest;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_rkd_value <= io_from_bits_rkd_value;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_result <= io_from_bits_result;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_exc_type <= io_from_bits_exc_type;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_csr_mask <= io_from_bits_csr_mask;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_csr_addr <= io_from_bits_csr_addr;	// @[src/main/scala/config/Configs.scala:39:24]
       end
-      info_is_wf <= ~_GEN & (io_from_valid ? io_from_bits_is_wf : info_is_wf);	// @[src/main/scala/config/Configs.scala:38:24, :47:30, :48:12, src/main/scala/stages/MEM/IM.scala:32:{21,36}, :33:19]
-      info_this_exc <= ~_GEN & (io_from_valid ? io_from_bits_this_exc : info_this_exc);	// @[src/main/scala/config/Configs.scala:38:24, :47:30, :48:12, src/main/scala/stages/MEM/IM.scala:32:{21,36}, :33:19]
-      info_csr_we <= ~_GEN & (io_from_valid ? io_from_bits_csr_we : info_csr_we);	// @[src/main/scala/config/Configs.scala:38:24, :47:30, :48:12, src/main/scala/stages/MEM/IM.scala:32:{21,36}, :33:19]
-      info_valid <= io_from_valid;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_is_wf <= ~_GEN & (io_from_valid ? io_from_bits_is_wf : info_is_wf);	// @[src/main/scala/config/Configs.scala:39:24, :48:30, :49:12, src/main/scala/stages/MEM/IM.scala:32:{21,36}, :33:19]
+      info_this_exc <= ~_GEN & (io_from_valid ? io_from_bits_this_exc : info_this_exc);	// @[src/main/scala/config/Configs.scala:39:24, :48:30, :49:12, src/main/scala/stages/MEM/IM.scala:32:{21,36}, :33:19]
+      info_csr_we <= ~_GEN & (io_from_valid ? io_from_bits_csr_we : info_csr_we);	// @[src/main/scala/config/Configs.scala:39:24, :48:30, :49:12, src/main/scala/stages/MEM/IM.scala:32:{21,36}, :33:19]
+      info_valid <= io_from_valid;	// @[src/main/scala/config/Configs.scala:40:24]
     end
   end // always @(posedge)
   `ifdef ENABLE_INITIAL_REG_	// @[src/main/scala/stages/MEM/IM.scala:27:7]
@@ -1440,44 +1487,45 @@ module IM(	// @[src/main/scala/stages/MEM/IM.scala:27:7]
         for (logic [3:0] i = 4'h0; i < 4'hA; i += 4'h1) begin
           _RANDOM[i] = `RANDOM;	// @[src/main/scala/stages/MEM/IM.scala:27:7]
         end	// @[src/main/scala/stages/MEM/IM.scala:27:7]
-        info_pc = _RANDOM[4'h0];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-        info_func_type = _RANDOM[4'h2][3:0];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-        info_op_type = _RANDOM[4'h2][13:4];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-        info_is_wf = _RANDOM[4'h2][14];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-        info_piece = _RANDOM[4'h2][16:15];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-        info_dest = _RANDOM[4'h2][21:17];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-        info_rkd_value = {_RANDOM[4'h2][31:22], _RANDOM[4'h3][21:0]};	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-        info_result = {_RANDOM[4'h5][31:22], _RANDOM[4'h6][21:0]};	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-        info_this_exc = _RANDOM[4'h6][22];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-        info_csr_we = _RANDOM[4'h6][23];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-        info_csr_addr = {_RANDOM[4'h6][31:24], _RANDOM[4'h7][5:0]};	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-        info_csr_mask = {_RANDOM[4'h8][31:21], _RANDOM[4'h9][20:0]};	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-        info_valid = _RANDOM[4'h9][21];	// @[src/main/scala/config/Configs.scala:38:24, :39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+        info_pc = _RANDOM[4'h0];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+        info_func_type = _RANDOM[4'h2][3:0];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+        info_op_type = _RANDOM[4'h2][13:4];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+        info_is_wf = _RANDOM[4'h2][14];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+        info_piece = _RANDOM[4'h2][16:15];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+        info_dest = _RANDOM[4'h2][21:17];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+        info_rkd_value = {_RANDOM[4'h2][31:22], _RANDOM[4'h3][21:0]};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+        info_result = {_RANDOM[4'h5][31:22], _RANDOM[4'h6][21:0]};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+        info_this_exc = _RANDOM[4'h6][22];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+        info_exc_type = _RANDOM[4'h6][28:23];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+        info_csr_we = _RANDOM[4'h6][29];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+        info_csr_mask = {_RANDOM[4'h6][31:30], _RANDOM[4'h7][29:0]};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+        info_csr_addr = {_RANDOM[4'h7][31:30], _RANDOM[4'h8][11:0]};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+        info_valid = _RANDOM[4'h9][27];	// @[src/main/scala/config/Configs.scala:40:24, src/main/scala/stages/MEM/IM.scala:27:7]
       `endif // RANDOMIZE_REG_INIT
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/MEM/IM.scala:27:7]
       `FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/MEM/IM.scala:27:7]
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_to_valid = info_valid;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
-  assign io_to_bits_pc = info_pc;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-  assign io_to_bits_func_type = info_func_type;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-  assign io_to_bits_op_type = info_op_type;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-  assign io_to_bits_is_wf = info_is_wf;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-  assign io_to_bits_dest = info_dest;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-  assign io_to_bits_rkd_value = info_rkd_value;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_to_valid = info_valid;	// @[src/main/scala/config/Configs.scala:40:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_to_bits_pc = info_pc;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_to_bits_op_type = info_op_type;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_to_bits_is_wf = info_is_wf;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_to_bits_dest = info_dest;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_to_bits_rkd_value = info_rkd_value;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
   assign io_to_bits_result = to_info_result;	// @[src/main/scala/stages/MEM/IM.scala:27:7, :41:24]
-  assign io_to_bits_this_exc = info_this_exc;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-  assign io_to_bits_csr_we = info_csr_we;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-  assign io_to_bits_csr_addr = info_csr_addr;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-  assign io_to_bits_csr_mask = info_csr_mask;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-  assign io_this_exc = info_this_exc;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-  assign io_ms_we = info_is_wf;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-  assign io_ms_addr = info_dest;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_to_bits_this_exc = info_this_exc;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_to_bits_exc_type = info_exc_type;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_to_bits_csr_we = info_csr_we;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_to_bits_csr_mask = info_csr_mask;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_to_bits_csr_addr = info_csr_addr;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_this_exc = info_this_exc;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_ms_we = info_is_wf;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_ms_addr = info_dest;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
   assign io_ms_data = to_info_result;	// @[src/main/scala/stages/MEM/IM.scala:27:7, :41:24]
-  assign io_csr_ms_we = info_csr_we;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
-  assign io_csr_ms_addr = info_csr_addr[4:0];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7, :84:18]
-  assign io_csr_ms_data = info_rkd_value;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_csr_ms_we = info_csr_we;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
+  assign io_csr_ms_addr = info_csr_addr[4:0];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7, :84:18]
+  assign io_csr_ms_data = info_rkd_value;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/MEM/IM.scala:27:7]
 endmodule
 
 module IW(	// @[src/main/scala/stages/WB/IW.scala:37:7]
@@ -1485,18 +1533,18 @@ module IW(	// @[src/main/scala/stages/WB/IW.scala:37:7]
                 reset,	// @[src/main/scala/stages/WB/IW.scala:37:7]
                 io_from_valid,	// @[src/main/scala/stages/WB/IW.scala:38:14]
   input  [31:0] io_from_bits_pc,	// @[src/main/scala/stages/WB/IW.scala:38:14]
-  input  [3:0]  io_from_bits_func_type,	// @[src/main/scala/stages/WB/IW.scala:38:14]
   input  [9:0]  io_from_bits_op_type,	// @[src/main/scala/stages/WB/IW.scala:38:14]
   input         io_from_bits_is_wf,	// @[src/main/scala/stages/WB/IW.scala:38:14]
   input  [4:0]  io_from_bits_dest,	// @[src/main/scala/stages/WB/IW.scala:38:14]
   input  [31:0] io_from_bits_rkd_value,	// @[src/main/scala/stages/WB/IW.scala:38:14]
                 io_from_bits_result,	// @[src/main/scala/stages/WB/IW.scala:38:14]
   input         io_from_bits_this_exc,	// @[src/main/scala/stages/WB/IW.scala:38:14]
-                io_from_bits_csr_we,	// @[src/main/scala/stages/WB/IW.scala:38:14]
-  input  [13:0] io_from_bits_csr_addr,	// @[src/main/scala/stages/WB/IW.scala:38:14]
+  input  [5:0]  io_from_bits_exc_type,	// @[src/main/scala/stages/WB/IW.scala:38:14]
+  input         io_from_bits_csr_we,	// @[src/main/scala/stages/WB/IW.scala:38:14]
   input  [31:0] io_from_bits_csr_mask,	// @[src/main/scala/stages/WB/IW.scala:38:14]
+  input  [13:0] io_from_bits_csr_addr,	// @[src/main/scala/stages/WB/IW.scala:38:14]
   output [31:0] io_to_bits_pc,	// @[src/main/scala/stages/WB/IW.scala:38:14]
-  output [9:0]  io_to_bits_op_type,	// @[src/main/scala/stages/WB/IW.scala:38:14]
+  output [5:0]  io_to_bits_exc_type,	// @[src/main/scala/stages/WB/IW.scala:38:14]
   input         io_flush_en,	// @[src/main/scala/stages/WB/IW.scala:38:14]
   output [4:0]  io_flush_apply,	// @[src/main/scala/stages/WB/IW.scala:38:14]
   output        io_this_exc,	// @[src/main/scala/stages/WB/IW.scala:38:14]
@@ -1521,64 +1569,62 @@ module IW(	// @[src/main/scala/stages/WB/IW.scala:37:7]
                 io_exc_end	// @[src/main/scala/stages/WB/IW.scala:38:14]
 );
 
-  reg  [31:0] info_pc;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [3:0]  info_func_type;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [9:0]  info_op_type;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg         info_is_wf;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [4:0]  info_dest;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [31:0] info_rkd_value;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [31:0] info_result;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg         info_this_exc;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg         info_csr_we;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [13:0] info_csr_addr;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg  [31:0] info_csr_mask;	// @[src/main/scala/config/Configs.scala:38:24]
-  reg         info_valid;	// @[src/main/scala/config/Configs.scala:39:24]
-  wire        io_rf_bus_we_0 = info_is_wf & info_valid;	// @[src/main/scala/config/Configs.scala:38:24, :39:24, src/main/scala/stages/WB/IW.scala:52:33]
-  wire        _io_rcsr_bus_wmask_T = info_op_type == 10'h1;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:58:41]
-  wire        _GEN = info_func_type == 4'h8;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7, :74:23]
-  wire        io_exc_start_0 = _GEN & info_op_type == 10'h0;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:74:{23,40,56}]
-  wire        io_exc_end_0 = _GEN & _io_rcsr_bus_wmask_T;	// @[src/main/scala/stages/WB/IW.scala:58:41, :74:23, :79:40]
+  reg  [31:0] info_pc;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [9:0]  info_op_type;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg         info_is_wf;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [4:0]  info_dest;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [31:0] info_rkd_value;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [31:0] info_result;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg         info_this_exc;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [5:0]  info_exc_type;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg         info_csr_we;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [31:0] info_csr_mask;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg  [13:0] info_csr_addr;	// @[src/main/scala/config/Configs.scala:39:24]
+  reg         info_valid;	// @[src/main/scala/config/Configs.scala:40:24]
+  wire        io_rf_bus_we_0 = info_is_wf & info_valid;	// @[src/main/scala/config/Configs.scala:39:24, :40:24, src/main/scala/stages/WB/IW.scala:52:35]
+  wire        io_exc_start_0 = info_this_exc & info_exc_type != 6'h26;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:74:{22,39}]
+  wire        io_exc_end_0 = info_this_exc & info_exc_type == 6'h26;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:79:{22,39}]
   always @(posedge clock) begin	// @[src/main/scala/stages/WB/IW.scala:37:7]
     if (reset) begin	// @[src/main/scala/stages/WB/IW.scala:37:7]
-      info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_func_type <= 4'h0;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-      info_op_type <= 10'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_is_wf <= 1'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_dest <= 5'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_rkd_value <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_result <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_this_exc <= 1'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_csr_we <= 1'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_csr_addr <= 14'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_csr_mask <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-      info_valid <= 1'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_op_type <= 10'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_is_wf <= 1'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_dest <= 5'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_rkd_value <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_result <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_this_exc <= 1'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_exc_type <= 6'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_csr_we <= 1'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_csr_mask <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_csr_addr <= 14'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+      info_valid <= 1'h0;	// @[src/main/scala/config/Configs.scala:40:24]
     end
     else begin	// @[src/main/scala/stages/WB/IW.scala:37:7]
       if (io_flush_en) begin	// @[src/main/scala/stages/WB/IW.scala:38:14]
-        info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_func_type <= 4'h0;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-        info_op_type <= 10'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_dest <= 5'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_rkd_value <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_result <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_csr_addr <= 14'h0;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_csr_mask <= 32'h0;	// @[src/main/scala/config/Configs.scala:38:24]
+        info_pc <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_op_type <= 10'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_dest <= 5'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_rkd_value <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_result <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_exc_type <= 6'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_csr_mask <= 32'h0;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_csr_addr <= 14'h0;	// @[src/main/scala/config/Configs.scala:39:24]
       end
       else if (io_from_valid) begin	// @[src/main/scala/stages/WB/IW.scala:38:14]
-        info_pc <= io_from_bits_pc;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_func_type <= io_from_bits_func_type;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_op_type <= io_from_bits_op_type;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_dest <= io_from_bits_dest;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_rkd_value <= io_from_bits_rkd_value;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_result <= io_from_bits_result;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_csr_addr <= io_from_bits_csr_addr;	// @[src/main/scala/config/Configs.scala:38:24]
-        info_csr_mask <= io_from_bits_csr_mask;	// @[src/main/scala/config/Configs.scala:38:24]
+        info_pc <= io_from_bits_pc;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_op_type <= io_from_bits_op_type;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_dest <= io_from_bits_dest;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_rkd_value <= io_from_bits_rkd_value;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_result <= io_from_bits_result;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_exc_type <= io_from_bits_exc_type;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_csr_mask <= io_from_bits_csr_mask;	// @[src/main/scala/config/Configs.scala:39:24]
+        info_csr_addr <= io_from_bits_csr_addr;	// @[src/main/scala/config/Configs.scala:39:24]
       end
-      info_is_wf <= ~io_flush_en & (io_from_valid ? io_from_bits_is_wf : info_is_wf);	// @[src/main/scala/config/Configs.scala:38:24, :47:30, :48:12, src/main/scala/stages/WB/IW.scala:42:22, :43:19]
+      info_is_wf <= ~io_flush_en & (io_from_valid ? io_from_bits_is_wf : info_is_wf);	// @[src/main/scala/config/Configs.scala:39:24, :48:30, :49:12, src/main/scala/stages/WB/IW.scala:42:21, :43:10]
       info_this_exc <=
-        ~io_flush_en & (io_from_valid ? io_from_bits_this_exc : info_this_exc);	// @[src/main/scala/config/Configs.scala:38:24, :47:30, :48:12, src/main/scala/stages/WB/IW.scala:42:22, :43:19]
-      info_csr_we <= ~io_flush_en & (io_from_valid ? io_from_bits_csr_we : info_csr_we);	// @[src/main/scala/config/Configs.scala:38:24, :47:30, :48:12, src/main/scala/stages/WB/IW.scala:42:22, :43:19]
-      info_valid <= io_from_valid;	// @[src/main/scala/config/Configs.scala:39:24]
+        ~io_flush_en & (io_from_valid ? io_from_bits_this_exc : info_this_exc);	// @[src/main/scala/config/Configs.scala:39:24, :48:30, :49:12, src/main/scala/stages/WB/IW.scala:42:21, :43:10]
+      info_csr_we <= ~io_flush_en & (io_from_valid ? io_from_bits_csr_we : info_csr_we);	// @[src/main/scala/config/Configs.scala:39:24, :48:30, :49:12, src/main/scala/stages/WB/IW.scala:42:21, :43:10]
+      info_valid <= io_from_valid;	// @[src/main/scala/config/Configs.scala:40:24]
     end
   end // always @(posedge)
   `ifdef ENABLE_INITIAL_REG_	// @[src/main/scala/stages/WB/IW.scala:37:7]
@@ -1594,183 +1640,183 @@ module IW(	// @[src/main/scala/stages/WB/IW.scala:37:7]
         for (logic [3:0] i = 4'h0; i < 4'hA; i += 4'h1) begin
           _RANDOM[i] = `RANDOM;	// @[src/main/scala/stages/WB/IW.scala:37:7]
         end	// @[src/main/scala/stages/WB/IW.scala:37:7]
-        info_pc = _RANDOM[4'h0];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-        info_func_type = _RANDOM[4'h2][3:0];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-        info_op_type = _RANDOM[4'h2][13:4];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-        info_is_wf = _RANDOM[4'h2][14];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-        info_dest = _RANDOM[4'h2][21:17];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-        info_rkd_value = {_RANDOM[4'h2][31:22], _RANDOM[4'h3][21:0]};	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-        info_result = {_RANDOM[4'h5][31:22], _RANDOM[4'h6][21:0]};	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-        info_this_exc = _RANDOM[4'h6][22];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-        info_csr_we = _RANDOM[4'h6][23];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-        info_csr_addr = {_RANDOM[4'h6][31:24], _RANDOM[4'h7][5:0]};	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-        info_csr_mask = {_RANDOM[4'h8][31:21], _RANDOM[4'h9][20:0]};	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-        info_valid = _RANDOM[4'h9][21];	// @[src/main/scala/config/Configs.scala:38:24, :39:24, src/main/scala/stages/WB/IW.scala:37:7]
+        info_pc = _RANDOM[4'h0];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+        info_op_type = _RANDOM[4'h2][13:4];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+        info_is_wf = _RANDOM[4'h2][14];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+        info_dest = _RANDOM[4'h2][21:17];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+        info_rkd_value = {_RANDOM[4'h2][31:22], _RANDOM[4'h3][21:0]};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+        info_result = {_RANDOM[4'h5][31:22], _RANDOM[4'h6][21:0]};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+        info_this_exc = _RANDOM[4'h6][22];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+        info_exc_type = _RANDOM[4'h6][28:23];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+        info_csr_we = _RANDOM[4'h6][29];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+        info_csr_mask = {_RANDOM[4'h6][31:30], _RANDOM[4'h7][29:0]};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+        info_csr_addr = {_RANDOM[4'h7][31:30], _RANDOM[4'h8][11:0]};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+        info_valid = _RANDOM[4'h9][27];	// @[src/main/scala/config/Configs.scala:40:24, src/main/scala/stages/WB/IW.scala:37:7]
       `endif // RANDOMIZE_REG_INIT
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/WB/IW.scala:37:7]
       `FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/WB/IW.scala:37:7]
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_to_bits_pc = info_pc;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-  assign io_to_bits_op_type = info_op_type;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-  assign io_flush_apply = {5{io_exc_end_0 | io_exc_start_0}};	// @[src/main/scala/stages/WB/IW.scala:37:7, :45:18, :74:{40,75}, :75:20, :79:{40,76}, :80:20]
-  assign io_this_exc = info_this_exc;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-  assign io_ws_we = info_is_wf;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-  assign io_ws_addr = info_dest;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-  assign io_ws_data = info_result;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-  assign io_csr_ws_we = info_csr_we;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-  assign io_csr_ws_addr = info_csr_addr[4:0];	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7, :70:18]
-  assign io_csr_ws_data = info_rkd_value;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-  assign io_debug_wb_pc = info_pc;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-  assign io_debug_wb_rf_we = {4{io_rf_bus_we_0}};	// @[src/main/scala/stages/WB/IW.scala:37:7, :52:33, :85:31]
-  assign io_debug_wb_rf_wnum = info_dest;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-  assign io_debug_wb_rf_wdata = info_result;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-  assign io_rf_bus_we = io_rf_bus_we_0;	// @[src/main/scala/stages/WB/IW.scala:37:7, :52:33]
-  assign io_rf_bus_waddr = {9'h0, info_dest};	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7, :54:19]
-  assign io_rf_bus_wdata = info_result;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-  assign io_rcsr_bus_we = info_csr_we;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-  assign io_rcsr_bus_wmask = _io_rcsr_bus_wmask_T ? 32'hFFFFFFFF : info_csr_mask;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7, :58:{27,41}]
-  assign io_rcsr_bus_waddr = info_csr_addr;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-  assign io_rcsr_bus_wdata = info_rkd_value;	// @[src/main/scala/config/Configs.scala:38:24, src/main/scala/stages/WB/IW.scala:37:7]
-  assign io_exc_start = io_exc_start_0;	// @[src/main/scala/stages/WB/IW.scala:37:7, :74:40]
-  assign io_exc_end = io_exc_end_0;	// @[src/main/scala/stages/WB/IW.scala:37:7, :79:40]
+  assign io_to_bits_pc = info_pc;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+  assign io_to_bits_exc_type = info_exc_type;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+  assign io_flush_apply = {5{io_exc_end_0 | io_exc_start_0}};	// @[src/main/scala/stages/WB/IW.scala:37:7, :45:18, :74:{22,56}, :75:20, :79:{22,56}, :80:20]
+  assign io_this_exc = info_this_exc;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+  assign io_ws_we = info_is_wf;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+  assign io_ws_addr = info_dest;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+  assign io_ws_data = info_result;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+  assign io_csr_ws_we = info_csr_we;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+  assign io_csr_ws_addr = info_csr_addr[4:0];	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7, :70:18]
+  assign io_csr_ws_data = info_rkd_value;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+  assign io_debug_wb_pc = info_pc;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+  assign io_debug_wb_rf_we = {4{io_rf_bus_we_0}};	// @[src/main/scala/stages/WB/IW.scala:37:7, :52:35, :85:31]
+  assign io_debug_wb_rf_wnum = info_dest;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+  assign io_debug_wb_rf_wdata = info_result;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+  assign io_rf_bus_we = io_rf_bus_we_0;	// @[src/main/scala/stages/WB/IW.scala:37:7, :52:35]
+  assign io_rf_bus_waddr = {9'h0, info_dest};	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7, :54:21]
+  assign io_rf_bus_wdata = info_result;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+  assign io_rcsr_bus_we = info_csr_we;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+  assign io_rcsr_bus_wmask = info_op_type == 10'h2 ? info_csr_mask : 32'hFFFFFFFF;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7, :58:{27,41}]
+  assign io_rcsr_bus_waddr = info_csr_addr;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+  assign io_rcsr_bus_wdata = info_rkd_value;	// @[src/main/scala/config/Configs.scala:39:24, src/main/scala/stages/WB/IW.scala:37:7]
+  assign io_exc_start = io_exc_start_0;	// @[src/main/scala/stages/WB/IW.scala:37:7, :74:22]
+  assign io_exc_end = io_exc_end_0;	// @[src/main/scala/stages/WB/IW.scala:37:7, :79:22]
 endmodule
 
-module CSR(	// @[src/main/scala/csr/CSR.scala:209:7]
-  input         clock,	// @[src/main/scala/csr/CSR.scala:209:7]
-                reset,	// @[src/main/scala/csr/CSR.scala:209:7]
-                io_re,	// @[src/main/scala/csr/CSR.scala:210:14]
-  input  [13:0] io_raddr,	// @[src/main/scala/csr/CSR.scala:210:14]
-  input         io_rf_bus_we,	// @[src/main/scala/csr/CSR.scala:210:14]
-  input  [31:0] io_rf_bus_wmask,	// @[src/main/scala/csr/CSR.scala:210:14]
-  input  [13:0] io_rf_bus_waddr,	// @[src/main/scala/csr/CSR.scala:210:14]
-  input  [31:0] io_rf_bus_wdata,	// @[src/main/scala/csr/CSR.scala:210:14]
-                io_info_pc,	// @[src/main/scala/csr/CSR.scala:210:14]
-  input  [9:0]  io_info_op_type,	// @[src/main/scala/csr/CSR.scala:210:14]
-  input         io_start,	// @[src/main/scala/csr/CSR.scala:210:14]
-                io_end,	// @[src/main/scala/csr/CSR.scala:210:14]
-  output [31:0] io_rdata,	// @[src/main/scala/csr/CSR.scala:210:14]
-  output        io_exc_bus_en,	// @[src/main/scala/csr/CSR.scala:210:14]
-  output [31:0] io_exc_bus_pc	// @[src/main/scala/csr/CSR.scala:210:14]
+module CSR(	// @[src/main/scala/csr/CSR.scala:29:7]
+  input         clock,	// @[src/main/scala/csr/CSR.scala:29:7]
+                reset,	// @[src/main/scala/csr/CSR.scala:29:7]
+                io_re,	// @[src/main/scala/csr/CSR.scala:30:14]
+  input  [13:0] io_raddr,	// @[src/main/scala/csr/CSR.scala:30:14]
+  input         io_rf_bus_we,	// @[src/main/scala/csr/CSR.scala:30:14]
+  input  [31:0] io_rf_bus_wmask,	// @[src/main/scala/csr/CSR.scala:30:14]
+  input  [13:0] io_rf_bus_waddr,	// @[src/main/scala/csr/CSR.scala:30:14]
+  input  [31:0] io_rf_bus_wdata,	// @[src/main/scala/csr/CSR.scala:30:14]
+                io_info_pc,	// @[src/main/scala/csr/CSR.scala:30:14]
+  input  [5:0]  io_info_exc_type,	// @[src/main/scala/csr/CSR.scala:30:14]
+  input         io_start,	// @[src/main/scala/csr/CSR.scala:30:14]
+                io_end,	// @[src/main/scala/csr/CSR.scala:30:14]
+  output [31:0] io_rdata,	// @[src/main/scala/csr/CSR.scala:30:14]
+  output        io_exc_bus_en,	// @[src/main/scala/csr/CSR.scala:30:14]
+  output [31:0] io_exc_bus_pc	// @[src/main/scala/csr/CSR.scala:30:14]
 );
 
-  reg         info_we;	// @[src/main/scala/csr/CSR.scala:30:30]
-  reg  [1:0]  info_datm;	// @[src/main/scala/csr/CSR.scala:30:30]
-  reg  [1:0]  info_datf;	// @[src/main/scala/csr/CSR.scala:30:30]
-  reg         info_pg;	// @[src/main/scala/csr/CSR.scala:30:30]
-  reg         info_da;	// @[src/main/scala/csr/CSR.scala:30:30]
-  reg         info_ie;	// @[src/main/scala/csr/CSR.scala:30:30]
-  reg  [1:0]  info_plv;	// @[src/main/scala/csr/CSR.scala:30:30]
-  reg         info_1_pwe;	// @[src/main/scala/csr/CSR.scala:46:30]
-  reg         info_1_pie;	// @[src/main/scala/csr/CSR.scala:46:30]
-  reg  [1:0]  info_1_pplv;	// @[src/main/scala/csr/CSR.scala:46:30]
-  reg         info_2_bte;	// @[src/main/scala/csr/CSR.scala:62:30]
-  reg         info_2_asxe;	// @[src/main/scala/csr/CSR.scala:62:30]
-  reg         info_2_sxe;	// @[src/main/scala/csr/CSR.scala:62:30]
-  reg         info_2_fpe;	// @[src/main/scala/csr/CSR.scala:62:30]
-  reg  [2:0]  info_3_vs;	// @[src/main/scala/csr/CSR.scala:77:30]
-  reg  [12:0] info_3_lie;	// @[src/main/scala/csr/CSR.scala:77:30]
-  reg  [8:0]  info_4_esubcode;	// @[src/main/scala/csr/CSR.scala:94:30]
-  reg  [5:0]  info_4_ecode;	// @[src/main/scala/csr/CSR.scala:94:30]
-  reg  [12:0] info_4_is;	// @[src/main/scala/csr/CSR.scala:94:30]
-  reg  [31:0] info_5_pc;	// @[src/main/scala/csr/CSR.scala:106:30]
-  reg  [31:0] info_6_vaddr;	// @[src/main/scala/csr/CSR.scala:118:30]
-  reg  [19:0] info_7_vpn;	// @[src/main/scala/csr/CSR.scala:131:30]
-  reg  [31:0] info_8_tid;	// @[src/main/scala/csr/CSR.scala:143:30]
-  reg  [27:0] info_9_initval;	// @[src/main/scala/csr/CSR.scala:158:30]
-  reg         info_9_preiodic;	// @[src/main/scala/csr/CSR.scala:158:30]
-  reg         info_9_en;	// @[src/main/scala/csr/CSR.scala:158:30]
-  reg  [27:0] info_10_timeval;	// @[src/main/scala/csr/CSR.scala:171:30]
-  reg         info_11_clr;	// @[src/main/scala/csr/CSR.scala:184:30]
-  wire        _GEN = io_rf_bus_we & io_rf_bus_waddr == 14'h0;	// @[src/main/scala/csr/CSR.scala:14:10, :30:30, :280:21, :286:22, :288:{28,38}]
-  wire        _GEN_0 = io_rf_bus_we & io_rf_bus_waddr == 14'h1;	// @[src/main/scala/csr/CSR.scala:14:10, :46:30, :286:22, :288:{28,38}]
-  wire        _GEN_1 = io_rf_bus_we & io_rf_bus_waddr == 14'h2;	// @[src/main/scala/csr/CSR.scala:14:10, :62:30, :286:22, :288:{28,38}]
-  wire        _GEN_2 = io_rf_bus_we & io_rf_bus_waddr == 14'h5;	// @[src/main/scala/csr/CSR.scala:14:10, :94:30, :286:22, :288:{28,38}]
-  wire        _GEN_3 = io_rf_bus_we & io_rf_bus_waddr == 14'h41;	// @[src/main/scala/csr/CSR.scala:14:10, :158:30, :286:22, :288:{28,38}]
-  always @(posedge clock) begin	// @[src/main/scala/csr/CSR.scala:209:7]
-    if (reset) begin	// @[src/main/scala/csr/CSR.scala:209:7]
-      info_we <= 1'h0;	// @[src/main/scala/csr/CSR.scala:30:30]
-      info_datm <= 2'h0;	// @[src/main/scala/csr/CSR.scala:30:30]
-      info_datf <= 2'h0;	// @[src/main/scala/csr/CSR.scala:30:30]
-      info_pg <= 1'h0;	// @[src/main/scala/csr/CSR.scala:30:30]
-      info_da <= 1'h1;	// @[src/main/scala/csr/CSR.scala:30:30]
-      info_ie <= 1'h0;	// @[src/main/scala/csr/CSR.scala:30:30]
-      info_plv <= 2'h0;	// @[src/main/scala/csr/CSR.scala:30:30]
-      info_1_pwe <= 1'h0;	// @[src/main/scala/csr/CSR.scala:46:30]
-      info_1_pie <= 1'h0;	// @[src/main/scala/csr/CSR.scala:46:30]
-      info_1_pplv <= 2'h0;	// @[src/main/scala/csr/CSR.scala:46:30]
-      info_2_bte <= 1'h0;	// @[src/main/scala/csr/CSR.scala:62:30]
-      info_2_asxe <= 1'h0;	// @[src/main/scala/csr/CSR.scala:62:30]
-      info_2_sxe <= 1'h0;	// @[src/main/scala/csr/CSR.scala:62:30]
-      info_2_fpe <= 1'h0;	// @[src/main/scala/csr/CSR.scala:62:30]
-      info_3_vs <= 3'h0;	// @[src/main/scala/csr/CSR.scala:77:30]
-      info_3_lie <= 13'h0;	// @[src/main/scala/csr/CSR.scala:77:30]
-      info_4_esubcode <= 9'h0;	// @[src/main/scala/csr/CSR.scala:94:30]
-      info_4_ecode <= 6'h0;	// @[src/main/scala/csr/CSR.scala:94:30]
-      info_4_is <= 13'h0;	// @[src/main/scala/csr/CSR.scala:94:30]
-      info_5_pc <= 32'h0;	// @[src/main/scala/csr/CSR.scala:106:30]
-      info_6_vaddr <= 32'h0;	// @[src/main/scala/csr/CSR.scala:118:30]
-      info_7_vpn <= 20'h0;	// @[src/main/scala/csr/CSR.scala:131:30]
-      info_8_tid <= 32'h0;	// @[src/main/scala/csr/CSR.scala:143:30]
-      info_9_initval <= 28'h0;	// @[src/main/scala/csr/CSR.scala:158:30]
-      info_9_preiodic <= 1'h0;	// @[src/main/scala/csr/CSR.scala:158:30]
-      info_9_en <= 1'h0;	// @[src/main/scala/csr/CSR.scala:158:30]
-      info_10_timeval <= 28'h0;	// @[src/main/scala/csr/CSR.scala:171:30]
-      info_11_clr <= 1'h0;	// @[src/main/scala/csr/CSR.scala:184:30]
+  reg         info_we;	// @[src/main/scala/csr/regs.scala:29:30]
+  reg  [1:0]  info_datm;	// @[src/main/scala/csr/regs.scala:29:30]
+  reg  [1:0]  info_datf;	// @[src/main/scala/csr/regs.scala:29:30]
+  reg         info_pg;	// @[src/main/scala/csr/regs.scala:29:30]
+  reg         info_da;	// @[src/main/scala/csr/regs.scala:29:30]
+  reg         info_ie;	// @[src/main/scala/csr/regs.scala:29:30]
+  reg  [1:0]  info_plv;	// @[src/main/scala/csr/regs.scala:29:30]
+  reg         info_1_pwe;	// @[src/main/scala/csr/regs.scala:45:30]
+  reg         info_1_pie;	// @[src/main/scala/csr/regs.scala:45:30]
+  reg  [1:0]  info_1_pplv;	// @[src/main/scala/csr/regs.scala:45:30]
+  reg         info_2_bte;	// @[src/main/scala/csr/regs.scala:61:30]
+  reg         info_2_asxe;	// @[src/main/scala/csr/regs.scala:61:30]
+  reg         info_2_sxe;	// @[src/main/scala/csr/regs.scala:61:30]
+  reg         info_2_fpe;	// @[src/main/scala/csr/regs.scala:61:30]
+  reg  [2:0]  info_3_vs;	// @[src/main/scala/csr/regs.scala:76:30]
+  reg  [12:0] info_3_lie;	// @[src/main/scala/csr/regs.scala:76:30]
+  reg  [8:0]  info_4_esubcode;	// @[src/main/scala/csr/regs.scala:93:30]
+  reg  [5:0]  info_4_ecode;	// @[src/main/scala/csr/regs.scala:93:30]
+  reg  [12:0] info_4_is;	// @[src/main/scala/csr/regs.scala:93:30]
+  reg  [31:0] info_5_pc;	// @[src/main/scala/csr/regs.scala:105:30]
+  reg  [31:0] info_6_vaddr;	// @[src/main/scala/csr/regs.scala:117:30]
+  reg  [19:0] info_7_vpn;	// @[src/main/scala/csr/regs.scala:130:30]
+  reg  [31:0] info_8_tid;	// @[src/main/scala/csr/regs.scala:142:30]
+  reg  [27:0] info_9_initval;	// @[src/main/scala/csr/regs.scala:157:30]
+  reg         info_9_preiodic;	// @[src/main/scala/csr/regs.scala:157:30]
+  reg         info_9_en;	// @[src/main/scala/csr/regs.scala:157:30]
+  reg  [27:0] info_10_timeval;	// @[src/main/scala/csr/regs.scala:170:30]
+  reg         info_11_clr;	// @[src/main/scala/csr/regs.scala:183:30]
+  wire        _GEN = io_rf_bus_we & io_rf_bus_waddr == 14'h0;	// @[src/main/scala/csr/CSR.scala:100:21, :106:22, :108:{28,38}, src/main/scala/csr/regs.scala:13:10, :29:30]
+  wire        _GEN_0 = io_rf_bus_we & io_rf_bus_waddr == 14'h1;	// @[src/main/scala/csr/CSR.scala:106:22, :108:{28,38}, src/main/scala/csr/regs.scala:13:10, :45:30]
+  wire        _GEN_1 = io_rf_bus_we & io_rf_bus_waddr == 14'h2;	// @[src/main/scala/csr/CSR.scala:106:22, :108:{28,38}, src/main/scala/csr/regs.scala:13:10, :61:30]
+  wire        _GEN_2 = io_rf_bus_we & io_rf_bus_waddr == 14'h5;	// @[src/main/scala/csr/CSR.scala:106:22, :108:{28,38}, src/main/scala/csr/regs.scala:13:10, :93:30]
+  wire        _GEN_3 = io_rf_bus_we & io_rf_bus_waddr == 14'h41;	// @[src/main/scala/csr/CSR.scala:106:22, :108:{28,38}, src/main/scala/csr/regs.scala:13:10, :157:30]
+  always @(posedge clock) begin	// @[src/main/scala/csr/CSR.scala:29:7]
+    if (reset) begin	// @[src/main/scala/csr/CSR.scala:29:7]
+      info_we <= 1'h0;	// @[src/main/scala/csr/regs.scala:29:30]
+      info_datm <= 2'h0;	// @[src/main/scala/csr/regs.scala:29:30]
+      info_datf <= 2'h0;	// @[src/main/scala/csr/regs.scala:29:30]
+      info_pg <= 1'h0;	// @[src/main/scala/csr/regs.scala:29:30]
+      info_da <= 1'h1;	// @[src/main/scala/csr/regs.scala:29:30]
+      info_ie <= 1'h0;	// @[src/main/scala/csr/regs.scala:29:30]
+      info_plv <= 2'h0;	// @[src/main/scala/csr/regs.scala:29:30]
+      info_1_pwe <= 1'h0;	// @[src/main/scala/csr/regs.scala:45:30]
+      info_1_pie <= 1'h0;	// @[src/main/scala/csr/regs.scala:45:30]
+      info_1_pplv <= 2'h0;	// @[src/main/scala/csr/regs.scala:45:30]
+      info_2_bte <= 1'h0;	// @[src/main/scala/csr/regs.scala:61:30]
+      info_2_asxe <= 1'h0;	// @[src/main/scala/csr/regs.scala:61:30]
+      info_2_sxe <= 1'h0;	// @[src/main/scala/csr/regs.scala:61:30]
+      info_2_fpe <= 1'h0;	// @[src/main/scala/csr/regs.scala:61:30]
+      info_3_vs <= 3'h0;	// @[src/main/scala/csr/regs.scala:76:30]
+      info_3_lie <= 13'h0;	// @[src/main/scala/csr/regs.scala:76:30]
+      info_4_esubcode <= 9'h0;	// @[src/main/scala/csr/regs.scala:93:30]
+      info_4_ecode <= 6'h0;	// @[src/main/scala/csr/regs.scala:93:30]
+      info_4_is <= 13'h0;	// @[src/main/scala/csr/regs.scala:93:30]
+      info_5_pc <= 32'h0;	// @[src/main/scala/csr/regs.scala:105:30]
+      info_6_vaddr <= 32'h0;	// @[src/main/scala/csr/regs.scala:117:30]
+      info_7_vpn <= 20'h0;	// @[src/main/scala/csr/regs.scala:130:30]
+      info_8_tid <= 32'h0;	// @[src/main/scala/csr/regs.scala:142:30]
+      info_9_initval <= 28'h0;	// @[src/main/scala/csr/regs.scala:157:30]
+      info_9_preiodic <= 1'h0;	// @[src/main/scala/csr/regs.scala:157:30]
+      info_9_en <= 1'h0;	// @[src/main/scala/csr/regs.scala:157:30]
+      info_10_timeval <= 28'h0;	// @[src/main/scala/csr/regs.scala:170:30]
+      info_11_clr <= 1'h0;	// @[src/main/scala/csr/regs.scala:183:30]
     end
-    else begin	// @[src/main/scala/csr/CSR.scala:209:7]
-      if (_GEN & io_rf_bus_wmask[9])	// @[src/main/scala/config/Configs.scala:85:28, src/main/scala/csr/CSR.scala:14:10, :30:30, :286:22, :288:38]
-        info_we <= io_rf_bus_wdata[9];	// @[src/main/scala/config/Configs.scala:85:38, src/main/scala/csr/CSR.scala:30:30]
-      if (_GEN) begin	// @[src/main/scala/csr/CSR.scala:14:10, :30:30, :286:22, :288:38]
+    else begin	// @[src/main/scala/csr/CSR.scala:29:7]
+      if (_GEN & io_rf_bus_wmask[9])	// @[src/main/scala/config/Configs.scala:86:28, src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :29:30]
+        info_we <= io_rf_bus_wdata[9];	// @[src/main/scala/config/Configs.scala:86:38, src/main/scala/csr/regs.scala:29:30]
+      if (_GEN) begin	// @[src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :29:30]
         info_datm <=
           {io_rf_bus_wmask[8] ? io_rf_bus_wdata[8] : info_datm[1],
-           io_rf_bus_wmask[7] ? io_rf_bus_wdata[7] : info_datm[0]};	// @[src/main/scala/config/Configs.scala:85:{23,28,38,47}, src/main/scala/csr/CSR.scala:14:27, :30:30]
+           io_rf_bus_wmask[7] ? io_rf_bus_wdata[7] : info_datm[0]};	// @[src/main/scala/config/Configs.scala:86:{23,28,38,47}, src/main/scala/csr/regs.scala:13:27, :29:30]
         info_datf <=
           {io_rf_bus_wmask[6] ? io_rf_bus_wdata[6] : info_datf[1],
-           io_rf_bus_wmask[5] ? io_rf_bus_wdata[5] : info_datf[0]};	// @[src/main/scala/config/Configs.scala:85:{23,28,38,47}, src/main/scala/csr/CSR.scala:14:27, :30:30]
+           io_rf_bus_wmask[5] ? io_rf_bus_wdata[5] : info_datf[0]};	// @[src/main/scala/config/Configs.scala:86:{23,28,38,47}, src/main/scala/csr/regs.scala:13:27, :29:30]
       end
-      if (_GEN & io_rf_bus_wmask[4])	// @[src/main/scala/config/Configs.scala:85:28, src/main/scala/csr/CSR.scala:14:10, :30:30, :286:22, :288:38]
-        info_pg <= io_rf_bus_wdata[4];	// @[src/main/scala/config/Configs.scala:85:38, src/main/scala/csr/CSR.scala:30:30]
-      if (_GEN & io_rf_bus_wmask[3])	// @[src/main/scala/config/Configs.scala:85:28, src/main/scala/csr/CSR.scala:14:10, :30:30, :286:22, :288:38]
-        info_da <= io_rf_bus_wdata[3];	// @[src/main/scala/config/Configs.scala:85:38, src/main/scala/csr/CSR.scala:30:30]
-      if (io_end) begin	// @[src/main/scala/csr/CSR.scala:210:14]
-        info_ie <= info_1_pie;	// @[src/main/scala/csr/CSR.scala:30:30, :46:30]
-        info_plv <= info_1_pplv;	// @[src/main/scala/csr/CSR.scala:30:30, :46:30]
+      if (_GEN & io_rf_bus_wmask[4])	// @[src/main/scala/config/Configs.scala:86:28, src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :29:30]
+        info_pg <= io_rf_bus_wdata[4];	// @[src/main/scala/config/Configs.scala:86:38, src/main/scala/csr/regs.scala:29:30]
+      if (_GEN & io_rf_bus_wmask[3])	// @[src/main/scala/config/Configs.scala:86:28, src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :29:30]
+        info_da <= io_rf_bus_wdata[3];	// @[src/main/scala/config/Configs.scala:86:38, src/main/scala/csr/regs.scala:29:30]
+      if (io_end) begin	// @[src/main/scala/csr/CSR.scala:30:14]
+        info_ie <= info_1_pie;	// @[src/main/scala/csr/regs.scala:29:30, :45:30]
+        info_plv <= info_1_pplv;	// @[src/main/scala/csr/regs.scala:29:30, :45:30]
       end
-      else begin	// @[src/main/scala/csr/CSR.scala:210:14]
-        info_ie <= ~io_start & (_GEN & io_rf_bus_wmask[2] ? io_rf_bus_wdata[2] : info_ie);	// @[src/main/scala/config/Configs.scala:85:{28,38}, src/main/scala/csr/CSR.scala:14:10, :30:30, :286:22, :288:38, :309:18, :313:20]
-        if (io_start)	// @[src/main/scala/csr/CSR.scala:210:14]
-          info_plv <= 2'h0;	// @[src/main/scala/csr/CSR.scala:30:30]
-        else if (_GEN)	// @[src/main/scala/csr/CSR.scala:14:10, :30:30, :286:22, :288:38]
+      else begin	// @[src/main/scala/csr/CSR.scala:30:14]
+        info_ie <= ~io_start & (_GEN & io_rf_bus_wmask[2] ? io_rf_bus_wdata[2] : info_ie);	// @[src/main/scala/config/Configs.scala:86:{28,38}, src/main/scala/csr/CSR.scala:106:22, :108:38, :129:18, :133:20, src/main/scala/csr/regs.scala:13:10, :29:30]
+        if (io_start)	// @[src/main/scala/csr/CSR.scala:30:14]
+          info_plv <= 2'h0;	// @[src/main/scala/csr/regs.scala:29:30]
+        else if (_GEN)	// @[src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :29:30]
           info_plv <=
             {io_rf_bus_wmask[1] ? io_rf_bus_wdata[1] : info_plv[1],
-             io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_plv[0]};	// @[src/main/scala/config/Configs.scala:85:{23,28,38,47}, src/main/scala/csr/CSR.scala:14:27, :30:30]
+             io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_plv[0]};	// @[src/main/scala/config/Configs.scala:86:{23,28,38,47}, src/main/scala/csr/regs.scala:13:27, :29:30]
       end
-      if (_GEN_0 & io_rf_bus_wmask[3])	// @[src/main/scala/config/Configs.scala:85:28, src/main/scala/csr/CSR.scala:14:10, :46:30, :286:22, :288:38]
-        info_1_pwe <= io_rf_bus_wdata[3];	// @[src/main/scala/config/Configs.scala:85:38, src/main/scala/csr/CSR.scala:46:30]
-      if (io_start) begin	// @[src/main/scala/csr/CSR.scala:210:14]
-        info_1_pie <= info_ie;	// @[src/main/scala/csr/CSR.scala:30:30, :46:30]
-        info_1_pplv <= info_plv;	// @[src/main/scala/csr/CSR.scala:30:30, :46:30]
-        info_4_ecode <= io_info_op_type == 10'h0 ? 6'hB : 6'h0;	// @[src/main/scala/config/Configs.scala:92:28, src/main/scala/csr/CSR.scala:94:30, :314:22]
-        info_5_pc <= io_info_pc;	// @[src/main/scala/csr/CSR.scala:106:30]
+      if (_GEN_0 & io_rf_bus_wmask[3])	// @[src/main/scala/config/Configs.scala:86:28, src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :45:30]
+        info_1_pwe <= io_rf_bus_wdata[3];	// @[src/main/scala/config/Configs.scala:86:38, src/main/scala/csr/regs.scala:45:30]
+      if (io_start) begin	// @[src/main/scala/csr/CSR.scala:30:14]
+        info_1_pie <= info_ie;	// @[src/main/scala/csr/regs.scala:29:30, :45:30]
+        info_1_pplv <= info_plv;	// @[src/main/scala/csr/regs.scala:29:30, :45:30]
+        info_4_ecode <= io_info_exc_type;	// @[src/main/scala/csr/regs.scala:93:30]
+        info_5_pc <= io_info_pc;	// @[src/main/scala/csr/regs.scala:105:30]
       end
-      else begin	// @[src/main/scala/csr/CSR.scala:210:14]
-        if (_GEN_0 & io_rf_bus_wmask[2])	// @[src/main/scala/config/Configs.scala:85:28, src/main/scala/csr/CSR.scala:14:10, :46:30, :286:22, :288:38]
-          info_1_pie <= io_rf_bus_wdata[2];	// @[src/main/scala/config/Configs.scala:85:38, src/main/scala/csr/CSR.scala:46:30]
-        if (_GEN_0)	// @[src/main/scala/csr/CSR.scala:14:10, :46:30, :286:22, :288:38]
+      else begin	// @[src/main/scala/csr/CSR.scala:30:14]
+        if (_GEN_0 & io_rf_bus_wmask[2])	// @[src/main/scala/config/Configs.scala:86:28, src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :45:30]
+          info_1_pie <= io_rf_bus_wdata[2];	// @[src/main/scala/config/Configs.scala:86:38, src/main/scala/csr/regs.scala:45:30]
+        if (_GEN_0)	// @[src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :45:30]
           info_1_pplv <=
             {io_rf_bus_wmask[1] ? io_rf_bus_wdata[1] : info_1_pplv[1],
-             io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_1_pplv[0]};	// @[src/main/scala/config/Configs.scala:85:{23,28,38,47}, src/main/scala/csr/CSR.scala:14:27, :46:30]
-        if (_GEN_2)	// @[src/main/scala/csr/CSR.scala:14:10, :94:30, :286:22, :288:38]
+             io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_1_pplv[0]};	// @[src/main/scala/config/Configs.scala:86:{23,28,38,47}, src/main/scala/csr/regs.scala:13:27, :45:30]
+        if (_GEN_2)	// @[src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :93:30]
           info_4_ecode <=
             {io_rf_bus_wmask[21] ? io_rf_bus_wdata[21] : info_4_ecode[5],
              io_rf_bus_wmask[20] ? io_rf_bus_wdata[20] : info_4_ecode[4],
              io_rf_bus_wmask[19] ? io_rf_bus_wdata[19] : info_4_ecode[3],
              io_rf_bus_wmask[18] ? io_rf_bus_wdata[18] : info_4_ecode[2],
              io_rf_bus_wmask[17] ? io_rf_bus_wdata[17] : info_4_ecode[1],
-             io_rf_bus_wmask[16] ? io_rf_bus_wdata[16] : info_4_ecode[0]};	// @[src/main/scala/config/Configs.scala:85:{23,28,38,47}, src/main/scala/csr/CSR.scala:14:27, :94:30]
-        if (io_rf_bus_we & io_rf_bus_waddr == 14'h6)	// @[src/main/scala/csr/CSR.scala:14:10, :106:30, :286:22, :288:{28,38}]
+             io_rf_bus_wmask[16] ? io_rf_bus_wdata[16] : info_4_ecode[0]};	// @[src/main/scala/config/Configs.scala:86:{23,28,38,47}, src/main/scala/csr/regs.scala:13:27, :93:30]
+        if (io_rf_bus_we & io_rf_bus_waddr == 14'h6)	// @[src/main/scala/csr/CSR.scala:106:22, :108:{28,38}, src/main/scala/csr/regs.scala:13:10, :105:30]
           info_5_pc <=
             {io_rf_bus_wmask[31] ? io_rf_bus_wdata[31] : info_5_pc[31],
              io_rf_bus_wmask[30] ? io_rf_bus_wdata[30] : info_5_pc[30],
@@ -1803,21 +1849,21 @@ module CSR(	// @[src/main/scala/csr/CSR.scala:209:7]
              io_rf_bus_wmask[3] ? io_rf_bus_wdata[3] : info_5_pc[3],
              io_rf_bus_wmask[2] ? io_rf_bus_wdata[2] : info_5_pc[2],
              io_rf_bus_wmask[1] ? io_rf_bus_wdata[1] : info_5_pc[1],
-             io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_5_pc[0]};	// @[src/main/scala/config/Configs.scala:85:{23,28,38,47}, :87:12, src/main/scala/csr/CSR.scala:106:30]
+             io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_5_pc[0]};	// @[src/main/scala/config/Configs.scala:86:{23,28,38,47}, :88:12, src/main/scala/csr/regs.scala:105:30]
       end
-      if (_GEN_1 & io_rf_bus_wmask[3])	// @[src/main/scala/config/Configs.scala:85:28, src/main/scala/csr/CSR.scala:14:10, :62:30, :286:22, :288:38]
-        info_2_bte <= io_rf_bus_wdata[3];	// @[src/main/scala/config/Configs.scala:85:38, src/main/scala/csr/CSR.scala:62:30]
-      if (_GEN_1 & io_rf_bus_wmask[2])	// @[src/main/scala/config/Configs.scala:85:28, src/main/scala/csr/CSR.scala:14:10, :62:30, :286:22, :288:38]
-        info_2_asxe <= io_rf_bus_wdata[2];	// @[src/main/scala/config/Configs.scala:85:38, src/main/scala/csr/CSR.scala:62:30]
-      if (_GEN_1 & io_rf_bus_wmask[1])	// @[src/main/scala/config/Configs.scala:85:28, src/main/scala/csr/CSR.scala:14:10, :62:30, :286:22, :288:38]
-        info_2_sxe <= io_rf_bus_wdata[1];	// @[src/main/scala/config/Configs.scala:85:38, src/main/scala/csr/CSR.scala:62:30]
-      if (_GEN_1 & io_rf_bus_wmask[0])	// @[src/main/scala/config/Configs.scala:85:28, src/main/scala/csr/CSR.scala:14:10, :62:30, :286:22, :288:38]
-        info_2_fpe <= io_rf_bus_wdata[0];	// @[src/main/scala/config/Configs.scala:85:38, src/main/scala/csr/CSR.scala:62:30]
-      if (io_rf_bus_we & io_rf_bus_waddr == 14'h4) begin	// @[src/main/scala/csr/CSR.scala:14:10, :77:30, :286:22, :288:{28,38}]
+      if (_GEN_1 & io_rf_bus_wmask[3])	// @[src/main/scala/config/Configs.scala:86:28, src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :61:30]
+        info_2_bte <= io_rf_bus_wdata[3];	// @[src/main/scala/config/Configs.scala:86:38, src/main/scala/csr/regs.scala:61:30]
+      if (_GEN_1 & io_rf_bus_wmask[2])	// @[src/main/scala/config/Configs.scala:86:28, src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :61:30]
+        info_2_asxe <= io_rf_bus_wdata[2];	// @[src/main/scala/config/Configs.scala:86:38, src/main/scala/csr/regs.scala:61:30]
+      if (_GEN_1 & io_rf_bus_wmask[1])	// @[src/main/scala/config/Configs.scala:86:28, src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :61:30]
+        info_2_sxe <= io_rf_bus_wdata[1];	// @[src/main/scala/config/Configs.scala:86:38, src/main/scala/csr/regs.scala:61:30]
+      if (_GEN_1 & io_rf_bus_wmask[0])	// @[src/main/scala/config/Configs.scala:86:28, src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :61:30]
+        info_2_fpe <= io_rf_bus_wdata[0];	// @[src/main/scala/config/Configs.scala:86:38, src/main/scala/csr/regs.scala:61:30]
+      if (io_rf_bus_we & io_rf_bus_waddr == 14'h4) begin	// @[src/main/scala/csr/CSR.scala:106:22, :108:{28,38}, src/main/scala/csr/regs.scala:13:10, :76:30]
         info_3_vs <=
           {io_rf_bus_wmask[18] ? io_rf_bus_wdata[18] : info_3_vs[2],
            io_rf_bus_wmask[17] ? io_rf_bus_wdata[17] : info_3_vs[1],
-           io_rf_bus_wmask[16] ? io_rf_bus_wdata[16] : info_3_vs[0]};	// @[src/main/scala/config/Configs.scala:85:{23,28,38,47}, src/main/scala/csr/CSR.scala:14:27, :77:30]
+           io_rf_bus_wmask[16] ? io_rf_bus_wdata[16] : info_3_vs[0]};	// @[src/main/scala/config/Configs.scala:86:{23,28,38,47}, src/main/scala/csr/regs.scala:13:27, :76:30]
         info_3_lie <=
           {io_rf_bus_wmask[12] ? io_rf_bus_wdata[12] : info_3_lie[12],
            io_rf_bus_wmask[11] ? io_rf_bus_wdata[11] : info_3_lie[11],
@@ -1831,9 +1877,9 @@ module CSR(	// @[src/main/scala/csr/CSR.scala:209:7]
            io_rf_bus_wmask[3] ? io_rf_bus_wdata[3] : info_3_lie[3],
            io_rf_bus_wmask[2] ? io_rf_bus_wdata[2] : info_3_lie[2],
            io_rf_bus_wmask[1] ? io_rf_bus_wdata[1] : info_3_lie[1],
-           io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_3_lie[0]};	// @[src/main/scala/config/Configs.scala:85:{23,28,38,47}, src/main/scala/csr/CSR.scala:14:27, :77:30]
+           io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_3_lie[0]};	// @[src/main/scala/config/Configs.scala:86:{23,28,38,47}, src/main/scala/csr/regs.scala:13:27, :76:30]
       end
-      if (_GEN_2) begin	// @[src/main/scala/csr/CSR.scala:14:10, :94:30, :286:22, :288:38]
+      if (_GEN_2) begin	// @[src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :93:30]
         info_4_esubcode <=
           {io_rf_bus_wmask[30] ? io_rf_bus_wdata[30] : info_4_esubcode[8],
            io_rf_bus_wmask[29] ? io_rf_bus_wdata[29] : info_4_esubcode[7],
@@ -1843,7 +1889,7 @@ module CSR(	// @[src/main/scala/csr/CSR.scala:209:7]
            io_rf_bus_wmask[25] ? io_rf_bus_wdata[25] : info_4_esubcode[3],
            io_rf_bus_wmask[24] ? io_rf_bus_wdata[24] : info_4_esubcode[2],
            io_rf_bus_wmask[23] ? io_rf_bus_wdata[23] : info_4_esubcode[1],
-           io_rf_bus_wmask[22] ? io_rf_bus_wdata[22] : info_4_esubcode[0]};	// @[src/main/scala/config/Configs.scala:85:{23,28,38,47}, src/main/scala/csr/CSR.scala:14:27, :94:30]
+           io_rf_bus_wmask[22] ? io_rf_bus_wdata[22] : info_4_esubcode[0]};	// @[src/main/scala/config/Configs.scala:86:{23,28,38,47}, src/main/scala/csr/regs.scala:13:27, :93:30]
         info_4_is <=
           {io_rf_bus_wmask[12] ? io_rf_bus_wdata[12] : info_4_is[12],
            io_rf_bus_wmask[11] ? io_rf_bus_wdata[11] : info_4_is[11],
@@ -1857,9 +1903,9 @@ module CSR(	// @[src/main/scala/csr/CSR.scala:209:7]
            io_rf_bus_wmask[3] ? io_rf_bus_wdata[3] : info_4_is[3],
            io_rf_bus_wmask[2] ? io_rf_bus_wdata[2] : info_4_is[2],
            io_rf_bus_wmask[1] ? io_rf_bus_wdata[1] : info_4_is[1],
-           io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_4_is[0]};	// @[src/main/scala/config/Configs.scala:85:{23,28,38,47}, src/main/scala/csr/CSR.scala:14:27, :94:30]
+           io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_4_is[0]};	// @[src/main/scala/config/Configs.scala:86:{23,28,38,47}, src/main/scala/csr/regs.scala:13:27, :93:30]
       end
-      if (io_rf_bus_we & io_rf_bus_waddr == 14'h7)	// @[src/main/scala/csr/CSR.scala:14:10, :118:30, :286:22, :288:{28,38}]
+      if (io_rf_bus_we & io_rf_bus_waddr == 14'h7)	// @[src/main/scala/csr/CSR.scala:106:22, :108:{28,38}, src/main/scala/csr/regs.scala:13:10, :117:30]
         info_6_vaddr <=
           {io_rf_bus_wmask[31] ? io_rf_bus_wdata[31] : info_6_vaddr[31],
            io_rf_bus_wmask[30] ? io_rf_bus_wdata[30] : info_6_vaddr[30],
@@ -1892,8 +1938,8 @@ module CSR(	// @[src/main/scala/csr/CSR.scala:209:7]
            io_rf_bus_wmask[3] ? io_rf_bus_wdata[3] : info_6_vaddr[3],
            io_rf_bus_wmask[2] ? io_rf_bus_wdata[2] : info_6_vaddr[2],
            io_rf_bus_wmask[1] ? io_rf_bus_wdata[1] : info_6_vaddr[1],
-           io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_6_vaddr[0]};	// @[src/main/scala/config/Configs.scala:85:{23,28,38,47}, :87:12, src/main/scala/csr/CSR.scala:118:30]
-      if (io_rf_bus_we & io_rf_bus_waddr == 14'hC)	// @[src/main/scala/csr/CSR.scala:14:10, :131:30, :286:22, :288:{28,38}]
+           io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_6_vaddr[0]};	// @[src/main/scala/config/Configs.scala:86:{23,28,38,47}, :88:12, src/main/scala/csr/regs.scala:117:30]
+      if (io_rf_bus_we & io_rf_bus_waddr == 14'hC)	// @[src/main/scala/csr/CSR.scala:106:22, :108:{28,38}, src/main/scala/csr/regs.scala:13:10, :130:30]
         info_7_vpn <=
           {io_rf_bus_wmask[31] ? io_rf_bus_wdata[31] : info_7_vpn[19],
            io_rf_bus_wmask[30] ? io_rf_bus_wdata[30] : info_7_vpn[18],
@@ -1914,8 +1960,8 @@ module CSR(	// @[src/main/scala/csr/CSR.scala:209:7]
            io_rf_bus_wmask[15] ? io_rf_bus_wdata[15] : info_7_vpn[3],
            io_rf_bus_wmask[14] ? io_rf_bus_wdata[14] : info_7_vpn[2],
            io_rf_bus_wmask[13] ? io_rf_bus_wdata[13] : info_7_vpn[1],
-           io_rf_bus_wmask[12] ? io_rf_bus_wdata[12] : info_7_vpn[0]};	// @[src/main/scala/config/Configs.scala:85:{23,28,38,47}, src/main/scala/csr/CSR.scala:14:27, :131:30]
-      if (io_rf_bus_we & io_rf_bus_waddr == 14'h40)	// @[src/main/scala/csr/CSR.scala:14:10, :143:30, :286:22, :288:{28,38}]
+           io_rf_bus_wmask[12] ? io_rf_bus_wdata[12] : info_7_vpn[0]};	// @[src/main/scala/config/Configs.scala:86:{23,28,38,47}, src/main/scala/csr/regs.scala:13:27, :130:30]
+      if (io_rf_bus_we & io_rf_bus_waddr == 14'h40)	// @[src/main/scala/csr/CSR.scala:106:22, :108:{28,38}, src/main/scala/csr/regs.scala:13:10, :142:30]
         info_8_tid <=
           {io_rf_bus_wmask[31] ? io_rf_bus_wdata[31] : info_8_tid[31],
            io_rf_bus_wmask[30] ? io_rf_bus_wdata[30] : info_8_tid[30],
@@ -1948,8 +1994,8 @@ module CSR(	// @[src/main/scala/csr/CSR.scala:209:7]
            io_rf_bus_wmask[3] ? io_rf_bus_wdata[3] : info_8_tid[3],
            io_rf_bus_wmask[2] ? io_rf_bus_wdata[2] : info_8_tid[2],
            io_rf_bus_wmask[1] ? io_rf_bus_wdata[1] : info_8_tid[1],
-           io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_8_tid[0]};	// @[src/main/scala/config/Configs.scala:85:{23,28,38,47}, :87:12, src/main/scala/csr/CSR.scala:143:30]
-      if (_GEN_3)	// @[src/main/scala/csr/CSR.scala:14:10, :158:30, :286:22, :288:38]
+           io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_8_tid[0]};	// @[src/main/scala/config/Configs.scala:86:{23,28,38,47}, :88:12, src/main/scala/csr/regs.scala:142:30]
+      if (_GEN_3)	// @[src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :157:30]
         info_9_initval <=
           {io_rf_bus_wmask[29] ? io_rf_bus_wdata[29] : info_9_initval[27],
            io_rf_bus_wmask[28] ? io_rf_bus_wdata[28] : info_9_initval[26],
@@ -1978,12 +2024,12 @@ module CSR(	// @[src/main/scala/csr/CSR.scala:209:7]
            io_rf_bus_wmask[5] ? io_rf_bus_wdata[5] : info_9_initval[3],
            io_rf_bus_wmask[4] ? io_rf_bus_wdata[4] : info_9_initval[2],
            io_rf_bus_wmask[3] ? io_rf_bus_wdata[3] : info_9_initval[1],
-           io_rf_bus_wmask[2] ? io_rf_bus_wdata[2] : info_9_initval[0]};	// @[src/main/scala/config/Configs.scala:85:{23,28,38,47}, src/main/scala/csr/CSR.scala:14:27, :158:30]
-      if (_GEN_3 & io_rf_bus_wmask[1])	// @[src/main/scala/config/Configs.scala:85:28, src/main/scala/csr/CSR.scala:14:10, :158:30, :286:22, :288:38]
-        info_9_preiodic <= io_rf_bus_wdata[1];	// @[src/main/scala/config/Configs.scala:85:38, src/main/scala/csr/CSR.scala:158:30]
-      if (_GEN_3 & io_rf_bus_wmask[0])	// @[src/main/scala/config/Configs.scala:85:28, src/main/scala/csr/CSR.scala:14:10, :158:30, :286:22, :288:38]
-        info_9_en <= io_rf_bus_wdata[0];	// @[src/main/scala/config/Configs.scala:85:38, src/main/scala/csr/CSR.scala:158:30]
-      if (io_rf_bus_we & io_rf_bus_waddr == 14'h42)	// @[src/main/scala/csr/CSR.scala:14:10, :171:30, :286:22, :288:{28,38}]
+           io_rf_bus_wmask[2] ? io_rf_bus_wdata[2] : info_9_initval[0]};	// @[src/main/scala/config/Configs.scala:86:{23,28,38,47}, src/main/scala/csr/regs.scala:13:27, :157:30]
+      if (_GEN_3 & io_rf_bus_wmask[1])	// @[src/main/scala/config/Configs.scala:86:28, src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :157:30]
+        info_9_preiodic <= io_rf_bus_wdata[1];	// @[src/main/scala/config/Configs.scala:86:38, src/main/scala/csr/regs.scala:157:30]
+      if (_GEN_3 & io_rf_bus_wmask[0])	// @[src/main/scala/config/Configs.scala:86:28, src/main/scala/csr/CSR.scala:106:22, :108:38, src/main/scala/csr/regs.scala:13:10, :157:30]
+        info_9_en <= io_rf_bus_wdata[0];	// @[src/main/scala/config/Configs.scala:86:38, src/main/scala/csr/regs.scala:157:30]
+      if (io_rf_bus_we & io_rf_bus_waddr == 14'h42)	// @[src/main/scala/csr/CSR.scala:106:22, :108:{28,38}, src/main/scala/csr/regs.scala:13:10, :170:30]
         info_10_timeval <=
           {io_rf_bus_wmask[27] ? io_rf_bus_wdata[27] : info_10_timeval[27],
            io_rf_bus_wmask[26] ? io_rf_bus_wdata[26] : info_10_timeval[26],
@@ -2012,56 +2058,56 @@ module CSR(	// @[src/main/scala/csr/CSR.scala:209:7]
            io_rf_bus_wmask[3] ? io_rf_bus_wdata[3] : info_10_timeval[3],
            io_rf_bus_wmask[2] ? io_rf_bus_wdata[2] : info_10_timeval[2],
            io_rf_bus_wmask[1] ? io_rf_bus_wdata[1] : info_10_timeval[1],
-           io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_10_timeval[0]};	// @[src/main/scala/config/Configs.scala:85:{23,28,38,47}, src/main/scala/csr/CSR.scala:14:27, :171:30]
-      if (io_rf_bus_we & io_rf_bus_waddr == 14'h44 & io_rf_bus_wmask[0])	// @[src/main/scala/config/Configs.scala:85:28, src/main/scala/csr/CSR.scala:14:10, :184:30, :286:22, :288:{28,38}]
-        info_11_clr <= io_rf_bus_wdata[0];	// @[src/main/scala/config/Configs.scala:85:38, src/main/scala/csr/CSR.scala:184:30]
+           io_rf_bus_wmask[0] ? io_rf_bus_wdata[0] : info_10_timeval[0]};	// @[src/main/scala/config/Configs.scala:86:{23,28,38,47}, src/main/scala/csr/regs.scala:13:27, :170:30]
+      if (io_rf_bus_we & io_rf_bus_waddr == 14'h44 & io_rf_bus_wmask[0])	// @[src/main/scala/config/Configs.scala:86:28, src/main/scala/csr/CSR.scala:106:22, :108:{28,38}, src/main/scala/csr/regs.scala:13:10, :183:30]
+        info_11_clr <= io_rf_bus_wdata[0];	// @[src/main/scala/config/Configs.scala:86:38, src/main/scala/csr/regs.scala:183:30]
     end
   end // always @(posedge)
-  `ifdef ENABLE_INITIAL_REG_	// @[src/main/scala/csr/CSR.scala:209:7]
-    `ifdef FIRRTL_BEFORE_INITIAL	// @[src/main/scala/csr/CSR.scala:209:7]
-      `FIRRTL_BEFORE_INITIAL	// @[src/main/scala/csr/CSR.scala:209:7]
+  `ifdef ENABLE_INITIAL_REG_	// @[src/main/scala/csr/CSR.scala:29:7]
+    `ifdef FIRRTL_BEFORE_INITIAL	// @[src/main/scala/csr/CSR.scala:29:7]
+      `FIRRTL_BEFORE_INITIAL	// @[src/main/scala/csr/CSR.scala:29:7]
     `endif // FIRRTL_BEFORE_INITIAL
-    logic [31:0] _RANDOM[0:11];	// @[src/main/scala/csr/CSR.scala:209:7]
-    initial begin	// @[src/main/scala/csr/CSR.scala:209:7]
-      `ifdef INIT_RANDOM_PROLOG_	// @[src/main/scala/csr/CSR.scala:209:7]
-        `INIT_RANDOM_PROLOG_	// @[src/main/scala/csr/CSR.scala:209:7]
+    logic [31:0] _RANDOM[0:11];	// @[src/main/scala/csr/CSR.scala:29:7]
+    initial begin	// @[src/main/scala/csr/CSR.scala:29:7]
+      `ifdef INIT_RANDOM_PROLOG_	// @[src/main/scala/csr/CSR.scala:29:7]
+        `INIT_RANDOM_PROLOG_	// @[src/main/scala/csr/CSR.scala:29:7]
       `endif // INIT_RANDOM_PROLOG_
-      `ifdef RANDOMIZE_REG_INIT	// @[src/main/scala/csr/CSR.scala:209:7]
+      `ifdef RANDOMIZE_REG_INIT	// @[src/main/scala/csr/CSR.scala:29:7]
         for (logic [3:0] i = 4'h0; i < 4'hC; i += 4'h1) begin
-          _RANDOM[i] = `RANDOM;	// @[src/main/scala/csr/CSR.scala:209:7]
-        end	// @[src/main/scala/csr/CSR.scala:209:7]
-        info_we = _RANDOM[4'h0][22];	// @[src/main/scala/csr/CSR.scala:30:30, :209:7]
-        info_datm = _RANDOM[4'h0][24:23];	// @[src/main/scala/csr/CSR.scala:30:30, :209:7]
-        info_datf = _RANDOM[4'h0][26:25];	// @[src/main/scala/csr/CSR.scala:30:30, :209:7]
-        info_pg = _RANDOM[4'h0][27];	// @[src/main/scala/csr/CSR.scala:30:30, :209:7]
-        info_da = _RANDOM[4'h0][28];	// @[src/main/scala/csr/CSR.scala:30:30, :209:7]
-        info_ie = _RANDOM[4'h0][29];	// @[src/main/scala/csr/CSR.scala:30:30, :209:7]
-        info_plv = _RANDOM[4'h0][31:30];	// @[src/main/scala/csr/CSR.scala:30:30, :209:7]
-        info_1_pwe = _RANDOM[4'h1][28];	// @[src/main/scala/csr/CSR.scala:46:30, :209:7]
-        info_1_pie = _RANDOM[4'h1][29];	// @[src/main/scala/csr/CSR.scala:46:30, :209:7]
-        info_1_pplv = _RANDOM[4'h1][31:30];	// @[src/main/scala/csr/CSR.scala:46:30, :209:7]
-        info_2_bte = _RANDOM[4'h2][28];	// @[src/main/scala/csr/CSR.scala:62:30, :209:7]
-        info_2_asxe = _RANDOM[4'h2][29];	// @[src/main/scala/csr/CSR.scala:62:30, :209:7]
-        info_2_sxe = _RANDOM[4'h2][30];	// @[src/main/scala/csr/CSR.scala:62:30, :209:7]
-        info_2_fpe = _RANDOM[4'h2][31];	// @[src/main/scala/csr/CSR.scala:62:30, :209:7]
-        info_3_vs = _RANDOM[4'h3][15:13];	// @[src/main/scala/csr/CSR.scala:77:30, :209:7]
-        info_3_lie = _RANDOM[4'h3][31:19];	// @[src/main/scala/csr/CSR.scala:77:30, :209:7]
-        info_4_esubcode = _RANDOM[4'h4][9:1];	// @[src/main/scala/csr/CSR.scala:94:30, :209:7]
-        info_4_ecode = _RANDOM[4'h4][15:10];	// @[src/main/scala/csr/CSR.scala:94:30, :209:7]
-        info_4_is = _RANDOM[4'h4][31:19];	// @[src/main/scala/csr/CSR.scala:94:30, :209:7]
-        info_5_pc = _RANDOM[4'h5];	// @[src/main/scala/csr/CSR.scala:106:30, :209:7]
-        info_6_vaddr = _RANDOM[4'h6];	// @[src/main/scala/csr/CSR.scala:118:30, :209:7]
-        info_7_vpn = _RANDOM[4'h7][19:0];	// @[src/main/scala/csr/CSR.scala:131:30, :209:7]
-        info_8_tid = _RANDOM[4'h8];	// @[src/main/scala/csr/CSR.scala:143:30, :209:7]
-        info_9_initval = _RANDOM[4'h9][29:2];	// @[src/main/scala/csr/CSR.scala:158:30, :209:7]
-        info_9_preiodic = _RANDOM[4'h9][30];	// @[src/main/scala/csr/CSR.scala:158:30, :209:7]
-        info_9_en = _RANDOM[4'h9][31];	// @[src/main/scala/csr/CSR.scala:158:30, :209:7]
-        info_10_timeval = _RANDOM[4'hA][31:4];	// @[src/main/scala/csr/CSR.scala:171:30, :209:7]
-        info_11_clr = _RANDOM[4'hB][31];	// @[src/main/scala/csr/CSR.scala:184:30, :209:7]
+          _RANDOM[i] = `RANDOM;	// @[src/main/scala/csr/CSR.scala:29:7]
+        end	// @[src/main/scala/csr/CSR.scala:29:7]
+        info_we = _RANDOM[4'h0][22];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:29:30]
+        info_datm = _RANDOM[4'h0][24:23];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:29:30]
+        info_datf = _RANDOM[4'h0][26:25];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:29:30]
+        info_pg = _RANDOM[4'h0][27];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:29:30]
+        info_da = _RANDOM[4'h0][28];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:29:30]
+        info_ie = _RANDOM[4'h0][29];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:29:30]
+        info_plv = _RANDOM[4'h0][31:30];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:29:30]
+        info_1_pwe = _RANDOM[4'h1][28];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:45:30]
+        info_1_pie = _RANDOM[4'h1][29];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:45:30]
+        info_1_pplv = _RANDOM[4'h1][31:30];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:45:30]
+        info_2_bte = _RANDOM[4'h2][28];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:61:30]
+        info_2_asxe = _RANDOM[4'h2][29];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:61:30]
+        info_2_sxe = _RANDOM[4'h2][30];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:61:30]
+        info_2_fpe = _RANDOM[4'h2][31];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:61:30]
+        info_3_vs = _RANDOM[4'h3][15:13];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:76:30]
+        info_3_lie = _RANDOM[4'h3][31:19];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:76:30]
+        info_4_esubcode = _RANDOM[4'h4][9:1];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:93:30]
+        info_4_ecode = _RANDOM[4'h4][15:10];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:93:30]
+        info_4_is = _RANDOM[4'h4][31:19];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:93:30]
+        info_5_pc = _RANDOM[4'h5];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:105:30]
+        info_6_vaddr = _RANDOM[4'h6];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:117:30]
+        info_7_vpn = _RANDOM[4'h7][19:0];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:130:30]
+        info_8_tid = _RANDOM[4'h8];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:142:30]
+        info_9_initval = _RANDOM[4'h9][29:2];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:157:30]
+        info_9_preiodic = _RANDOM[4'h9][30];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:157:30]
+        info_9_en = _RANDOM[4'h9][31];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:157:30]
+        info_10_timeval = _RANDOM[4'hA][31:4];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:170:30]
+        info_11_clr = _RANDOM[4'hB][31];	// @[src/main/scala/csr/CSR.scala:29:7, src/main/scala/csr/regs.scala:183:30]
       `endif // RANDOMIZE_REG_INIT
     end // initial
-    `ifdef FIRRTL_AFTER_INITIAL	// @[src/main/scala/csr/CSR.scala:209:7]
-      `FIRRTL_AFTER_INITIAL	// @[src/main/scala/csr/CSR.scala:209:7]
+    `ifdef FIRRTL_AFTER_INITIAL	// @[src/main/scala/csr/CSR.scala:29:7]
+      `FIRRTL_AFTER_INITIAL	// @[src/main/scala/csr/CSR.scala:29:7]
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
   assign io_rdata =
@@ -2109,9 +2155,9 @@ module CSR(	// @[src/main/scala/csr/CSR.scala:209:7]
                                                           info_ie,
                                                           info_plv}
                                                        : 32'h0)
-      : 32'h0;	// @[src/main/scala/csr/CSR.scala:30:30, :46:30, :62:30, :77:30, :94:30, :106:30, :118:30, :131:30, :143:30, :158:30, :171:30, :184:30, :209:7, :277:12, :278:15, :280:{21,31}, :281:{18,28}]
-  assign io_exc_bus_en = io_end | io_start;	// @[src/main/scala/csr/CSR.scala:209:7, :309:18, :327:16, :331:19]
-  assign io_exc_bus_pc = io_end ? info_5_pc : io_start ? {info_7_vpn, 12'h0} : 32'h0;	// @[src/main/scala/csr/CSR.scala:106:30, :131:30, :209:7, :308:14, :309:18, :324:{19,34}, :327:16, :332:19]
+      : 32'h0;	// @[src/main/scala/csr/CSR.scala:29:7, :97:12, :98:15, :100:{21,31}, :101:{18,28}, src/main/scala/csr/regs.scala:29:30, :45:30, :61:30, :76:30, :93:30, :105:30, :117:30, :130:30, :142:30, :157:30, :170:30, :183:30]
+  assign io_exc_bus_en = io_end | io_start;	// @[src/main/scala/csr/CSR.scala:29:7, :129:18, :141:16, :145:19]
+  assign io_exc_bus_pc = io_end ? info_5_pc : io_start ? {info_7_vpn, 12'h0} : 32'h0;	// @[src/main/scala/csr/CSR.scala:29:7, :128:14, :129:18, :138:{19,34}, :141:16, :146:19, src/main/scala/csr/regs.scala:105:30, :130:30]
 endmodule
 
 module controller(	// @[src/main/scala/controller/controller.scala:42:7]
@@ -2179,167 +2225,175 @@ module controller(	// @[src/main/scala/controller/controller.scala:42:7]
   assign io_flush_en_4 = io_flush_apply_4[4];	// @[src/main/scala/controller/controller.scala:42:7, :45:36]
 endmodule
 
-module Top(	// @[src/main/scala/stages/Top.scala:31:7]
-  input         clock,	// @[src/main/scala/stages/Top.scala:31:7]
-                reset,	// @[src/main/scala/stages/Top.scala:31:7]
-  output        io_inst_sram_en,	// @[src/main/scala/stages/Top.scala:32:14]
-  output [3:0]  io_inst_sram_we,	// @[src/main/scala/stages/Top.scala:32:14]
-  output [31:0] io_inst_sram_addr,	// @[src/main/scala/stages/Top.scala:32:14]
-                io_inst_sram_wdata,	// @[src/main/scala/stages/Top.scala:32:14]
-  input  [31:0] io_inst_sram_rdata,	// @[src/main/scala/stages/Top.scala:32:14]
-  output        io_data_sram_en,	// @[src/main/scala/stages/Top.scala:32:14]
-  output [3:0]  io_data_sram_we,	// @[src/main/scala/stages/Top.scala:32:14]
-  output [31:0] io_data_sram_addr,	// @[src/main/scala/stages/Top.scala:32:14]
-                io_data_sram_wdata,	// @[src/main/scala/stages/Top.scala:32:14]
-  input  [31:0] io_data_sram_rdata,	// @[src/main/scala/stages/Top.scala:32:14]
-  output [31:0] io_debug_wb_pc,	// @[src/main/scala/stages/Top.scala:32:14]
-  output [3:0]  io_debug_wb_rf_we,	// @[src/main/scala/stages/Top.scala:32:14]
-  output [4:0]  io_debug_wb_rf_wnum,	// @[src/main/scala/stages/Top.scala:32:14]
-  output [31:0] io_debug_wb_rf_wdata	// @[src/main/scala/stages/Top.scala:32:14]
+module Top(	// @[src/main/scala/stages/Top.scala:32:7]
+  input         clock,	// @[src/main/scala/stages/Top.scala:32:7]
+                reset,	// @[src/main/scala/stages/Top.scala:32:7]
+  output        io_inst_sram_en,	// @[src/main/scala/stages/Top.scala:33:14]
+  output [3:0]  io_inst_sram_we,	// @[src/main/scala/stages/Top.scala:33:14]
+  output [31:0] io_inst_sram_addr,	// @[src/main/scala/stages/Top.scala:33:14]
+                io_inst_sram_wdata,	// @[src/main/scala/stages/Top.scala:33:14]
+  input  [31:0] io_inst_sram_rdata,	// @[src/main/scala/stages/Top.scala:33:14]
+  output        io_data_sram_en,	// @[src/main/scala/stages/Top.scala:33:14]
+  output [3:0]  io_data_sram_we,	// @[src/main/scala/stages/Top.scala:33:14]
+  output [31:0] io_data_sram_addr,	// @[src/main/scala/stages/Top.scala:33:14]
+                io_data_sram_wdata,	// @[src/main/scala/stages/Top.scala:33:14]
+  input  [31:0] io_data_sram_rdata,	// @[src/main/scala/stages/Top.scala:33:14]
+  output [31:0] io_debug_wb_pc,	// @[src/main/scala/stages/Top.scala:33:14]
+  output [3:0]  io_debug_wb_rf_we,	// @[src/main/scala/stages/Top.scala:33:14]
+  output [4:0]  io_debug_wb_rf_wnum,	// @[src/main/scala/stages/Top.scala:33:14]
+  output [31:0] io_debug_wb_rf_wdata	// @[src/main/scala/stages/Top.scala:33:14]
 );
 
-  wire [31:0] _ctrl_io_ds_reg_data_data_0;	// @[src/main/scala/stages/Top.scala:40:20]
-  wire [31:0] _ctrl_io_ds_reg_data_data_1;	// @[src/main/scala/stages/Top.scala:40:20]
-  wire [31:0] _ctrl_io_ds_reg_data_csr_val;	// @[src/main/scala/stages/Top.scala:40:20]
-  wire        _ctrl_io_flush_en_1;	// @[src/main/scala/stages/Top.scala:40:20]
-  wire        _ctrl_io_flush_en_2;	// @[src/main/scala/stages/Top.scala:40:20]
-  wire        _ctrl_io_flush_en_3;	// @[src/main/scala/stages/Top.scala:40:20]
-  wire        _ctrl_io_flush_en_4;	// @[src/main/scala/stages/Top.scala:40:20]
-  wire [31:0] _csr_io_rdata;	// @[src/main/scala/stages/Top.scala:39:20]
-  wire        _csr_io_exc_bus_en;	// @[src/main/scala/stages/Top.scala:39:20]
-  wire [31:0] _csr_io_exc_bus_pc;	// @[src/main/scala/stages/Top.scala:39:20]
-  wire [31:0] _ws_io_to_bits_pc;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire [9:0]  _ws_io_to_bits_op_type;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire [4:0]  _ws_io_flush_apply;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire        _ws_io_this_exc;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire        _ws_io_ws_we;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire [4:0]  _ws_io_ws_addr;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire [31:0] _ws_io_ws_data;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire        _ws_io_csr_ws_we;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire [4:0]  _ws_io_csr_ws_addr;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire [31:0] _ws_io_csr_ws_data;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire        _ws_io_rf_bus_we;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire [13:0] _ws_io_rf_bus_waddr;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire [31:0] _ws_io_rf_bus_wdata;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire        _ws_io_rcsr_bus_we;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire [31:0] _ws_io_rcsr_bus_wmask;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire [13:0] _ws_io_rcsr_bus_waddr;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire [31:0] _ws_io_rcsr_bus_wdata;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire        _ws_io_exc_start;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire        _ws_io_exc_end;	// @[src/main/scala/stages/Top.scala:38:20]
-  wire        _ms_io_to_valid;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire [31:0] _ms_io_to_bits_pc;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire [3:0]  _ms_io_to_bits_func_type;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire [9:0]  _ms_io_to_bits_op_type;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire        _ms_io_to_bits_is_wf;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire [4:0]  _ms_io_to_bits_dest;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire [31:0] _ms_io_to_bits_rkd_value;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire [31:0] _ms_io_to_bits_result;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire        _ms_io_to_bits_this_exc;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire        _ms_io_to_bits_csr_we;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire [13:0] _ms_io_to_bits_csr_addr;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire [31:0] _ms_io_to_bits_csr_mask;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire        _ms_io_this_exc;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire        _ms_io_ms_we;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire [4:0]  _ms_io_ms_addr;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire [31:0] _ms_io_ms_data;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire        _ms_io_csr_ms_we;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire [4:0]  _ms_io_csr_ms_addr;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire [31:0] _ms_io_csr_ms_data;	// @[src/main/scala/stages/Top.scala:37:20]
-  wire        _es_io_from_ready;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire        _es_io_to_valid;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire [31:0] _es_io_to_bits_pc;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire [3:0]  _es_io_to_bits_func_type;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire [9:0]  _es_io_to_bits_op_type;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire        _es_io_to_bits_is_wf;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire [1:0]  _es_io_to_bits_piece;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire [4:0]  _es_io_to_bits_dest;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire [31:0] _es_io_to_bits_rkd_value;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire [31:0] _es_io_to_bits_result;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire        _es_io_to_bits_this_exc;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire        _es_io_to_bits_csr_we;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire [13:0] _es_io_to_bits_csr_addr;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire [31:0] _es_io_to_bits_csr_mask;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire        _es_io_this_exc;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire        _es_io_es_we;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire [4:0]  _es_io_es_addr;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire [31:0] _es_io_es_data;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire        _es_io_csr_es_we;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire [4:0]  _es_io_csr_es_addr;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire [31:0] _es_io_csr_es_data;	// @[src/main/scala/stages/Top.scala:36:20]
-  wire        _ds_io_from_ready;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire        _ds_io_to_valid;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [31:0] _ds_io_to_bits_pc;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [3:0]  _ds_io_to_bits_func_type;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [9:0]  _ds_io_to_bits_op_type;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire        _ds_io_to_bits_is_wf;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [4:0]  _ds_io_to_bits_dest;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [31:0] _ds_io_to_bits_rkd_value;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [31:0] _ds_io_to_bits_src1;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [31:0] _ds_io_to_bits_src2;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire        _ds_io_to_bits_this_exc;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire        _ds_io_to_bits_csr_we;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [13:0] _ds_io_to_bits_csr_addr;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [31:0] _ds_io_to_bits_csr_val;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [31:0] _ds_io_to_bits_csr_mask;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [4:0]  _ds_io_ds_reg_info_addr_0;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [4:0]  _ds_io_ds_reg_info_addr_1;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [13:0] _ds_io_ds_reg_info_csr_addr;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [31:0] _ds_io_ds_reg_info_ini_data_0;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [31:0] _ds_io_ds_reg_info_ini_data_1;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [31:0] _ds_io_ds_reg_info_csr_ini_data;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire        _ds_io_csr_re;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [13:0] _ds_io_csr_raddr;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire        _ds_io_br_bus_br_taken;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire [31:0] _ds_io_br_bus_br_target;	// @[src/main/scala/stages/Top.scala:35:20]
-  wire        _fs_io_to_valid;	// @[src/main/scala/stages/Top.scala:34:20]
-  wire [31:0] _fs_io_to_bits_pc;	// @[src/main/scala/stages/Top.scala:34:20]
-  wire [31:0] _fs_io_to_bits_inst;	// @[src/main/scala/stages/Top.scala:34:20]
-  reg         fs_io_from_valid_REG;	// @[src/main/scala/stages/Top.scala:42:35]
-  always @(posedge clock)	// @[src/main/scala/stages/Top.scala:31:7]
-    fs_io_from_valid_REG <= ~reset;	// @[src/main/scala/stages/Top.scala:42:{35,36}]
-  `ifdef ENABLE_INITIAL_REG_	// @[src/main/scala/stages/Top.scala:31:7]
-    `ifdef FIRRTL_BEFORE_INITIAL	// @[src/main/scala/stages/Top.scala:31:7]
-      `FIRRTL_BEFORE_INITIAL	// @[src/main/scala/stages/Top.scala:31:7]
+  wire [31:0] _ctrl_io_ds_reg_data_data_0;	// @[src/main/scala/stages/Top.scala:41:20]
+  wire [31:0] _ctrl_io_ds_reg_data_data_1;	// @[src/main/scala/stages/Top.scala:41:20]
+  wire [31:0] _ctrl_io_ds_reg_data_csr_val;	// @[src/main/scala/stages/Top.scala:41:20]
+  wire        _ctrl_io_flush_en_1;	// @[src/main/scala/stages/Top.scala:41:20]
+  wire        _ctrl_io_flush_en_2;	// @[src/main/scala/stages/Top.scala:41:20]
+  wire        _ctrl_io_flush_en_3;	// @[src/main/scala/stages/Top.scala:41:20]
+  wire        _ctrl_io_flush_en_4;	// @[src/main/scala/stages/Top.scala:41:20]
+  wire [31:0] _csr_io_rdata;	// @[src/main/scala/stages/Top.scala:40:20]
+  wire        _csr_io_exc_bus_en;	// @[src/main/scala/stages/Top.scala:40:20]
+  wire [31:0] _csr_io_exc_bus_pc;	// @[src/main/scala/stages/Top.scala:40:20]
+  wire [31:0] _ws_io_to_bits_pc;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire [5:0]  _ws_io_to_bits_exc_type;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire [4:0]  _ws_io_flush_apply;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire        _ws_io_this_exc;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire        _ws_io_ws_we;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire [4:0]  _ws_io_ws_addr;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire [31:0] _ws_io_ws_data;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire        _ws_io_csr_ws_we;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire [4:0]  _ws_io_csr_ws_addr;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire [31:0] _ws_io_csr_ws_data;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire        _ws_io_rf_bus_we;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire [13:0] _ws_io_rf_bus_waddr;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire [31:0] _ws_io_rf_bus_wdata;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire        _ws_io_rcsr_bus_we;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire [31:0] _ws_io_rcsr_bus_wmask;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire [13:0] _ws_io_rcsr_bus_waddr;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire [31:0] _ws_io_rcsr_bus_wdata;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire        _ws_io_exc_start;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire        _ws_io_exc_end;	// @[src/main/scala/stages/Top.scala:39:20]
+  wire        _ms_io_to_valid;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire [31:0] _ms_io_to_bits_pc;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire [9:0]  _ms_io_to_bits_op_type;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire        _ms_io_to_bits_is_wf;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire [4:0]  _ms_io_to_bits_dest;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire [31:0] _ms_io_to_bits_rkd_value;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire [31:0] _ms_io_to_bits_result;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire        _ms_io_to_bits_this_exc;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire [5:0]  _ms_io_to_bits_exc_type;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire        _ms_io_to_bits_csr_we;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire [31:0] _ms_io_to_bits_csr_mask;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire [13:0] _ms_io_to_bits_csr_addr;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire        _ms_io_this_exc;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire        _ms_io_ms_we;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire [4:0]  _ms_io_ms_addr;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire [31:0] _ms_io_ms_data;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire        _ms_io_csr_ms_we;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire [4:0]  _ms_io_csr_ms_addr;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire [31:0] _ms_io_csr_ms_data;	// @[src/main/scala/stages/Top.scala:38:20]
+  wire        _es_io_from_ready;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire        _es_io_to_valid;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire [31:0] _es_io_to_bits_pc;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire [3:0]  _es_io_to_bits_func_type;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire [9:0]  _es_io_to_bits_op_type;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire        _es_io_to_bits_is_wf;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire [1:0]  _es_io_to_bits_piece;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire [4:0]  _es_io_to_bits_dest;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire [31:0] _es_io_to_bits_rkd_value;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire [31:0] _es_io_to_bits_result;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire        _es_io_to_bits_this_exc;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire [5:0]  _es_io_to_bits_exc_type;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire        _es_io_to_bits_csr_we;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire [31:0] _es_io_to_bits_csr_mask;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire [13:0] _es_io_to_bits_csr_addr;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire        _es_io_this_exc;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire        _es_io_es_we;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire [4:0]  _es_io_es_addr;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire [31:0] _es_io_es_data;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire        _es_io_csr_es_we;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire [4:0]  _es_io_csr_es_addr;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire [31:0] _es_io_csr_es_data;	// @[src/main/scala/stages/Top.scala:37:20]
+  wire        _ds_io_from_ready;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire        _ds_io_to_valid;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [31:0] _ds_io_to_bits_pc;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [3:0]  _ds_io_to_bits_func_type;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [9:0]  _ds_io_to_bits_op_type;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire        _ds_io_to_bits_is_wf;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [4:0]  _ds_io_to_bits_dest;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [31:0] _ds_io_to_bits_rkd_value;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [31:0] _ds_io_to_bits_src1;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [31:0] _ds_io_to_bits_src2;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire        _ds_io_to_bits_this_exc;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [5:0]  _ds_io_to_bits_exc_type;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire        _ds_io_to_bits_csr_we;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [31:0] _ds_io_to_bits_csr_mask;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [13:0] _ds_io_to_bits_csr_addr;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [31:0] _ds_io_to_bits_csr_val;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [4:0]  _ds_io_ds_reg_info_addr_0;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [4:0]  _ds_io_ds_reg_info_addr_1;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [13:0] _ds_io_ds_reg_info_csr_addr;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [31:0] _ds_io_ds_reg_info_ini_data_0;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [31:0] _ds_io_ds_reg_info_ini_data_1;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [31:0] _ds_io_ds_reg_info_csr_ini_data;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire        _ds_io_csr_re;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [13:0] _ds_io_csr_raddr;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire        _ds_io_br_bus_br_taken;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire [31:0] _ds_io_br_bus_br_target;	// @[src/main/scala/stages/Top.scala:36:20]
+  wire        _fs_io_to_valid;	// @[src/main/scala/stages/Top.scala:35:20]
+  wire [31:0] _fs_io_to_bits_pc;	// @[src/main/scala/stages/Top.scala:35:20]
+  wire [31:0] _fs_io_to_bits_inst;	// @[src/main/scala/stages/Top.scala:35:20]
+  wire        _fs_io_to_bits_this_exc;	// @[src/main/scala/stages/Top.scala:35:20]
+  wire [5:0]  _fs_io_to_bits_exc_type;	// @[src/main/scala/stages/Top.scala:35:20]
+  reg         fs_io_from_valid_REG;	// @[src/main/scala/stages/Top.scala:43:35]
+  always @(posedge clock)	// @[src/main/scala/stages/Top.scala:32:7]
+    fs_io_from_valid_REG <= ~reset;	// @[src/main/scala/stages/Top.scala:43:{35,36}]
+  `ifdef ENABLE_INITIAL_REG_	// @[src/main/scala/stages/Top.scala:32:7]
+    `ifdef FIRRTL_BEFORE_INITIAL	// @[src/main/scala/stages/Top.scala:32:7]
+      `FIRRTL_BEFORE_INITIAL	// @[src/main/scala/stages/Top.scala:32:7]
     `endif // FIRRTL_BEFORE_INITIAL
-    logic [31:0] _RANDOM[0:0];	// @[src/main/scala/stages/Top.scala:31:7]
-    initial begin	// @[src/main/scala/stages/Top.scala:31:7]
-      `ifdef INIT_RANDOM_PROLOG_	// @[src/main/scala/stages/Top.scala:31:7]
-        `INIT_RANDOM_PROLOG_	// @[src/main/scala/stages/Top.scala:31:7]
+    logic [31:0] _RANDOM[0:0];	// @[src/main/scala/stages/Top.scala:32:7]
+    initial begin	// @[src/main/scala/stages/Top.scala:32:7]
+      `ifdef INIT_RANDOM_PROLOG_	// @[src/main/scala/stages/Top.scala:32:7]
+        `INIT_RANDOM_PROLOG_	// @[src/main/scala/stages/Top.scala:32:7]
       `endif // INIT_RANDOM_PROLOG_
-      `ifdef RANDOMIZE_REG_INIT	// @[src/main/scala/stages/Top.scala:31:7]
-        _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// @[src/main/scala/stages/Top.scala:31:7]
-        fs_io_from_valid_REG = _RANDOM[/*Zero width*/ 1'b0][0];	// @[src/main/scala/stages/Top.scala:31:7, :42:35]
+      `ifdef RANDOMIZE_REG_INIT	// @[src/main/scala/stages/Top.scala:32:7]
+        _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// @[src/main/scala/stages/Top.scala:32:7]
+        fs_io_from_valid_REG = _RANDOM[/*Zero width*/ 1'b0][0];	// @[src/main/scala/stages/Top.scala:32:7, :43:35]
       `endif // RANDOMIZE_REG_INIT
     end // initial
-    `ifdef FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/Top.scala:31:7]
-      `FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/Top.scala:31:7]
+    `ifdef FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/Top.scala:32:7]
+      `FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/Top.scala:32:7]
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  IF fs (	// @[src/main/scala/stages/Top.scala:34:20]
+  IF fs (	// @[src/main/scala/stages/Top.scala:35:20]
     .clock               (clock),
     .reset               (reset),
-    .io_from_valid       (fs_io_from_valid_REG & ~reset),	// @[src/main/scala/stages/Top.scala:42:{35,36,51}]
-    .io_to_ready         (_ds_io_from_ready),	// @[src/main/scala/stages/Top.scala:35:20]
+    .io_from_valid       (fs_io_from_valid_REG & ~reset),	// @[src/main/scala/stages/Top.scala:43:{35,36,51}]
+    .io_to_ready         (_ds_io_from_ready),	// @[src/main/scala/stages/Top.scala:36:20]
     .io_to_valid         (_fs_io_to_valid),
     .io_to_bits_pc       (_fs_io_to_bits_pc),
     .io_to_bits_inst     (_fs_io_to_bits_inst),
-    .io_exc_bus_en       (_csr_io_exc_bus_en),	// @[src/main/scala/stages/Top.scala:39:20]
-    .io_exc_bus_pc       (_csr_io_exc_bus_pc),	// @[src/main/scala/stages/Top.scala:39:20]
-    .io_br_bus_br_taken  (_ds_io_br_bus_br_taken),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_br_bus_br_target (_ds_io_br_bus_br_target),	// @[src/main/scala/stages/Top.scala:35:20]
+    .io_to_bits_this_exc (_fs_io_to_bits_this_exc),
+    .io_to_bits_exc_type (_fs_io_to_bits_exc_type),
+    .io_exc_bus_en       (_csr_io_exc_bus_en),	// @[src/main/scala/stages/Top.scala:40:20]
+    .io_exc_bus_pc       (_csr_io_exc_bus_pc),	// @[src/main/scala/stages/Top.scala:40:20]
+    .io_br_bus_br_taken  (_ds_io_br_bus_br_taken),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_br_bus_br_target (_ds_io_br_bus_br_target),	// @[src/main/scala/stages/Top.scala:36:20]
     .io_inst_sram_en     (io_inst_sram_en),
     .io_inst_sram_addr   (io_inst_sram_addr),
     .io_inst_sram_rdata  (io_inst_sram_rdata)
-  );	// @[src/main/scala/stages/Top.scala:34:20]
-  ID ds (	// @[src/main/scala/stages/Top.scala:35:20]
+  );	// @[src/main/scala/stages/Top.scala:35:20]
+  ID ds (	// @[src/main/scala/stages/Top.scala:36:20]
     .clock                       (clock),
     .reset                       (reset),
     .io_from_ready               (_ds_io_from_ready),
-    .io_from_valid               (_fs_io_to_valid),	// @[src/main/scala/stages/Top.scala:34:20]
-    .io_from_bits_pc             (_fs_io_to_bits_pc),	// @[src/main/scala/stages/Top.scala:34:20]
-    .io_from_bits_inst           (_fs_io_to_bits_inst),	// @[src/main/scala/stages/Top.scala:34:20]
-    .io_to_ready                 (_es_io_from_ready),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_valid               (_fs_io_to_valid),	// @[src/main/scala/stages/Top.scala:35:20]
+    .io_from_bits_pc             (_fs_io_to_bits_pc),	// @[src/main/scala/stages/Top.scala:35:20]
+    .io_from_bits_inst           (_fs_io_to_bits_inst),	// @[src/main/scala/stages/Top.scala:35:20]
+    .io_from_bits_this_exc       (_fs_io_to_bits_this_exc),	// @[src/main/scala/stages/Top.scala:35:20]
+    .io_from_bits_exc_type       (_fs_io_to_bits_exc_type),	// @[src/main/scala/stages/Top.scala:35:20]
+    .io_to_ready                 (_es_io_from_ready),	// @[src/main/scala/stages/Top.scala:37:20]
     .io_to_valid                 (_ds_io_to_valid),
     .io_to_bits_pc               (_ds_io_to_bits_pc),
     .io_to_bits_func_type        (_ds_io_to_bits_func_type),
@@ -2350,48 +2404,50 @@ module Top(	// @[src/main/scala/stages/Top.scala:31:7]
     .io_to_bits_src1             (_ds_io_to_bits_src1),
     .io_to_bits_src2             (_ds_io_to_bits_src2),
     .io_to_bits_this_exc         (_ds_io_to_bits_this_exc),
+    .io_to_bits_exc_type         (_ds_io_to_bits_exc_type),
     .io_to_bits_csr_we           (_ds_io_to_bits_csr_we),
+    .io_to_bits_csr_mask         (_ds_io_to_bits_csr_mask),
     .io_to_bits_csr_addr         (_ds_io_to_bits_csr_addr),
     .io_to_bits_csr_val          (_ds_io_to_bits_csr_val),
-    .io_to_bits_csr_mask         (_ds_io_to_bits_csr_mask),
-    .io_flush_en                 (_ctrl_io_flush_en_1),	// @[src/main/scala/stages/Top.scala:40:20]
-    .io_has_exc                  (_es_io_this_exc | _ms_io_this_exc | _ws_io_this_exc),	// @[src/main/scala/stages/Top.scala:36:20, :37:20, :38:20, :55:{39,57}]
+    .io_flush_en                 (_ctrl_io_flush_en_1),	// @[src/main/scala/stages/Top.scala:41:20]
+    .io_has_exc                  (_es_io_this_exc | _ms_io_this_exc | _ws_io_this_exc),	// @[src/main/scala/stages/Top.scala:37:20, :38:20, :39:20, :57:{39,57}]
     .io_ds_reg_info_addr_0       (_ds_io_ds_reg_info_addr_0),
     .io_ds_reg_info_addr_1       (_ds_io_ds_reg_info_addr_1),
     .io_ds_reg_info_csr_addr     (_ds_io_ds_reg_info_csr_addr),
     .io_ds_reg_info_ini_data_0   (_ds_io_ds_reg_info_ini_data_0),
     .io_ds_reg_info_ini_data_1   (_ds_io_ds_reg_info_ini_data_1),
     .io_ds_reg_info_csr_ini_data (_ds_io_ds_reg_info_csr_ini_data),
-    .io_ds_reg_data_data_0       (_ctrl_io_ds_reg_data_data_0),	// @[src/main/scala/stages/Top.scala:40:20]
-    .io_ds_reg_data_data_1       (_ctrl_io_ds_reg_data_data_1),	// @[src/main/scala/stages/Top.scala:40:20]
-    .io_ds_reg_data_csr_val      (_ctrl_io_ds_reg_data_csr_val),	// @[src/main/scala/stages/Top.scala:40:20]
+    .io_ds_reg_data_data_0       (_ctrl_io_ds_reg_data_data_0),	// @[src/main/scala/stages/Top.scala:41:20]
+    .io_ds_reg_data_data_1       (_ctrl_io_ds_reg_data_data_1),	// @[src/main/scala/stages/Top.scala:41:20]
+    .io_ds_reg_data_csr_val      (_ctrl_io_ds_reg_data_csr_val),	// @[src/main/scala/stages/Top.scala:41:20]
     .io_csr_re                   (_ds_io_csr_re),
     .io_csr_raddr                (_ds_io_csr_raddr),
-    .io_csr_rdata                (_csr_io_rdata),	// @[src/main/scala/stages/Top.scala:39:20]
-    .io_rf_bus_we                (_ws_io_rf_bus_we),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_rf_bus_waddr             (_ws_io_rf_bus_waddr),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_rf_bus_wdata             (_ws_io_rf_bus_wdata),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_csr_rdata                (_csr_io_rdata),	// @[src/main/scala/stages/Top.scala:40:20]
+    .io_rf_bus_we                (_ws_io_rf_bus_we),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_rf_bus_waddr             (_ws_io_rf_bus_waddr),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_rf_bus_wdata             (_ws_io_rf_bus_wdata),	// @[src/main/scala/stages/Top.scala:39:20]
     .io_br_bus_br_taken          (_ds_io_br_bus_br_taken),
     .io_br_bus_br_target         (_ds_io_br_bus_br_target)
-  );	// @[src/main/scala/stages/Top.scala:35:20]
-  IE es (	// @[src/main/scala/stages/Top.scala:36:20]
+  );	// @[src/main/scala/stages/Top.scala:36:20]
+  IE es (	// @[src/main/scala/stages/Top.scala:37:20]
     .clock                  (clock),
     .reset                  (reset),
     .io_from_ready          (_es_io_from_ready),
-    .io_from_valid          (_ds_io_to_valid),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_from_bits_pc        (_ds_io_to_bits_pc),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_from_bits_func_type (_ds_io_to_bits_func_type),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_from_bits_op_type   (_ds_io_to_bits_op_type),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_from_bits_is_wf     (_ds_io_to_bits_is_wf),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_from_bits_dest      (_ds_io_to_bits_dest),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_from_bits_rkd_value (_ds_io_to_bits_rkd_value),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_from_bits_src1      (_ds_io_to_bits_src1),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_from_bits_src2      (_ds_io_to_bits_src2),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_from_bits_this_exc  (_ds_io_to_bits_this_exc),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_from_bits_csr_we    (_ds_io_to_bits_csr_we),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_from_bits_csr_addr  (_ds_io_to_bits_csr_addr),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_from_bits_csr_val   (_ds_io_to_bits_csr_val),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_from_bits_csr_mask  (_ds_io_to_bits_csr_mask),	// @[src/main/scala/stages/Top.scala:35:20]
+    .io_from_valid          (_ds_io_to_valid),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_bits_pc        (_ds_io_to_bits_pc),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_bits_func_type (_ds_io_to_bits_func_type),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_bits_op_type   (_ds_io_to_bits_op_type),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_bits_is_wf     (_ds_io_to_bits_is_wf),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_bits_dest      (_ds_io_to_bits_dest),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_bits_rkd_value (_ds_io_to_bits_rkd_value),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_bits_src1      (_ds_io_to_bits_src1),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_bits_src2      (_ds_io_to_bits_src2),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_bits_this_exc  (_ds_io_to_bits_this_exc),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_bits_exc_type  (_ds_io_to_bits_exc_type),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_bits_csr_we    (_ds_io_to_bits_csr_we),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_bits_csr_mask  (_ds_io_to_bits_csr_mask),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_bits_csr_addr  (_ds_io_to_bits_csr_addr),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_bits_csr_val   (_ds_io_to_bits_csr_val),	// @[src/main/scala/stages/Top.scala:36:20]
     .io_to_valid            (_es_io_to_valid),
     .io_to_bits_pc          (_es_io_to_bits_pc),
     .io_to_bits_func_type   (_es_io_to_bits_func_type),
@@ -2402,55 +2458,57 @@ module Top(	// @[src/main/scala/stages/Top.scala:31:7]
     .io_to_bits_rkd_value   (_es_io_to_bits_rkd_value),
     .io_to_bits_result      (_es_io_to_bits_result),
     .io_to_bits_this_exc    (_es_io_to_bits_this_exc),
+    .io_to_bits_exc_type    (_es_io_to_bits_exc_type),
     .io_to_bits_csr_we      (_es_io_to_bits_csr_we),
-    .io_to_bits_csr_addr    (_es_io_to_bits_csr_addr),
     .io_to_bits_csr_mask    (_es_io_to_bits_csr_mask),
-    .io_flush_en            (_ctrl_io_flush_en_2),	// @[src/main/scala/stages/Top.scala:40:20]
+    .io_to_bits_csr_addr    (_es_io_to_bits_csr_addr),
+    .io_flush_en            (_ctrl_io_flush_en_2),	// @[src/main/scala/stages/Top.scala:41:20]
     .io_this_exc            (_es_io_this_exc),
-    .io_has_exc             (_ms_io_this_exc | _ws_io_this_exc),	// @[src/main/scala/stages/Top.scala:37:20, :38:20, :60:39]
+    .io_has_exc             (_ms_io_this_exc | _ws_io_this_exc),	// @[src/main/scala/stages/Top.scala:38:20, :39:20, :62:39]
     .io_es_we               (_es_io_es_we),
     .io_es_addr             (_es_io_es_addr),
     .io_es_data             (_es_io_es_data),
     .io_csr_es_we           (_es_io_csr_es_we),
     .io_csr_es_addr         (_es_io_csr_es_addr),
     .io_csr_es_data         (_es_io_csr_es_data),
-    .io_ds_reg_info_addr_0  (_ds_io_ds_reg_info_addr_0),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_ds_reg_info_addr_1  (_ds_io_ds_reg_info_addr_1),	// @[src/main/scala/stages/Top.scala:35:20]
+    .io_ds_reg_info_addr_0  (_ds_io_ds_reg_info_addr_0),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_ds_reg_info_addr_1  (_ds_io_ds_reg_info_addr_1),	// @[src/main/scala/stages/Top.scala:36:20]
     .io_data_sram_we        (io_data_sram_we),
     .io_data_sram_addr      (io_data_sram_addr),
     .io_data_sram_wdata     (io_data_sram_wdata)
-  );	// @[src/main/scala/stages/Top.scala:36:20]
-  IM ms (	// @[src/main/scala/stages/Top.scala:37:20]
+  );	// @[src/main/scala/stages/Top.scala:37:20]
+  IM ms (	// @[src/main/scala/stages/Top.scala:38:20]
     .clock                  (clock),
     .reset                  (reset),
-    .io_from_valid          (_es_io_to_valid),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_from_bits_pc        (_es_io_to_bits_pc),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_from_bits_func_type (_es_io_to_bits_func_type),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_from_bits_op_type   (_es_io_to_bits_op_type),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_from_bits_is_wf     (_es_io_to_bits_is_wf),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_from_bits_piece     (_es_io_to_bits_piece),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_from_bits_dest      (_es_io_to_bits_dest),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_from_bits_rkd_value (_es_io_to_bits_rkd_value),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_from_bits_result    (_es_io_to_bits_result),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_from_bits_this_exc  (_es_io_to_bits_this_exc),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_from_bits_csr_we    (_es_io_to_bits_csr_we),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_from_bits_csr_addr  (_es_io_to_bits_csr_addr),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_from_bits_csr_mask  (_es_io_to_bits_csr_mask),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_from_valid          (_es_io_to_valid),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_from_bits_pc        (_es_io_to_bits_pc),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_from_bits_func_type (_es_io_to_bits_func_type),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_from_bits_op_type   (_es_io_to_bits_op_type),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_from_bits_is_wf     (_es_io_to_bits_is_wf),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_from_bits_piece     (_es_io_to_bits_piece),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_from_bits_dest      (_es_io_to_bits_dest),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_from_bits_rkd_value (_es_io_to_bits_rkd_value),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_from_bits_result    (_es_io_to_bits_result),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_from_bits_this_exc  (_es_io_to_bits_this_exc),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_from_bits_exc_type  (_es_io_to_bits_exc_type),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_from_bits_csr_we    (_es_io_to_bits_csr_we),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_from_bits_csr_mask  (_es_io_to_bits_csr_mask),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_from_bits_csr_addr  (_es_io_to_bits_csr_addr),	// @[src/main/scala/stages/Top.scala:37:20]
     .io_to_valid            (_ms_io_to_valid),
     .io_to_bits_pc          (_ms_io_to_bits_pc),
-    .io_to_bits_func_type   (_ms_io_to_bits_func_type),
     .io_to_bits_op_type     (_ms_io_to_bits_op_type),
     .io_to_bits_is_wf       (_ms_io_to_bits_is_wf),
     .io_to_bits_dest        (_ms_io_to_bits_dest),
     .io_to_bits_rkd_value   (_ms_io_to_bits_rkd_value),
     .io_to_bits_result      (_ms_io_to_bits_result),
     .io_to_bits_this_exc    (_ms_io_to_bits_this_exc),
+    .io_to_bits_exc_type    (_ms_io_to_bits_exc_type),
     .io_to_bits_csr_we      (_ms_io_to_bits_csr_we),
-    .io_to_bits_csr_addr    (_ms_io_to_bits_csr_addr),
     .io_to_bits_csr_mask    (_ms_io_to_bits_csr_mask),
-    .io_flush_en            (_ctrl_io_flush_en_3),	// @[src/main/scala/stages/Top.scala:40:20]
+    .io_to_bits_csr_addr    (_ms_io_to_bits_csr_addr),
+    .io_flush_en            (_ctrl_io_flush_en_3),	// @[src/main/scala/stages/Top.scala:41:20]
     .io_this_exc            (_ms_io_this_exc),
-    .io_has_exc             (_ws_io_this_exc),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_has_exc             (_ws_io_this_exc),	// @[src/main/scala/stages/Top.scala:39:20]
     .io_ms_we               (_ms_io_ms_we),
     .io_ms_addr             (_ms_io_ms_addr),
     .io_ms_data             (_ms_io_ms_data),
@@ -2458,25 +2516,25 @@ module Top(	// @[src/main/scala/stages/Top.scala:31:7]
     .io_csr_ms_addr         (_ms_io_csr_ms_addr),
     .io_csr_ms_data         (_ms_io_csr_ms_data),
     .io_data_sram_rdata     (io_data_sram_rdata)
-  );	// @[src/main/scala/stages/Top.scala:37:20]
-  IW ws (	// @[src/main/scala/stages/Top.scala:38:20]
+  );	// @[src/main/scala/stages/Top.scala:38:20]
+  IW ws (	// @[src/main/scala/stages/Top.scala:39:20]
     .clock                  (clock),
     .reset                  (reset),
-    .io_from_valid          (_ms_io_to_valid),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_from_bits_pc        (_ms_io_to_bits_pc),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_from_bits_func_type (_ms_io_to_bits_func_type),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_from_bits_op_type   (_ms_io_to_bits_op_type),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_from_bits_is_wf     (_ms_io_to_bits_is_wf),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_from_bits_dest      (_ms_io_to_bits_dest),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_from_bits_rkd_value (_ms_io_to_bits_rkd_value),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_from_bits_result    (_ms_io_to_bits_result),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_from_bits_this_exc  (_ms_io_to_bits_this_exc),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_from_bits_csr_we    (_ms_io_to_bits_csr_we),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_from_bits_csr_addr  (_ms_io_to_bits_csr_addr),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_from_bits_csr_mask  (_ms_io_to_bits_csr_mask),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_from_valid          (_ms_io_to_valid),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_from_bits_pc        (_ms_io_to_bits_pc),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_from_bits_op_type   (_ms_io_to_bits_op_type),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_from_bits_is_wf     (_ms_io_to_bits_is_wf),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_from_bits_dest      (_ms_io_to_bits_dest),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_from_bits_rkd_value (_ms_io_to_bits_rkd_value),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_from_bits_result    (_ms_io_to_bits_result),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_from_bits_this_exc  (_ms_io_to_bits_this_exc),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_from_bits_exc_type  (_ms_io_to_bits_exc_type),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_from_bits_csr_we    (_ms_io_to_bits_csr_we),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_from_bits_csr_mask  (_ms_io_to_bits_csr_mask),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_from_bits_csr_addr  (_ms_io_to_bits_csr_addr),	// @[src/main/scala/stages/Top.scala:38:20]
     .io_to_bits_pc          (_ws_io_to_bits_pc),
-    .io_to_bits_op_type     (_ws_io_to_bits_op_type),
-    .io_flush_en            (_ctrl_io_flush_en_4),	// @[src/main/scala/stages/Top.scala:40:20]
+    .io_to_bits_exc_type    (_ws_io_to_bits_exc_type),
+    .io_flush_en            (_ctrl_io_flush_en_4),	// @[src/main/scala/stages/Top.scala:41:20]
     .io_flush_apply         (_ws_io_flush_apply),
     .io_this_exc            (_ws_io_this_exc),
     .io_ws_we               (_ws_io_ws_we),
@@ -2498,49 +2556,49 @@ module Top(	// @[src/main/scala/stages/Top.scala:31:7]
     .io_rcsr_bus_wdata      (_ws_io_rcsr_bus_wdata),
     .io_exc_start           (_ws_io_exc_start),
     .io_exc_end             (_ws_io_exc_end)
-  );	// @[src/main/scala/stages/Top.scala:38:20]
-  CSR csr (	// @[src/main/scala/stages/Top.scala:39:20]
-    .clock           (clock),
-    .reset           (reset),
-    .io_re           (_ds_io_csr_re),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_raddr        (_ds_io_csr_raddr),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_rf_bus_we    (_ws_io_rcsr_bus_we),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_rf_bus_wmask (_ws_io_rcsr_bus_wmask),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_rf_bus_waddr (_ws_io_rcsr_bus_waddr),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_rf_bus_wdata (_ws_io_rcsr_bus_wdata),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_info_pc      (_ws_io_to_bits_pc),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_info_op_type (_ws_io_to_bits_op_type),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_start        (_ws_io_exc_start),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_end          (_ws_io_exc_end),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_rdata        (_csr_io_rdata),
-    .io_exc_bus_en   (_csr_io_exc_bus_en),
-    .io_exc_bus_pc   (_csr_io_exc_bus_pc)
   );	// @[src/main/scala/stages/Top.scala:39:20]
-  controller ctrl (	// @[src/main/scala/stages/Top.scala:40:20]
-    .io_es_we                    (_es_io_es_we),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_es_addr                  (_es_io_es_addr),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_es_data                  (_es_io_es_data),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_csr_es_we                (_es_io_csr_es_we),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_csr_es_addr              (_es_io_csr_es_addr),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_csr_es_data              (_es_io_csr_es_data),	// @[src/main/scala/stages/Top.scala:36:20]
-    .io_ms_we                    (_ms_io_ms_we),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_ms_addr                  (_ms_io_ms_addr),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_ms_data                  (_ms_io_ms_data),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_csr_ms_we                (_ms_io_csr_ms_we),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_csr_ms_addr              (_ms_io_csr_ms_addr),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_csr_ms_data              (_ms_io_csr_ms_data),	// @[src/main/scala/stages/Top.scala:37:20]
-    .io_ws_we                    (_ws_io_ws_we),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_ws_addr                  (_ws_io_ws_addr),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_ws_data                  (_ws_io_ws_data),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_csr_ws_we                (_ws_io_csr_ws_we),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_csr_ws_addr              (_ws_io_csr_ws_addr),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_csr_ws_data              (_ws_io_csr_ws_data),	// @[src/main/scala/stages/Top.scala:38:20]
-    .io_ds_reg_info_addr_0       (_ds_io_ds_reg_info_addr_0),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_ds_reg_info_addr_1       (_ds_io_ds_reg_info_addr_1),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_ds_reg_info_csr_addr     (_ds_io_ds_reg_info_csr_addr),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_ds_reg_info_ini_data_0   (_ds_io_ds_reg_info_ini_data_0),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_ds_reg_info_ini_data_1   (_ds_io_ds_reg_info_ini_data_1),	// @[src/main/scala/stages/Top.scala:35:20]
-    .io_ds_reg_info_csr_ini_data (_ds_io_ds_reg_info_csr_ini_data),	// @[src/main/scala/stages/Top.scala:35:20]
+  CSR csr (	// @[src/main/scala/stages/Top.scala:40:20]
+    .clock            (clock),
+    .reset            (reset),
+    .io_re            (_ds_io_csr_re),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_raddr         (_ds_io_csr_raddr),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_rf_bus_we     (_ws_io_rcsr_bus_we),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_rf_bus_wmask  (_ws_io_rcsr_bus_wmask),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_rf_bus_waddr  (_ws_io_rcsr_bus_waddr),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_rf_bus_wdata  (_ws_io_rcsr_bus_wdata),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_info_pc       (_ws_io_to_bits_pc),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_info_exc_type (_ws_io_to_bits_exc_type),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_start         (_ws_io_exc_start),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_end           (_ws_io_exc_end),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_rdata         (_csr_io_rdata),
+    .io_exc_bus_en    (_csr_io_exc_bus_en),
+    .io_exc_bus_pc    (_csr_io_exc_bus_pc)
+  );	// @[src/main/scala/stages/Top.scala:40:20]
+  controller ctrl (	// @[src/main/scala/stages/Top.scala:41:20]
+    .io_es_we                    (_es_io_es_we),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_es_addr                  (_es_io_es_addr),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_es_data                  (_es_io_es_data),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_csr_es_we                (_es_io_csr_es_we),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_csr_es_addr              (_es_io_csr_es_addr),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_csr_es_data              (_es_io_csr_es_data),	// @[src/main/scala/stages/Top.scala:37:20]
+    .io_ms_we                    (_ms_io_ms_we),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_ms_addr                  (_ms_io_ms_addr),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_ms_data                  (_ms_io_ms_data),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_csr_ms_we                (_ms_io_csr_ms_we),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_csr_ms_addr              (_ms_io_csr_ms_addr),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_csr_ms_data              (_ms_io_csr_ms_data),	// @[src/main/scala/stages/Top.scala:38:20]
+    .io_ws_we                    (_ws_io_ws_we),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_ws_addr                  (_ws_io_ws_addr),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_ws_data                  (_ws_io_ws_data),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_csr_ws_we                (_ws_io_csr_ws_we),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_csr_ws_addr              (_ws_io_csr_ws_addr),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_csr_ws_data              (_ws_io_csr_ws_data),	// @[src/main/scala/stages/Top.scala:39:20]
+    .io_ds_reg_info_addr_0       (_ds_io_ds_reg_info_addr_0),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_ds_reg_info_addr_1       (_ds_io_ds_reg_info_addr_1),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_ds_reg_info_csr_addr     (_ds_io_ds_reg_info_csr_addr),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_ds_reg_info_ini_data_0   (_ds_io_ds_reg_info_ini_data_0),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_ds_reg_info_ini_data_1   (_ds_io_ds_reg_info_ini_data_1),	// @[src/main/scala/stages/Top.scala:36:20]
+    .io_ds_reg_info_csr_ini_data (_ds_io_ds_reg_info_csr_ini_data),	// @[src/main/scala/stages/Top.scala:36:20]
     .io_ds_reg_data_data_0       (_ctrl_io_ds_reg_data_data_0),
     .io_ds_reg_data_data_1       (_ctrl_io_ds_reg_data_data_1),
     .io_ds_reg_data_csr_val      (_ctrl_io_ds_reg_data_csr_val),
@@ -2548,10 +2606,10 @@ module Top(	// @[src/main/scala/stages/Top.scala:31:7]
     .io_flush_en_2               (_ctrl_io_flush_en_2),
     .io_flush_en_3               (_ctrl_io_flush_en_3),
     .io_flush_en_4               (_ctrl_io_flush_en_4),
-    .io_flush_apply_4            (_ws_io_flush_apply)	// @[src/main/scala/stages/Top.scala:38:20]
-  );	// @[src/main/scala/stages/Top.scala:40:20]
-  assign io_inst_sram_we = 4'h0;	// @[src/main/scala/stages/Top.scala:31:7, :34:20, :35:20]
-  assign io_inst_sram_wdata = 32'h0;	// @[src/main/scala/stages/Top.scala:31:7, :34:20, :35:20]
-  assign io_data_sram_en = 1'h1;	// @[src/main/scala/stages/Top.scala:31:7]
+    .io_flush_apply_4            (_ws_io_flush_apply)	// @[src/main/scala/stages/Top.scala:39:20]
+  );	// @[src/main/scala/stages/Top.scala:41:20]
+  assign io_inst_sram_we = 4'h0;	// @[src/main/scala/stages/Top.scala:32:7, :35:20, :36:20]
+  assign io_inst_sram_wdata = 32'h0;	// @[src/main/scala/stages/Top.scala:32:7, :35:20, :36:20]
+  assign io_data_sram_en = 1'h1;	// @[src/main/scala/stages/Top.scala:32:7]
 endmodule
 
