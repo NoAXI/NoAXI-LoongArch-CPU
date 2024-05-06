@@ -102,6 +102,7 @@ class IE extends Module with Parameters {
   to_info.is_wf  := info.is_wf && is_cal
   io.to.bits     := to_info
 
+  // 前递
   io.es.we   := to_info.is_wf
   io.es.addr := to_info.dest
   io.es.data := to_info.result

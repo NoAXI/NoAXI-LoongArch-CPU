@@ -146,18 +146,10 @@ class ID extends Module with Parameters with InstType {
   to_info.dest      := Mux(inst === LA32.BL, 1.U, rd)
   to_info.rkd_value := rkd_value
   to_info.csr_addr  := imm(13, 0)
-  // to_info.csr_val   := io.csr_rdata
   to_info.csr_val   := io.ds_reg_data.csr_val
   to_info.csr_mask  := rj_value
   to_info.csr_we    := func_type === FuncType.csr && (op_type === CsrOpType.wr || op_type === CsrOpType.xchg)
   to_info.ecode     := imm(14, 0)
   to_info.this_exc  := io.this_exc
-  // to_info.can_we := MateDefault(
-  //   inst_type,
-  //   true.B,
-  //   List(
-  //     InstCSR14 -> (io.plv === 0.U),
-  //   ),
-  // )
   io.to.bits        := to_info
 }

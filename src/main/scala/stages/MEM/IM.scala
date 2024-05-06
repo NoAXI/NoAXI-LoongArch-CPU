@@ -76,6 +76,7 @@ class IM extends Module with Parameters {
   )
   io.to.bits := to_info
 
+  // 前递
   io.ms.we   := to_info.is_wf
   io.ms.addr := to_info.dest
   io.ms.data := to_info.result

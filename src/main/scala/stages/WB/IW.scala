@@ -62,6 +62,7 @@ class IW extends Module with Parameters {
   to_info    := info
   io.to.bits := to_info
 
+  //前递
   io.ws.we   := to_info.is_wf
   io.ws.addr := to_info.dest
   io.ws.data := to_info.result
@@ -69,7 +70,7 @@ class IW extends Module with Parameters {
   io.csr_ws.addr := to_info.csr_addr
   io.csr_ws.data := to_info.rkd_value
 
-  // 例外
+  // 例外跳转
   when(info.func_type === FuncType.exc && info.op_type === ExcOpType.sys) {
     io.flush_apply := "b11111".U
     io.exc_start := true.B
