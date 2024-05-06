@@ -50,6 +50,22 @@ class PRMD extends base {
   override val id = CSR.PRMD
 }
 
+class EUEN_info extends Bundle {
+  val zero = UInt(28.W)
+  val bte  = Bool()
+  val asxe = Bool()
+  val sxe  = Bool()
+  val fpe  = Bool()
+}
+
+class EUEN extends base {
+  override val info = RegInit({
+    val init = WireDefault(0.U.asTypeOf(new EUEN_info))
+    init
+  })
+  override val id = CSR.EUEN
+}
+
 class ECFG_info extends Bundle {
   val zero1 = UInt(13.W)
   val vs    = UInt(3.W)
@@ -94,6 +110,18 @@ class ERA extends base {
   override val id = CSR.ERA
 }
 
+class BADV_info extends Bundle with Parameters {
+  val vaddr = UInt(ADDR_WIDTH.W)
+}
+
+class BADV extends base with Parameters {
+  override val info = RegInit({
+    val init = WireDefault(0.U.asTypeOf(new BADV_info))
+    init
+  })
+  override val id = CSR.BADV
+}
+
 class EENTRY_info extends Bundle with Parameters {
   val vpn  = UInt((ADDR_WIDTH - 12).W)
   val zero = UInt(12.W)
@@ -107,19 +135,72 @@ class EENTRY extends base with Parameters {
   override val id = CSR.EENTRY
 }
 
+class TID_info extends Bundle with Parameters {
+  val tid = UInt(32.W)
+}
+
+class TID extends base with Parameters {
+  override val info = RegInit({
+    val init = WireDefault(0.U.asTypeOf(new TID_info))
+    init
+  })
+  override val id = CSR.TID
+}
+
+class TCFG_info extends Bundle with Parameters {
+  val zero     = UInt((30 - COUNT_N).W)
+  val initval  = UInt(COUNT_N.W)
+  val preiodic = Bool()
+  val en       = Bool()
+}
+
+class TCFG extends base with Parameters {
+  override val info = RegInit({
+    val init = WireDefault(0.U.asTypeOf(new TCFG_info))
+    init
+  })
+  override val id = CSR.TCFG
+}
+
+class TVAL_info extends Bundle with Parameters {
+  val zero    = UInt((32 - COUNT_N).W)
+  val timeval = UInt(COUNT_N.W)
+}
+
+class TVAL extends base with Parameters {
+  override val info = RegInit({
+    val init = WireDefault(0.U.asTypeOf(new TVAL_info))
+    init
+  })
+  override val id = CSR.TVAL
+}
+
+class TICLR_info extends Bundle with Parameters {
+  val zero = UInt(31.W)
+  val clr  = Bool()
+}
+
+class TICLR extends base with Parameters {
+  override val info = RegInit({
+    val init = WireDefault(0.U.asTypeOf(new TICLR_info))
+    init
+  })
+  override val id = CSR.TICLR
+}
+
 class CSR_IO extends Bundle with Parameters {
   // from ds
-  val re      = Input(Bool())
-  val raddr   = Input(UInt(14.W))
-  val rf_bus  = Input(new rf_bus)
+  val re     = Input(Bool())
+  val raddr  = Input(UInt(14.W))
+  val rf_bus = Input(new rf_bus)
 
   // from wb
-  val info    = Input(new info)
+  val info  = Input(new info)
   val start = Input(Bool())
   val end   = Input(Bool())
 
   // to ds
-  val rdata   = Output(UInt(DATA_WIDTH.W))
+  val rdata = Output(UInt(DATA_WIDTH.W))
 
   // to fs
   val exc_bus = Output(new exc_bus)
@@ -130,44 +211,43 @@ class CSR extends Module with Parameters {
 
   val CRMD   = new CRMD
   val PRMD   = new PRMD
+  val EUEN   = new EUEN
+  val ECFG   = new ECFG
   val ESTAT  = new ESTAT
   val ERA    = new ERA
+  val BADV   = new BADV
   val EENTRY = new EENTRY
-  val ECFG   = new ECFG
-
-  // val EUEN      = RegInit(0.U(32.W))
-  // val BADV      = RegInit(0.U(32.W))
-  // val TLBIDX    = RegInit(0.U(32.W))
-  // val TLBEHI    = RegInit(0.U(32.W))
-  // val TLBELO0   = RegInit(0.U(32.W))
-  // val TLBELO1   = RegInit(0.U(32.W))
-  // val ASID      = RegInit(0.U(32.W))
-  // val PGDL      = RegInit(0.U(32.W))
-  // val PGDH      = RegInit(0.U(32.W))
-  // val PGD       = RegInit(0.U(32.W))
-  // val CPUID     = RegInit(0.U(32.W))
-  // val SAVE0     = RegInit(0.U(32.W))
-  // val SAVE1     = RegInit(0.U(32.W))
-  // val SAVE2     = RegInit(0.U(32.W))
-  // val SAVE3     = RegInit(0.U(32.W))
-  // val TID       = RegInit(0.U(32.W))
-  // val TCFG      = RegInit(0.U(32.W))
-  // val TVAL      = RegInit(0.U(32.W))
-  // val TICLR     = RegInit(0.U(32.W))
-  // val LLBCTL    = RegInit(0.U(32.W))
-  // val TLBRENTRY = RegInit(0.U(32.W))
-  // val CTAG      = RegInit(0.U(32.W))
-  // val DMW0      = RegInit(0.U(32.W))
-  // val DMW1      = RegInit(0.U(32.W))
+  // val TLBIDX    =
+  // val TLBEHI    =
+  // val TLBELO0   =
+  // val TLBELO1   =
+  // val ASID      =
+  // val PGDL      =
+  // val PGDH      =
+  // val PGD       =
+  // val CPUID     =
+  // val SAVE0     =
+  // val SAVE1     =
+  // val SAVE2     =
+  // val SAVE3     =
+  val TID   = new TID
+  val TCFG  = new TCFG
+  val TVAL  = new TVAL
+  val TICLR = new TICLR
+  // val LLBCTL    =
+  // val TLBRENTRY =
+  // val CTAG      =
+  // val DMW0      =
+  // val DMW1      =
 
   val csrlist = Seq(
     CRMD,
     PRMD,
-    // EUEN,
+    EUEN,
     ECFG,
     ESTAT,
     ERA,
-    // BADV,
+    BADV,
     EENTRY,
     // TLBIDX,
     // TLBEHI,
@@ -182,10 +262,10 @@ class CSR extends Module with Parameters {
     // SAVE1,
     // SAVE2,
     // SAVE3,
-    // TID,
-    // TCFG,
-    // TVAL,
-    // TICLR,
+    TID,
+    TCFG,
+    TVAL,
+    TICLR,
     // LLBCTL,
     // TLBRENTRY,
     // CTAG,
@@ -195,9 +275,9 @@ class CSR extends Module with Parameters {
 
   // 读 or 写
   io.rdata := 0.U
-  when (io.re) {
+  when(io.re) {
     for (x <- csrlist) {
-      when (io.raddr === x.id) {
+      when(io.raddr === x.id) {
         io.rdata := x.info.asUInt
       }
     }
@@ -214,11 +294,15 @@ class CSR extends Module with Parameters {
   // 不可写区域
   CRMD.info.zero   := 0.U
   PRMD.info.zero   := 0.U
+  EUEN.info.zero   := 0.U
+  ECFG.info.zero1  := 0.U
+  ECFG.info.zero2  := 0.U
   ESTAT.info.zero1 := 0.U
   ESTAT.info.zero2 := 0.U
   EENTRY.info.zero := 0.U
-  ECFG.info.zero1  := 0.U
-  ECFG.info.zero2  := 0.U
+  TCFG.info.zero   := 0.U
+  TVAL.info.zero   := 0.U
+  TICLR.info.zero  := 0.U
 
   // 例外跳转
   io.exc_bus := WireDefault(0.U.asTypeOf(new exc_bus))

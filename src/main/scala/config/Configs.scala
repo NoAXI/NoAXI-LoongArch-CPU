@@ -109,4 +109,6 @@ trait Parameters {
   val LS_TYPE_WIDTH = 3 // Load/Store 类型长度
 
   val ALL_MASK = "b1111_1111_1111_1111_1111_1111_1111_1111"
+
+  val COUNT_N = 28
 }
