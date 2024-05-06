@@ -99,6 +99,9 @@ class CSR extends Module with Parameters {
     for (x <- csrlist) {
       when(io.raddr === x.id) {
         io.rdata := x.info.asUInt
+        when(x.id === CSR.TICLR) {
+          io.rdata := 0.U
+        }
       }
     }
   }
@@ -110,6 +113,41 @@ class CSR extends Module with Parameters {
       }
     }
   }
+
+  val timecnt_exc  = WireDefault(false.B)
+  val counter      = RegInit(0.U(COUNT_N.W))
+  val init_val     = Mux(TCFG.info.preiodic, TCFG.info.initval, 0.U)
+  val cnt_flag     = RegInit(true.B)
+  val timeexc_flag = RegInit(true.B)
+  when(TCFG.info.en) {
+    when(counter === 0.U) {
+      when(cnt_flag) {
+        cnt_flag := false.B
+      }.otherwise {
+        when(timeexc_flag) {
+          timeexc_flag := false.B
+          timecnt_exc  := true.B
+          ESTAT.info.is := "b00100000000000".U | ESTAT.info.is
+        }
+      }
+      counter := init_val
+    }.otherwise {
+      counter := counter - 1.U
+    }
+  }.otherwise {
+    cnt_flag := true.B
+    ESTAT.info.is := "b11011111111111".U & ESTAT.info.is
+  }
+  when(cnt_flag) {
+    counter := TCFG.info.initval  // 它说要补两0？
+  }
+  // to do:TICLR.clr的逻辑控制
+  // when(TICLR.info.clr) {
+  //   timecnt_exc := false.B
+  // }
+  TVAL.info.timeval := counter
+
+  val start = io.start || timecnt_exc
 
   // 不可写区域
   CRMD.info.zero   := 0.U
@@ -126,12 +164,17 @@ class CSR extends Module with Parameters {
 
   // 例外跳转
   io.exc_bus := WireDefault(0.U.asTypeOf(new exc_bus))
-  when(io.start) {
+  when(start) {
     PRMD.info.pplv := CRMD.info.plv
     PRMD.info.pie  := CRMD.info.ie
     CRMD.info.plv  := 0.U
     CRMD.info.ie   := 0.U
-    ESTAT.info.ecode := io.info.exc_type
+    ESTAT.info.ecode := MuxCase(
+      io.info.exc_type,
+      List(
+        timecnt_exc -> ECodes.INT,
+      ),
+    )
     ERA.info.pc := io.info.pc
 
     io.exc_bus.en := true.B
@@ -139,6 +182,7 @@ class CSR extends Module with Parameters {
   }
 
   when(io.end) {
+    timeexc_flag  := true.B
     CRMD.info.plv := PRMD.info.pplv
     CRMD.info.ie  := PRMD.info.pie
 

@@ -144,9 +144,12 @@ object ExcOpType {
 
 object LA32 extends InstType {
     // rdcnt
-    def RDCNTIDW    = BitPat("b0000000000000000011000?????00000")
-    def RDCNTVLW    = BitPat("b000000000000000001100000000?????")
-    def RDCNTVHW    = BitPat("b000000000000000001100100000?????")
+    // def RDCNTIDW    = BitPat("b0000000000000000011000?????00000")
+    // def RDCNTVLW    = BitPat("b000000000000000001100000000?????")
+    // def RDCNTVHW    = BitPat("b000000000000000001100100000?????")
+    def RDTIMEL_W   = BitPat("b0000000000000000011000??????????")
+    def RDTIMEH_W   = BitPat("b0000000000000000011001??????????")
+    def RDTIMED     = BitPat("b0000000000000000011010??????????")
     
     // logic reg-reg
     def ADD_W       = BitPat("b00000000000100000???????????????")
@@ -343,6 +346,23 @@ object ECodes {
     // add
     val NONE    = 0x25.U(7.W) // no exception
     val ertn    = 0x26.U(7.W) // exception return
+}
+
+// 线中断表
+object WireBreak {
+    val IPI    = 12.U(7.W)
+    val TI     = 11.U(7.W) 
+    val PMI    = 10.U(7.W) 
+    val HWI0   = 9.U(7.W) 
+    val HWI1   = 8.U(7.W)
+    val HWI2   = 7.U(7.W)
+    val HWI3   = 6.U(7.W)
+    val HWI4   = 5.U(7.W)
+    val HWI5   = 4.U(7.W)
+    val HWI6   = 3.U(7.W)
+    val HWI7   = 2.U(7.W)
+    val SWI0   = 1.U(7.W)
+    val SWI1   = 0.U(7.W)
 }
 
 //to do

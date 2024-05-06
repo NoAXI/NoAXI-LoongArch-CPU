@@ -86,7 +86,6 @@ class ESTAT_info extends Bundle {
   val ecode    = UInt(6.W)  // 例外类型一级编码
   val zero2    = UInt(3.W)
   val is       = UInt(13.W) // 软件中断状态位
-
 }
 
 class ESTAT extends base {
