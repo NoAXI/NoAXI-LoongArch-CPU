@@ -81,11 +81,7 @@ object Functions {
   }
 
   def writeMask(mask: UInt, data: UInt, wdata: UInt): UInt = {
-    val result = VecInit((0.U(32.W)).asBools)
-    for (i <- 0 until 32) {
-      result(i) := Mux(mask(i), wdata(i), data(i))
-    }
-    result.asUInt
+    (wdata & mask) | (data & ~mask)
   }
 
   // 没怎么看懂

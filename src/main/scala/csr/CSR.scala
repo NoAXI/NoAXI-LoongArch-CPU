@@ -46,10 +46,10 @@ class CSR extends Module with Parameters {
   // val PGDH      =
   // val PGD       =
   // val CPUID     =
-  // val SAVE0     =
-  // val SAVE1     =
-  // val SAVE2     =
-  // val SAVE3     =
+  val SAVE0 = new SAVE0
+  val SAVE1 = new SAVE1
+  val SAVE2 = new SAVE2
+  val SAVE3 = new SAVE3
   val TID   = new TID
   val TCFG  = new TCFG
   val TVAL  = new TVAL
@@ -78,10 +78,10 @@ class CSR extends Module with Parameters {
     // PGDH,
     // PGD,
     // CPUID,
-    // SAVE0,
-    // SAVE1,
-    // SAVE2,
-    // SAVE3,
+    SAVE0,
+    SAVE1,
+    SAVE2,
+    SAVE3,
     TID,
     TCFG,
     TVAL,
@@ -106,13 +106,21 @@ class CSR extends Module with Parameters {
     }
   }
 
+
   when(io.rf_bus.we) {
     for (x <- csrlist) {
       when(io.rf_bus.waddr === x.id) {
-        x.write(writeMask(io.rf_bus.wmask, x.info.asUInt, io.rf_bus.wdata))
+        val wdata = writeMask(io.rf_bus.wmask, x.info.asUInt, io.rf_bus.wdata)
+        x.write(wdata)
+        // 清除中断位 当有写1的行为
+        when(x.id === CSR.TICLR && wdata === 1.U) {
+          ESTAT.info.is_11 := false.B
+        }
       }
     }
   }
+
+
 
   val timecnt_exc  = WireDefault(false.B)
   val counter      = RegInit(0.U(COUNT_N.W))
@@ -125,9 +133,9 @@ class CSR extends Module with Parameters {
         cnt_flag := false.B
       }.otherwise {
         when(timeexc_flag) {
-          timeexc_flag := false.B
-          timecnt_exc  := true.B
-          ESTAT.info.is := "b00100000000000".U | ESTAT.info.is
+          timeexc_flag  := false.B
+          timecnt_exc   := true.B
+          ESTAT.info.is_11 := true.B
         }
       }
       counter := init_val
@@ -136,18 +144,13 @@ class CSR extends Module with Parameters {
     }
   }.otherwise {
     cnt_flag := true.B
-    ESTAT.info.is := "b11011111111111".U & ESTAT.info.is
   }
   when(cnt_flag) {
-    counter := TCFG.info.initval  // 它说要补两0？
+    counter := TCFG.info.initval // 它说要补两0？
   }
   // to do:TICLR.clr的逻辑控制
-  // when(TICLR.info.clr) {
-  //   timecnt_exc := false.B
-  // }
   TVAL.info.timeval := counter
-
-  val start = io.start || timecnt_exc
+  val start = io.start || (timecnt_exc && ECFG.info.lie_12_11(0).asBool && CRMD.info.ie)
 
   // 不可写区域
   CRMD.info.zero   := 0.U
@@ -182,7 +185,7 @@ class CSR extends Module with Parameters {
   }
 
   when(io.end) {
-    timeexc_flag  := true.B
+    // timeexc_flag  := true.B
     CRMD.info.plv := PRMD.info.pplv
     CRMD.info.ie  := PRMD.info.pie
 
