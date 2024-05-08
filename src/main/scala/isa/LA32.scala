@@ -144,12 +144,9 @@ object ExcOpType {
 
 object LA32 extends InstType {
     // rdcnt
-    // def RDCNTIDW    = BitPat("b0000000000000000011000?????00000")
-    // def RDCNTVLW    = BitPat("b000000000000000001100000000?????")
-    // def RDCNTVHW    = BitPat("b000000000000000001100100000?????")
-    def RDTIMEL_W   = BitPat("b0000000000000000011000??????????")
-    def RDTIMEH_W   = BitPat("b0000000000000000011001??????????")
-    def RDTIMED     = BitPat("b0000000000000000011010??????????")
+    def RDCNTIDW    = BitPat("b0000000000000000011000?????00000")
+    def RDCNTVLW    = BitPat("b000000000000000001100000000?????")
+    def RDCNTVHW    = BitPat("b000000000000000001100100000?????")
     
     // logic reg-reg
     def ADD_W       = BitPat("b00000000000100000???????????????")

@@ -41,9 +41,10 @@ class IF extends Module with Parameters {
   io.flush_apply := 0.U
 
   // 分支 or 正常 PCReg的跳转
+  val bf_exc_en = ShiftRegister(io.exc_bus.en, 1)
   val fs_pc   = RegInit(START_ADDR.U(ADDR_WIDTH.W))
-  val next_pc = Mux(io.exc_bus.en, io.exc_bus.pc, Mux(io.br_bus.br_taken, io.br_bus.br_target, fs_pc + 4.U))
-  when(io.br_bus.br_taken) { // 分支的时候停止流水
+  val next_pc = Mux(io.exc_bus.en, io.exc_bus.pc, Mux(io.br_bus.br_taken && !bf_exc_en, io.br_bus.br_target, fs_pc + 4.U))
+  when(io.br_bus.br_taken && !bf_exc_en) { // 若是分支但前一拍是异常入口，测无需跳转且正常流水
     io.to.valid := false.B
   }
   when((io.from.valid && io.from.ready) || io.exc_bus.en) {
