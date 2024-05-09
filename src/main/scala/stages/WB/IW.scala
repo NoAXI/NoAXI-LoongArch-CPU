@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 
 import isa._
+import csr._
 import config._
 import controller._
 import config.Functions._

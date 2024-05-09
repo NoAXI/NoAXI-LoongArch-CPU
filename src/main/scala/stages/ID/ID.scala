@@ -4,45 +4,47 @@ import chisel3._
 import chisel3.util._
 
 import isa._
+import csr._
 import config._
 import controller._
 import config.Functions._
 
 class ID_IO extends Bundle with Parameters {
-  val from        = Flipped(DecoupledIO(new info))
-  val to          = DecoupledIO(new info)
-  val flush_en    = Input(Bool())
-  val flush_apply = Output(UInt(5.W))
+  // handshake
+  val from = Flipped(DecoupledIO(new info))
+  val to   = DecoupledIO(new info)
 
-  val this_exc = Output(Bool())
-  val has_exc  = Input(Bool())
-
+  // act with controller
   val ds_reg_info = Output(new dsRegInfo)
+  val flush_apply = Output(UInt(5.W))
+  val this_exc    = Output(Bool())
+  val flush_en    = Input(Bool())
+  val has_exc     = Input(Bool())
   val ds_reg_data = Input(new dsRegData)
 
+  // act with csr
   val csr_re     = Output(Bool())
   val csr_raddr  = Output(UInt(14.W))
+  val csr_rf_bus = Output(new rf_bus)
   val csr_rdata  = Input(UInt(DATA_WIDTH.W))
   val counter    = Input(UInt(64.W))
-  val csr_rf_bus = Output(new rf_bus)
 
-  // ** from writeback
+  // from writeback: write register
   val rf_bus   = Input(new rf_bus)
   val rcsr_bus = Input(new rf_bus)
 
-  // ** to if
+  // to fetch: branch
   val br_bus = Output(new br_bus)
 }
 
 class ID extends Module with Parameters with InstType {
   val io = IO(new ID_IO)
 
-  // 握手
   val info = ConnectGetBus(io.from, io.to)
+
   when(io.flush_en || io.has_exc) {
     info := WireDefault(0.U.asTypeOf(new info))
   }
-  io.flush_apply := 0.U
 
   // 译码获取信息
   val inst = info.inst
@@ -59,6 +61,7 @@ class ID extends Module with Parameters with InstType {
     ),
   )
 
+  io.flush_apply := 0.U
   io.this_exc := Mux(info.this_exc, info.this_exc, exception =/= ECodes.NONE)
 
   val imm = MateDefault(
@@ -98,7 +101,7 @@ class ID extends Module with Parameters with InstType {
       SrcType.rd_imm -> rd,
     ),
   )
-  io.csr_raddr := Mux(inst === LA32.RDCNTID, CSR.TID, imm(13, 0))
+  io.csr_raddr := Mux(inst === LA32.RDCNTID, CSRCodes.TID, imm(13, 0))
   io.csr_re    := func_type === FuncType.csr
 
   // 前递处理

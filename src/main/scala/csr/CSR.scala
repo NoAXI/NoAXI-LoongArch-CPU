@@ -104,7 +104,7 @@ class CSR extends Module with Parameters {
     for (x <- csrlist) {
       when(io.raddr === x.id) {
         io.rdata := x.info.asUInt
-        when(x.id === CSR.TICLR) {
+        when(x.id === CSRCodes.TICLR) {
           io.rdata := 0.U
         }
       }
@@ -118,69 +118,30 @@ class CSR extends Module with Parameters {
         val wdata = writeMask(io.rf_bus.wmask, x.info.asUInt, io.rf_bus.wdata)
         x.write(wdata)
         // 清除中断位 当有写1的行为
-        when(x.id === CSR.TICLR && wdata(0) === 1.U) {
+        when(x.id === CSRCodes.TICLR && wdata(0) === 1.U) {
           ESTAT.info.is_11 := false.B
         }
       }
     }
   }
 
-  //to do: update cnt_flag
-  // val cnt_flag     = RegInit(true.B)
-  TVAL.info.timeval := RegInit(1.U)
+  TVAL.info.timeval := RegInit(1.U) // 不加看pc 1c072478
   when (TCFG.info.en) {
     when (TVAL.info.timeval === 0.U) {
-      // when (cnt_flag) {
-      //   cnt_flag := false.B
-      // }
       TVAL.info.timeval := Mux(TCFG.info.preiodic, TCFG.info.initval ## 0.U(2.W), 0.U)
     }.otherwise {
       TVAL.info.timeval := TVAL.info.timeval - 1.U
     }
   }
-  // when(cnt_flag) {
-  //   TVAL.info.timeval := TCFG.info.initval ## 0.U(2.W)// 它说要补两0？
-  // }
 
   val TVAL_edge = ShiftRegister(TVAL.info.timeval, 1)
   when(TCFG.info.en && TVAL.info.timeval === 0.U && TVAL_edge === 1.U){
     ESTAT.info.is_11 := true.B
   }
 
-
-  // val timecnt_exc  = WireDefault(false.B)
-  // val counter      = RegInit(0.U(COUNT_N.W))
-  // val init_val     = Mux(TCFG.info.preiodic, TCFG.info.initval, 0.U)
-  // val cnt_flag     = RegInit(true.B)
-  // val timeexc_flag = RegInit(true.B)
-  // when(TCFG.info.en) {
-  //   when(counter === 0.U) {
-  //     when(cnt_flag) {
-  //       cnt_flag := false.B
-  //     }.otherwise {
-  //       when(timeexc_flag) {
-  //         timeexc_flag  := false.B
-  //         timecnt_exc   := true.B
-  //         ESTAT.info.is_11 := true.B
-  //       }
-  //     }
-  //     counter := init_val
-  //   }.otherwise {
-  //     counter := counter - 1.U
-  //   }
-  // }.otherwise {
-  //   cnt_flag := true.B
-  // }
-  // when(cnt_flag) {
-  //   counter := TCFG.info.initval // 它说要补两0？
-  // }
-  // // to do:TICLR.clr的逻辑控制
-  // TVAL.info.timeval := counter
   val any_exc = Cat(ESTAT.info.is_12, ESTAT.info.is_11, ESTAT.info.is_9_2, ESTAT.info.is_1_0) &
                 Cat(ECFG.info.lie_12_11, ECFG.info.lie_9_0) 
   val start = io.start || (any_exc.orR && CRMD.info.ie)
-
-  // val start = io.start
 
   // 例外跳转
   io.exc_bus := WireDefault(0.U.asTypeOf(new exc_bus))
@@ -216,7 +177,6 @@ class CSR extends Module with Parameters {
   }
 
   when(io.end) {
-    // timeexc_flag  := true.B
     CRMD.info.plv := PRMD.info.pplv
     CRMD.info.ie  := PRMD.info.pie
 
