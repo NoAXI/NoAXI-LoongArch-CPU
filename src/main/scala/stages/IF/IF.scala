@@ -35,9 +35,6 @@ class IF extends Module with Parameters {
 
   // 与下一流水级握手
   val info = ConnectGetBus(io.from, io.to)
-  when(io.flush_en || io.has_exc) {
-    info := WireDefault(0.U.asTypeOf(new info))
-  }
   io.flush_apply := 0.U
 
   // 分支 or 正常 PCReg的跳转
@@ -47,7 +44,7 @@ class IF extends Module with Parameters {
   when(io.br_bus.br_taken && !bf_exc_en) { // 若是分支但前一拍是异常入口，测无需跳转且正常流水
     io.to.valid := false.B
   }
-  when((io.from.valid && io.from.ready) || io.exc_bus.en) {
+  when((io.from.valid && io.from.ready && !io.this_exc) || io.exc_bus.en) {
     fs_pc := next_pc
   }
 
@@ -61,6 +58,7 @@ class IF extends Module with Parameters {
   to_info.this_exc := io.this_exc
   when(io.this_exc) {
     to_info.exc_type := ECodes.ADEF
+    to_info.wrong_addr := fs_pc
   }
   io.to.bits := to_info
 

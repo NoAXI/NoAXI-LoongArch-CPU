@@ -49,11 +49,11 @@ class IW extends Module with Parameters {
   io.exc_end   := WireDefault(false.B)
 
   // 写寄存器，传给ds
-  io.rf_bus.we      := info.is_wf && io.to.valid
+  io.rf_bus.we      := info.is_wf && io.to.valid && !info.this_exc
   io.rf_bus.wmask   := ALL_MASK.U
   io.rf_bus.waddr   := info.dest
   io.rf_bus.wdata   := info.result
-  io.rcsr_bus.we    := info.csr_we
+  io.rcsr_bus.we    := info.csr_we && io.to.valid && !info.this_exc
   io.rcsr_bus.waddr := info.csr_addr
   io.rcsr_bus.wmask := Mux(info.op_type === CsrOpType.xchg, info.csr_mask, ALL_MASK.U)
   io.rcsr_bus.wdata := info.rkd_value
@@ -82,7 +82,7 @@ class IW extends Module with Parameters {
   }
 
   io.debug_wb_pc       := info.pc
-  io.debug_wb_rf_we    := Fill(4, io.rf_bus.we)
+  io.debug_wb_rf_we    := Fill(4, io.rf_bus.we & !info.this_exc)
   io.debug_wb_rf_wnum  := info.dest
   io.debug_wb_rf_wdata := info.result
 }

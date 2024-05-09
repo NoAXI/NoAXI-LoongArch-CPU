@@ -111,9 +111,12 @@ object MemOpType {
 }
 
 object CsrOpType {
-    def rd    = "b00".U
-    def wr   = "b01".U
-    def xchg    = "b10".U
+    def rd    = "b000".U
+    def wr    = "b001".U
+    def xchg  = "b010".U
+    def cntrd = "b011".U
+    def cnth  = "b100".U
+    def cntl  = "b101".U
     def apply() = UInt(2.W)
 }
 
@@ -144,7 +147,7 @@ object ExcOpType {
 
 object LA32 extends InstType {
     // rdcnt
-    def RDCNTIDW    = BitPat("b0000000000000000011000?????00000")
+    def RDCNTID     = BitPat("b0000000000000000011000?????00000")
     def RDCNTVLW    = BitPat("b000000000000000001100000000?????")
     def RDCNTVHW    = BitPat("b000000000000000001100100000?????")
     
@@ -284,6 +287,9 @@ object LA32 extends InstType {
         CSRWR     -> List(InstCSR14,   FuncType.csr,   CsrOpType.wr,        IsWf.y,   SrcType.rj,   SrcType.rd      ),
         CSRXCHG   -> List(InstCSR14,   FuncType.csr,   CsrOpType.xchg,      IsWf.y,   SrcType.rj,   SrcType.rd      ),
         ERTN      -> List(Inst3R,      FuncType.exc,   ExcOpType.ertn,      IsWf.n,   SrcType.is4,  SrcType.is4     ),
+        RDCNTID   -> List(Inst2R,      FuncType.csr,   CsrOpType.cntrd,     IsWf.y,   SrcType.rj,   SrcType.rj      ),
+        RDCNTVHW  -> List(Inst2R,      FuncType.csr,   CsrOpType.cnth,      IsWf.y,   SrcType.rd,   SrcType.rd      ),
+        RDCNTVLW  -> List(Inst2R,      FuncType.csr,   CsrOpType.cntl,      IsWf.y,   SrcType.rd,   SrcType.rd      ),
     )
 }
 

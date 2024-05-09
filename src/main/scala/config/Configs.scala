@@ -23,12 +23,14 @@ class info extends Bundle with Parameters {
   val result = UInt(DATA_WIDTH.W)
 
   val this_exc = Bool() // 普通例外
-  val exc_type = UInt(6.W)
+  val exc_type = UInt(7.W)
   val csr_we   = Bool()
   val csr_mask = UInt(DATA_WIDTH.W)
   val csr_addr = UInt(14.W)
   val csr_val  = UInt(DATA_WIDTH.W)
   val ecode    = UInt(15.W)
+
+  val wrong_addr = UInt(ADDR_WIDTH.W)
 }
 
 class pair[A, B](val first: A, val second: B)

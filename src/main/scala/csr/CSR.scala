@@ -21,6 +21,7 @@ class CSR_IO extends Bundle with Parameters {
 
   // to ds
   val rdata = Output(UInt(DATA_WIDTH.W))
+  val counter = Output(UInt(64.W))
 
   // to fs
   val exc_bus = Output(new exc_bus)
@@ -93,6 +94,10 @@ class CSR extends Module with Parameters {
     // DMW1,
   )
 
+  val stable_counter = RegInit(0.U(64.W))
+  stable_counter := Mux(stable_counter === ALL_MASK.U, 0.U, stable_counter + 1.U)
+  io.counter := stable_counter
+
   // 读 or 写
   io.rdata := 0.U
   when(io.re) {
@@ -120,35 +125,28 @@ class CSR extends Module with Parameters {
     }
   }
 
-  val cnt_flag     = RegInit(true.B)
+  //to do: update cnt_flag
+  // val cnt_flag     = RegInit(true.B)
+  TVAL.info.timeval := RegInit(1.U)
   when (TCFG.info.en) {
     when (TVAL.info.timeval === 0.U) {
-      when (cnt_flag) {
-        cnt_flag := false.B
-      }
+      // when (cnt_flag) {
+      //   cnt_flag := false.B
+      // }
       TVAL.info.timeval := Mux(TCFG.info.preiodic, TCFG.info.initval ## 0.U(2.W), 0.U)
     }.otherwise {
       TVAL.info.timeval := TVAL.info.timeval - 1.U
     }
   }
-  when(cnt_flag) {
-    TVAL.info.timeval := TCFG.info.initval ## 0.U(2.W)// 它说要补两0？
-  }
+  // when(cnt_flag) {
+  //   TVAL.info.timeval := TCFG.info.initval ## 0.U(2.W)// 它说要补两0？
+  // }
 
   val TVAL_edge = ShiftRegister(TVAL.info.timeval, 1)
   when(TCFG.info.en && TVAL.info.timeval === 0.U && TVAL_edge === 1.U){
     ESTAT.info.is_11 := true.B
   }
 
-  BADV.info.vaddr := MateDefault(
-    ESTAT.info.ecode,
-    BADV.info.vaddr,
-    List(
-      ECodes.ADEF -> io.info.pc,
-      // ECodes.ADEM -> io.info.wrong_addr,
-      // ECodes.ALE  -> io.info.wrong_addr,
-    ),
-  )
 
   // val timecnt_exc  = WireDefault(false.B)
   // val counter      = RegInit(0.U(COUNT_N.W))
@@ -191,8 +189,9 @@ class CSR extends Module with Parameters {
     PRMD.info.pie  := CRMD.info.ie
     CRMD.info.plv  := 0.U
     CRMD.info.ie   := 0.U
+    // 中断>例外的优先级
     ESTAT.info.ecode := MuxCase(
-      io.info.exc_type,
+      io.info.exc_type(6, 0),
       List(
         ESTAT.info.is_1_0.orR -> ECodes.INT,
         ESTAT.info.is_9_2.orR -> ECodes.INT,
@@ -200,7 +199,17 @@ class CSR extends Module with Parameters {
         ESTAT.info.is_12 -> ECodes.INT,
       ),
     )
+    ESTAT.info.esubcode := Mux(io.info.ecode === ECodes.ADEM, 1.U, 0.U)
     ERA.info.pc := io.info.pc
+    BADV.info.vaddr := MateDefault(
+      io.info.exc_type,
+      BADV.info.vaddr,
+      List(
+        ECodes.ADEF -> io.info.wrong_addr,
+        ECodes.ADEM -> io.info.wrong_addr,
+        ECodes.ALE  -> io.info.wrong_addr,
+      ),
+    )
 
     io.exc_bus.en := true.B
     io.exc_bus.pc := EENTRY.info.asUInt

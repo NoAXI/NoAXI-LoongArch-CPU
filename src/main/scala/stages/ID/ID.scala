@@ -23,6 +23,7 @@ class ID_IO extends Bundle with Parameters {
   val csr_re     = Output(Bool())
   val csr_raddr  = Output(UInt(14.W))
   val csr_rdata  = Input(UInt(DATA_WIDTH.W))
+  val counter    = Input(UInt(64.W))
   val csr_rf_bus = Output(new rf_bus)
 
   // ** from writeback
@@ -37,9 +38,9 @@ class ID extends Module with Parameters with InstType {
   val io = IO(new ID_IO)
 
   // 握手
-  val info    = ConnectGetBus(io.from, io.to)
+  val info = ConnectGetBus(io.from, io.to)
   when(io.flush_en || io.has_exc) {
-    info    := WireDefault(0.U.asTypeOf(new info))
+    info := WireDefault(0.U.asTypeOf(new info))
   }
   io.flush_apply := 0.U
 
@@ -51,7 +52,7 @@ class ID extends Module with Parameters with InstType {
   val exception = MuxCase(
     ECodes.NONE,
     List(
-      (op_type === "b111111".U && info.pc =/= 0.U)               -> ECodes.INE,//意思就是说没这个指令，并且不是flush导致的
+      (op_type === "b111111".U && info.pc =/= 0.U)               -> ECodes.INE, // 意思就是说没这个指令，并且不是flush导致的
       (func_type === FuncType.exc && op_type === ExcOpType.brk)  -> ECodes.BRK,
       (func_type === FuncType.exc && op_type === ExcOpType.sys)  -> ECodes.SYS,
       (func_type === FuncType.exc && op_type === ExcOpType.ertn) -> ECodes.ertn,
@@ -97,7 +98,7 @@ class ID extends Module with Parameters with InstType {
       SrcType.rd_imm -> rd,
     ),
   )
-  io.csr_raddr := imm(13, 0)
+  io.csr_raddr := Mux(inst === LA32.RDCNTID, CSR.TID, imm(13, 0))
   io.csr_re    := func_type === FuncType.csr
 
   // 前递处理
@@ -152,10 +153,20 @@ class ID extends Module with Parameters with InstType {
   to_info.func_type := func_type
   to_info.op_type   := op_type
   to_info.is_wf     := is_wf
-  to_info.dest      := Mux(inst === LA32.BL, 1.U, rd)
+  to_info.dest := MuxCase(
+    rd,
+    List(
+      (inst === LA32.BL)      -> 1.U,
+      (inst === LA32.RDCNTID) -> rj,
+    ),
+  )
   to_info.rkd_value := rkd_value
   to_info.csr_addr  := imm(13, 0)
-  to_info.csr_val   := io.ds_reg_data.csr_val
+  to_info.csr_val   := MuxCase(io.ds_reg_data.csr_val, List(
+      (func_type === FuncType.csr && op_type === CsrOpType.cnth) -> io.counter(63, 32),
+      (func_type === FuncType.csr && op_type === CsrOpType.cntl) -> io.counter(31, 0),
+    )
+  )
   to_info.csr_mask  := rj_value
   to_info.csr_we    := func_type === FuncType.csr && (op_type === CsrOpType.wr || op_type === CsrOpType.xchg)
   to_info.ecode     := imm(14, 0)

@@ -55,6 +55,7 @@ class Top extends Module with Parameters {
   ds.io.csr_rdata   := csr.io.rdata
   ds.io.flush_en    := ctrl.io.flush_en(1)
   ds.io.has_exc     := es.io.this_exc || ms.io.this_exc || ws.io.this_exc
+  ds.io.counter     := csr.io.counter
 
   es.io.from        <> ds.io.to
   es.io.ds_reg_info := ds.io.ds_reg_info
