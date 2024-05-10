@@ -125,7 +125,8 @@ class CSR extends Module with Parameters {
     }
   }
 
-  TVAL.info.timeval := RegInit(1.U) // 不加看pc 1c072478
+  // TVAL.info.timeval := RegInit(1.U) // 不加看pc 1c072478
+  TVAL.info.timeval := 1.U // 不加看pc 1c072478
   when (TCFG.info.en) {
     when (TVAL.info.timeval === 0.U) {
       TVAL.info.timeval := Mux(TCFG.info.preiodic, TCFG.info.initval ## 0.U(2.W), 0.U)
