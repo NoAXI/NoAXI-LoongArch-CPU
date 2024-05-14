@@ -25,12 +25,11 @@ class IF_IO extends Bundle with Parameters {
   // from decoder: branch
   val br_bus = Input(new br_bus)
 
-  // act with inst_sram
-  val inst_sram_en    = Output(Bool())
-  val inst_sram_we    = Output(UInt(INST_WIDTH_B.W))
-  val inst_sram_addr  = Output(UInt(ADDR_WIDTH.W))
-  val inst_sram_wdata = Output(UInt(INST_WIDTH.W))
-  val inst_sram_rdata = Input(UInt(INST_WIDTH.W))
+  // act with icache
+  val fetch   = Flipped(DecoupledIO(UInt(INST_WIDTH.W)))
+  val request = Output(Bool())
+  val finish  = Output(Bool())
+  val addr    = Output(UInt(ADDR_WIDTH.W))
 }
 
 class IF extends Module with Parameters {
@@ -40,20 +39,30 @@ class IF extends Module with Parameters {
 
   val bf_exc_en = ShiftRegister(io.exc_bus.en, 1)
   val pc        = RegInit(START_ADDR.U(ADDR_WIDTH.W))
+  val br_taken  = RegInit(false.B)
+
+  when(io.br_bus.br_taken) {
+    br_taken := true.B
+  }.elsewhen(io.to.valid) {
+    br_taken := false.B
+  } // 设计的不太好，会导致br_taken持续过长
+
+  val br_en = br_taken || io.br_bus.br_taken
+
   val next_pc = MuxCase(
     pc + 4.U,
     Seq(
-      io.exc_bus.en                      -> io.exc_bus.pc,
-      (io.br_bus.br_taken && !bf_exc_en) -> io.br_bus.br_target,
+      io.exc_bus.en            -> io.exc_bus.pc,
+      (br_en && !bf_exc_en) -> io.br_bus.br_target,
     ),
   )
 
   // 若是分支但前一拍是异常入口，则无需跳转且正常流水
-  when(io.br_bus.br_taken && !bf_exc_en) {
+  when(io.br_bus.br_taken && !bf_exc_en || !ShiftRegister(io.fetch.valid, 1)) {
     io.to.valid := false.B
   }
 
-  when((io.from.valid && io.from.ready && !io.this_exc) || io.exc_bus.en) {
+  when(((io.from.valid && io.from.ready && !io.this_exc) || io.exc_bus.en) && io.fetch.valid) {
     pc := next_pc
   }
 
@@ -64,7 +73,7 @@ class IF extends Module with Parameters {
   val to_info = WireDefault(0.U.asTypeOf(new info))
   to_info.exc_type := ECodes.NONE
   to_info.pc       := pc
-  to_info.inst     := io.inst_sram_rdata
+  to_info.inst     := io.fetch.bits // to do: io.fetch.valid有什么用
   to_info.this_exc := io.this_exc
   when(io.this_exc) {
     to_info.exc_type   := ECodes.ADEF
@@ -73,8 +82,10 @@ class IF extends Module with Parameters {
   io.to.bits := to_info
 
   // 与指令内存的接口
-  io.inst_sram_en    := (io.from.valid && io.from.ready) || io.exc_bus.en
-  io.inst_sram_we    := 0.U
-  io.inst_sram_addr  := next_pc
-  io.inst_sram_wdata := 0.U
+  io.fetch.ready := true.B
+  io.request     := (io.from.fire || io.exc_bus.en) && (!io.fetch.valid && !ShiftRegister(io.fetch.valid, 1)) // vivado专属傻呗版本
+  // io.finish      := io.to.fire // ?
+  io.finish := true.B
+  // io.finish := next_pc =/= ShiftRegister(next_pc, 1)
+  io.addr   := next_pc 
 }

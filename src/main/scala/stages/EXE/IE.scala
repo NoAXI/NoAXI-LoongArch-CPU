@@ -22,11 +22,16 @@ class IE_IO extends Bundle with Parameters {
   val csr_es      = Output(new hazardData)
   val ds_reg_info = Input(new dsRegInfo)
 
-  // ** to sram
-  val data_sram_en    = Output(Bool())
-  val data_sram_we    = Output(UInt(DATA_WIDTH_B.W))
-  val data_sram_addr  = Output(UInt(ADDR_WIDTH.W))
-  val data_sram_wdata = Output(UInt(INST_WIDTH.W))
+  // act with dcache
+  val exe     = Flipped(DecoupledIO(UInt(32.W)))
+  val request = Output(Bool())
+  val finish  = Output(Bool())
+  val ren     = Output(Bool())
+  val wen     = Output(Bool())
+  val size    = Output(UInt(32.W))
+  val wstrb   = Output(UInt(8.W))
+  val addr    = Output(UInt(ADDR_WIDTH.W))
+  val wdata   = Output(UInt(DATA_WIDTH.W))
 }
 
 class IE extends Module with Parameters {
@@ -43,10 +48,19 @@ class IE extends Module with Parameters {
   val es_mem_re = info.func_type === FuncType.mem && MemOpType.isread(info.op_type)
   val es_mem_we = info.func_type === FuncType.mem && !es_mem_re
 
-  when(es_mem_re && io.ds_reg_info.addr.exists(_ === info.dest)) {
+  // when(es_mem_re && io.ds_reg_info.addr.exists(_ === info.dest)) {
+  //   io.from.ready := false.B
+  //   info          := WireDefault(0.U.asTypeOf(new info))
+  // }
+  when (io.ds_reg_info.addr.exists(_ === info.dest) && io.exe.valid) {
     io.from.ready := false.B
     info          := WireDefault(0.U.asTypeOf(new info))
   }
+
+  when (es_mem_re && !io.exe.valid) {
+    io.from.ready := false.B
+    io.to.valid := false.B
+  } 
 
   // 调用DIV获得运算结果
   val div = Module(new DIV)
@@ -103,18 +117,23 @@ class IE extends Module with Parameters {
       List(
         (info.op_type === MemOpType.writeh && (result(0) =/= "b0".U))     -> ECodes.ALE,
         (info.op_type === MemOpType.writew && (result(1, 0) =/= "b00".U)) -> ECodes.ALE,
-        (info.op_type === MemOpType.readh  && (result(0) =/= "b0".U))     -> ECodes.ALE,
+        (info.op_type === MemOpType.readh && (result(0) =/= "b0".U))      -> ECodes.ALE,
         (info.op_type === MemOpType.readhu && (result(0) =/= "b0".U))     -> ECodes.ALE,
-        (info.op_type === MemOpType.readw  && (result(1, 0) =/= "b00".U)) -> ECodes.ALE,
+        (info.op_type === MemOpType.readw && (result(1, 0) =/= "b00".U))  -> ECodes.ALE,
         // (result(31) === 1.U) -> ECodes.ADEM,
       ),
     ),
     ECodes.NONE,
   )
 
-  io.data_sram_en := true.B
-  io.data_sram_we := Mux(
-    io.to.valid && es_mem_we && (!io.has_exc) && (exception === ECodes.NONE),
+  io.exe.ready := true.B
+  io.request   := es_mem_re || es_mem_we
+  io.finish    := true.B
+  io.ren       := es_mem_re
+  io.wen       := es_mem_we
+  io.size      := 4.U // not sure
+  io.wstrb := Mux(
+    es_mem_we && (!io.has_exc) && (exception === ECodes.NONE),
     MateDefault(
       info.op_type,
       0.U,
@@ -126,8 +145,8 @@ class IE extends Module with Parameters {
     ),
     0.U,
   )
-  io.data_sram_addr := result
-  io.data_sram_wdata := MateDefault(
+  io.addr := result
+  io.wdata := MateDefault(
     info.op_type,
     0.U,
     List(
@@ -141,6 +160,7 @@ class IE extends Module with Parameters {
 
   val to_info = WireDefault(0.U.asTypeOf(new info))
   to_info            := info
+  to_info.rdata      := io.exe.bits
   to_info.piece      := result(1, 0)
   to_info.result     := result
   to_info.is_wf      := info.is_wf && is_cal

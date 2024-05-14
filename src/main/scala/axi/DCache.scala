@@ -6,20 +6,18 @@ import config._
 
 class DCache_IO extends Bundle with Parameters {
   // to axi
-  val axi = new AXI_IO
+  val axi = new AXI_DCache_IO
 
   // act with exe
-  val exe     = Flipped(DecoupledIO(UInt(32.W)))
-  val to_exe  = DecoupledIO(UInt(32.W))
+  val exe     = DecoupledIO(UInt(32.W))
   val request = Input(Bool())
+  val finish  = Input(Bool())
   val ren     = Input(Bool())
   val wen     = Input(Bool())
   val size    = Input(UInt(32.W))
   val wstrb   = Input(UInt(8.W))
   val addr    = Input(UInt(ADDR_WIDTH.W))
   val wdata   = Input(UInt(DATA_WIDTH.W))
-
-  val finish = Input(Bool())
 
   // to wb: stall
   val stall = Output(Bool())
@@ -28,13 +26,23 @@ class DCache_IO extends Bundle with Parameters {
 class DCache extends Module with Parameters {
   val io = IO(new DCache_IO)
 
-  val axi    = RegInit(0.U.asTypeOf(new AXI_IO))
-  val to_exe = RegInit(0.U.asTypeOf(new DecoupledIO(UInt(DATA_WIDTH.W))))
-  val stall  = RegInit(Bool())
+  val ar    = RegInit(0.U.asTypeOf(new AR))
+  val r     = RegInit(0.U.asTypeOf(new R))
+  val aw    = RegInit(0.U.asTypeOf(new AW))
+  val w     = RegInit(0.U.asTypeOf(new W))
+  val b     = RegInit(0.U.asTypeOf(new B))
+  val valid = RegInit(false.B)
+  val bits  = RegInit(0.U(DATA_WIDTH.W))
+  val stall = RegInit(false.B)
 
-  io.axi    <> axi
-  io.to_exe <> to_exe
-  io.stall  <> stall
+  io.axi.ar    <> ar
+  io.axi.r     <> r
+  io.axi.aw    <> aw
+  io.axi.w     <> w
+  io.axi.b     <> b
+  io.exe.valid := valid
+  io.exe.bits  := bits
+  io.stall     <> stall
 
   val saved_valid = RegInit(false.B)
   val saved_data  = RegInit(0.U(DATA_WIDTH.W))
@@ -44,82 +52,82 @@ class DCache extends Module with Parameters {
   val state = RegInit(idle)
   switch(state) {
     is(idle) {
-      to_exe.valid := false.B
+      valid := false.B
       when(io.request) {
         when(io.ren) {
-          axi.arvalid := true.B
-          axi.arready := false.B
-          axi.araddr  := io.addr
-          axi.arsize  := io.size
-          state       := state0
+          ar.valid := true.B
+          r.ready  := false.B
+          ar.addr  := io.addr
+          ar.size  := io.size
+          state    := state0
         }.elsewhen(io.wen) {
-          axi.awvalid := true.B
-          axi.awaddr  := io.addr
-          axi.awlen   := 0.U
-          axi.awsize  := io.size
-          axi.wstrb   := io.wstrb
-          axi.wvalid  := true.B
-          axi.wdada   := io.wdata
-          axi.bready  := false.B
-          state       := state2
+          aw.valid := true.B
+          aw.addr  := io.addr
+          aw.len   := 0.U
+          aw.size  := io.size
+          w.strb   := io.wstrb
+          w.valid  := true.B
+          w.data   := io.wdata
+          b.ready  := false.B
+          state    := state2
         }
       }
     }
     is(state0) {
       stall := true.B
       when(io.axi.arready) {
-        axi.arvalid := false.B
-        axi.rready  := true.B
-        state       := state1
+        ar.valid := false.B
+        r.ready  := true.B
+        state    := state1
       }
     }
     is(state1) {
       stall := true.B
       when(io.axi.rvalid) {
-        to_exe.valid := true.B
-        to_exe.bits  := axi.rdata
+        valid := true.B
+        bits  := io.axi.rdata
 
         when(io.finish) {
           state := idle
         }.otherwise {
-          saved_data  := to_exe.bits
-          saved_valid := to_exe.valid
+          saved_data  := io.axi.rdata
+          saved_valid := true.B
           state       := waiting
         }
       }
     }
     is(state2) {
       when(io.axi.wready && io.axi.awready) {
-        axi.awvalid := false.B
-        axi.wvalid  := false.B
-        axi.bready  := true.B
-        state       := state5
+        aw.valid := false.B
+        w.valid  := false.B
+        b.ready  := true.B
+        state    := state5
       }.elsewhen(io.axi.wready) {
-        axi.awvalid := true.B
-        axi.wvalid  := false.B
-        axi.bready  := false.B
-        state       := state4
+        aw.valid := true.B
+        w.valid  := false.B
+        b.ready  := false.B
+        state    := state4
       }.elsewhen(io.axi.awready) {
-        axi.awvalid := false.B
-        axi.wvalid  := true.B
-        axi.bready  := false.B
-        state       := state3
+        aw.valid := false.B
+        w.valid  := true.B
+        b.ready  := false.B
+        state    := state3
       }
     }
     is(state3) {
       when(io.axi.wready) {
-        axi.awvalid := false.B
-        axi.wvalid  := false.B
-        axi.bready  := true.B
-        state       := state5
+        aw.valid := false.B
+        w.valid  := false.B
+        b.ready  := true.B
+        state    := state5
       }
     }
     is(state4) {
       when(io.axi.awready) {
-        axi.awvalid := false.B
-        axi.wvalid  := false.B
-        axi.bready  := true.B
-        state       := state5
+        aw.valid := false.B
+        w.valid  := false.B
+        b.ready  := true.B
+        state    := state5
       }
     }
     is(state5) {
@@ -130,11 +138,11 @@ class DCache extends Module with Parameters {
       }
     }
     is(waiting) {
-      to_exe.bits  := saved_data
-      to_exe.valid := saved_valid
+      bits  := saved_data
+      valid := saved_valid
       when(io.finish) {
-        to_exe.valid := false.B
-        state        := idle
+        valid := false.B
+        state := idle
       }
     }
   }

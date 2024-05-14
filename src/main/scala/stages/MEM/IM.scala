@@ -21,7 +21,7 @@ class IM_IO extends Bundle with Parameters {
   val csr_ms = Output(new hazardData)
 
   // ** from data-sram
-  val data_sram_rdata = Input(UInt(INST_WIDTH.W))
+  // val data_sram_rdata = Input(UInt(INST_WIDTH.W))
 }
 
 class IM extends Module with Parameters {
@@ -42,17 +42,17 @@ class IM extends Module with Parameters {
     info.func_type === FuncType.mem && MemOpType.isread(info.op_type),  // 是否是读操作
     MateDefault(
       info.op_type(2, 1),  // 看是h类型还是b类型
-      io.data_sram_rdata,  // 默认是readw
+      info.rdata,  // 默认是readw
       List(
         MemOpType.b -> Extend(
           MateDefault(
             info.piece,
             0.U,
             List(
-              "b00".U -> io.data_sram_rdata(7, 0),
-              "b01".U -> io.data_sram_rdata(15, 8),
-              "b10".U -> io.data_sram_rdata(23, 16),
-              "b11".U -> io.data_sram_rdata(31, 24),
+              "b00".U -> info.rdata(7, 0),
+              "b01".U -> info.rdata(15, 8),
+              "b10".U -> info.rdata(23, 16),
+              "b11".U -> info.rdata(31, 24),
             ),
           ),
           DATA_WIDTH,
@@ -63,8 +63,8 @@ class IM extends Module with Parameters {
             info.piece,
             0.U,
             List(
-              "b00".U -> io.data_sram_rdata(15, 0),
-              "b10".U -> io.data_sram_rdata(31, 16),
+              "b00".U -> info.rdata(15, 0),
+              "b10".U -> info.rdata(31, 16),
             ),
           ),
           DATA_WIDTH,

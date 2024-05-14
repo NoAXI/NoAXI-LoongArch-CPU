@@ -95,7 +95,7 @@ class CSR extends Module with Parameters {
   )
 
   val stable_counter = RegInit(0.U(64.W))
-  stable_counter := Mux(stable_counter === ALL_MASK.U, 0.U, stable_counter + 1.U)
+  stable_counter := Mux(stable_counter === Fill(2, ALL_MASK.U), 0.U, stable_counter + 1.U)
   io.counter := stable_counter
 
   // 读 or 写

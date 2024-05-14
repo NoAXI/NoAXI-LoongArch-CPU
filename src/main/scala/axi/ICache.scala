@@ -6,33 +6,32 @@ import config._
 
 class ICache_IO extends Bundle with Parameters {
   // to axi
-  val axi = new AXI_IO
+  val axi = new AXI_ICache_IO
 
   // act with fetch
-  val fetch    = Flipped(DecoupledIO(UInt(32.W)))
-  val to_fetch = DecoupledIO(UInt(32.W))
-  val request  = Input(Bool())
-  val addr     = Input(UInt(ADDR_WIDTH.W))
-
-  val finish = Input(Bool())
+  val fetch   = DecoupledIO(UInt(32.W))
+  val request = Input(Bool())
+  val finish  = Input(Bool())
+  val addr    = Input(UInt(ADDR_WIDTH.W))
 
   // to wb: stall all
   val stall = Output(Bool())
-
-  // from ..: is stall?
-//   val is_stall = Input(Bool())
 }
 
 class ICache extends Module with Parameters {
   val io = IO(new ICache_IO)
 
-  val axi      = RegInit(0.U.asTypeOf(new AXI_IO))
-  val to_fetch = RegInit(0.U.asTypeOf(new DecoupledIO(UInt(INST_WIDTH.W))))
-  val stall    = RegInit(Bool())
+  val ar    = RegInit(0.U.asTypeOf(new AR))
+  val r     = RegInit(0.U.asTypeOf(new R))
+  val valid = RegInit(false.B)
+  val bits  = RegInit(0.U(INST_WIDTH.W))
+  val stall = RegInit(false.B)
 
-  io.axi      <> axi
-  io.to_fetch <> to_fetch
-  io.stall    <> stall
+  io.axi.ar      <> ar
+  io.axi.r       <> r
+  io.fetch.valid := valid
+  io.fetch.bits  := bits
+  io.stall       <> stall
 
   val saved_valid = RegInit(false.B)
   val saved_inst  = RegInit(0.U(INST_WIDTH.W))
@@ -42,44 +41,46 @@ class ICache extends Module with Parameters {
   val state = RegInit(idle)
   switch(state) {
     is(idle) {
-      to_fetch.valid := false.B
+      valid := false.B
       when(io.request) {
-        axi.arvalid := true.B
-        axi.arready := false.B
-        axi.araddr  := io.addr
-        axi.arlen   := 0.U
-        axi.arsize  := 4.U
-        state       := state0
+        ar.valid := true.B
+        ar.addr  := io.addr
+        r.ready  := false.B
+        ar.len   := 0.U
+        ar.size  := 4.U
+        state    := state0
       }
     }
     is(state0) {
+      // ar.addr  := io.addr
       stall := true.B
       when(io.axi.arready) {
-        axi.arvalid := false.B
-        axi.rready  := true.B
-        state       := state1
+        ar.valid := false.B
+        r.ready  := true.B
+        state    := state1
       }
     }
     is(state1) {
       stall := true.B
       when(io.axi.rvalid) {
-        to_fetch.valid := true.B
-        to_fetch.bits  := axi.rdata
+        valid := true.B
+        bits  := io.axi.rdata
 
         when(io.finish) {
+          stall := false.B
           state := idle
         }.otherwise {
-          saved_inst  := to_fetch.bits
-          saved_valid := to_fetch.valid
+          saved_inst  := io.axi.rdata
+          saved_valid := true.B
           state       := waiting
         }
       }
     }
     is(waiting) {
-      to_fetch.bits  := saved_inst
-      to_fetch.valid := saved_valid
+      bits  := saved_inst
+      valid := saved_valid
       when(io.finish) {
-        to_fetch.valid := false.B
+        valid := false.B
         state := idle
       }
     }

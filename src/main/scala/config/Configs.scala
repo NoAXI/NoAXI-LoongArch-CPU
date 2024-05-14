@@ -22,6 +22,8 @@ class info extends Bundle with Parameters {
   val src2   = UInt(DATA_WIDTH.W)
   val result = UInt(DATA_WIDTH.W)
 
+  val rdata = UInt(DATA_WIDTH.W)
+
   val this_exc = Bool() // 普通例外
   val exc_type = UInt(7.W)
   val csr_we   = Bool()

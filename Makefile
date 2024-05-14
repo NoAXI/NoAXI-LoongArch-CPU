@@ -2,7 +2,7 @@ simulator_path = ../test/soc-simulator
 myCPU_path = /mnt/f/CPU/lab_Loongarch/mycpu_env/myCPU
 func_path = /mnt/f/CPU/lab_Loongarch/mycpu_env/func
 generate_path = ./systemVerilog
-EXP = 13
+EXP = 15
 
 sim:
 	@mill -i _.runMain Elaborate --target-dir $(generate_path)
