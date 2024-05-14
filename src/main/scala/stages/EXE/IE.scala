@@ -127,7 +127,7 @@ class IE extends Module with Parameters {
   )
 
   io.exe.ready := true.B
-  io.request   := es_mem_re || es_mem_we
+  io.request   := (es_mem_re || es_mem_we) && (!io.exe.valid && !ShiftRegister(io.exe.valid, 1)) // vivado专属傻呗版本
   io.finish    := true.B
   io.ren       := es_mem_re
   io.wen       := es_mem_we

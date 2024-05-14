@@ -1260,6 +1260,7 @@ module IE(	// @[src/main/scala/stages/EXE/IE.scala:37:7]
        | info_op_type == 10'hC & (|(result[1:0])))
       ? 7'h9
       : 7'h25;	// @[src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/config/Configs.scala:43:24, :48:13, :93:28, src/main/scala/stages/EXE/IE.scala:48:51, :49:51, :60:37, :62:17, :113:22, :114:{17,30,34,47}, :118:{23,44,54}, :119:{23,44,54,61}, :120:{23,43}, :121:{23,44}, :122:{23,43,60}]
+  reg         io_request_r;	// @[src/main/scala/stages/EXE/IE.scala:130:79]
   wire [2:0]  _GEN_2 = {exception[5], exception[3:2]};	// @[src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/stages/EXE/IE.scala:113:22]
   wire        _io_wdata_T_5 = info_op_type == 10'h2;	// @[src/main/scala/config/Configs.scala:43:24, :93:28]
   wire        io_this_exc_0 = info_this_exc ? info_this_exc : _GEN_2 != 3'h5;	// @[src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/EXE/IE.scala:113:22, :159:{21,62}]
@@ -1329,6 +1330,7 @@ module IE(	// @[src/main/scala/stages/EXE/IE.scala:37:7]
       if (~_GEN_1)	// @[src/main/scala/config/Configs.scala:47:13, src/main/scala/stages/EXE/IE.scala:55:70, :56:19, :60:37, :61:19, :75:41, :76:19, :89:41, :90:20]
         info_valid <= io_from_valid;	// @[src/main/scala/config/Configs.scala:44:24]
     end
+    io_request_r <= io_exe_valid;	// @[src/main/scala/stages/EXE/IE.scala:130:79]
   end // always @(posedge)
   `ifdef ENABLE_INITIAL_REG_	// @[src/main/scala/stages/EXE/IE.scala:37:7]
     `ifdef FIRRTL_BEFORE_INITIAL	// @[src/main/scala/stages/EXE/IE.scala:37:7]
@@ -1360,6 +1362,7 @@ module IE(	// @[src/main/scala/stages/EXE/IE.scala:37:7]
         info_ecode = _RANDOM[4'hA][27:13];	// @[src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/EXE/IE.scala:37:7]
         info_wrong_addr = {_RANDOM[4'hA][31:28], _RANDOM[4'hB][27:0]};	// @[src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/EXE/IE.scala:37:7]
         info_valid = _RANDOM[4'hB][28];	// @[src/main/scala/config/Configs.scala:43:24, :44:24, src/main/scala/stages/EXE/IE.scala:37:7]
+        io_request_r = _RANDOM[4'hB][29];	// @[src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/EXE/IE.scala:37:7, :130:79]
       `endif // RANDOMIZE_REG_INIT
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/EXE/IE.scala:37:7]
@@ -1413,7 +1416,7 @@ module IE(	// @[src/main/scala/stages/EXE/IE.scala:37:7]
   assign io_csr_es_we = info_csr_we;	// @[src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/EXE/IE.scala:37:7]
   assign io_csr_es_addr = info_csr_addr[4:0];	// @[src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/EXE/IE.scala:37:7, :177:18]
   assign io_csr_es_data = info_rkd_value;	// @[src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/EXE/IE.scala:37:7]
-  assign io_request = io_ren_0 | io_wen_0;	// @[src/main/scala/stages/EXE/IE.scala:37:7, :48:51, :49:51, :130:29]
+  assign io_request = (io_ren_0 | io_wen_0) & ~io_exe_valid & ~io_request_r;	// @[src/main/scala/stages/EXE/IE.scala:37:7, :48:51, :49:51, :60:22, :130:{30,44,62,65,79}]
   assign io_ren = io_ren_0;	// @[src/main/scala/stages/EXE/IE.scala:37:7, :48:51]
   assign io_wen = io_wen_0;	// @[src/main/scala/stages/EXE/IE.scala:37:7, :49:51]
   assign io_wstrb =
