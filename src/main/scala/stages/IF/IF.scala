@@ -37,9 +37,11 @@ class IF extends Module with Parameters {
 
   val info = ConnectGetBus(io.from, io.to)
 
-  val bf_exc_en = ShiftRegister(io.exc_bus.en, 1)
-  val pc        = RegInit(START_ADDR.U(ADDR_WIDTH.W))
-  val br_taken  = RegInit(false.B)
+  val bf_exc_en    = ShiftRegister(io.exc_bus.en, 1)
+  val exc_pc       = RegInit(0.U(ADDR_WIDTH.W))
+  val pc           = RegInit(START_ADDR.U(ADDR_WIDTH.W))
+  val br_taken     = RegInit(false.B)
+  val br_exc_taken = RegInit(false.B)
 
   when(io.br_bus.br_taken) {
     br_taken := true.B
@@ -47,12 +49,21 @@ class IF extends Module with Parameters {
     br_taken := false.B
   } // 设计的不太好，会导致br_taken持续过长
 
-  val br_en = br_taken || io.br_bus.br_taken
+  when(io.exc_bus.en) {
+    exc_pc := io.exc_bus.pc
+    br_exc_taken := true.B
+  }.elsewhen(io.to.valid) {
+    br_exc_taken := false.B
+    exc_pc := 0.U
+  }
+
+  val br_en  = br_taken || io.br_bus.br_taken
+  val exc_en = br_exc_taken || io.exc_bus.en
 
   val next_pc = MuxCase(
     pc + 4.U,
     Seq(
-      io.exc_bus.en            -> io.exc_bus.pc,
+      exc_en                -> (io.exc_bus.pc | exc_pc),
       (br_en && !bf_exc_en) -> io.br_bus.br_target,
     ),
   )
@@ -62,7 +73,7 @@ class IF extends Module with Parameters {
     io.to.valid := false.B
   }
 
-  when(((io.from.valid && io.from.ready && !io.this_exc) || io.exc_bus.en) && io.fetch.valid) {
+  when(((io.from.valid && io.from.ready && !io.this_exc) || exc_en) && io.fetch.valid) {
     pc := next_pc
   }
 
@@ -83,9 +94,9 @@ class IF extends Module with Parameters {
 
   // 与指令内存的接口
   io.fetch.ready := true.B
-  io.request     := (io.from.fire || io.exc_bus.en) && (!io.fetch.valid && !ShiftRegister(io.fetch.valid, 1)) // vivado专属傻呗版本
+  io.request := (io.from.fire || io.exc_bus.en) && (!io.fetch.valid && !ShiftRegister(io.fetch.valid, 1)) && !io.has_exc// vivado专属傻呗版本
   // io.finish      := io.to.fire // ?
   io.finish := true.B
   // io.finish := next_pc =/= ShiftRegister(next_pc, 1)
-  io.addr   := next_pc 
+  io.addr := next_pc
 }

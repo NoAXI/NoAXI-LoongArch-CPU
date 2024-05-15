@@ -121,15 +121,16 @@ class CSR extends Module with Parameters {
         when(x.id === CSRCodes.TICLR && wdata(0) === 1.U) {
           ESTAT.info.is_11 := false.B
         }
+        when(x.id === CSRCodes.TCFG) {
+          TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 1.U(2.W) + 10.U
+        }
       }
     }
   }
 
-  // TVAL.info.timeval := RegInit(1.U) // 不加看pc 1c072478
-  TVAL.info.timeval := 1.U // 不加看pc 1c072478
   when (TCFG.info.en) {
     when (TVAL.info.timeval === 0.U) {
-      TVAL.info.timeval := Mux(TCFG.info.preiodic, TCFG.info.initval ## 0.U(2.W), 0.U)
+      TVAL.info.timeval := Mux(TCFG.info.preiodic, TCFG.info.initval ## 1.U(2.W) + 10.U, 0.U)
     }.otherwise {
       TVAL.info.timeval := TVAL.info.timeval - 1.U
     }
@@ -162,7 +163,7 @@ class CSR extends Module with Parameters {
       ),
     )
     ESTAT.info.esubcode := Mux(io.info.ecode === ECodes.ADEM, 1.U, 0.U)
-    ERA.info.pc := io.info.pc
+    ERA.info.pc := Mux(ESTAT.info.is_1_0.orR, io.info.pc + 4.U, io.info.pc) // tm的如果说是软中断，它记录的一定是下个pc，下个pc一定也是+4
     BADV.info.vaddr := MateDefault(
       io.info.exc_type,
       BADV.info.vaddr,

@@ -169,6 +169,45 @@ class IE extends Module with Parameters {
   to_info.wrong_addr := Mux(info.this_exc, info.wrong_addr, result)
   io.to.bits         := to_info
 
+  when (io.exe.valid) {
+    to_info.result := Mux(
+      info.func_type === FuncType.mem && MemOpType.isread(info.op_type),  // 是否是读操作
+      MateDefault(
+        info.op_type(2, 1),  // 看是h类型还是b类型
+        io.exe.bits,  // 默认是readw
+        List(
+          MemOpType.b -> Extend(
+            MateDefault(
+              result(1, 0),
+              0.U,
+              List(
+                "b00".U -> io.exe.bits(7, 0),
+                "b01".U -> io.exe.bits(15, 8),
+                "b10".U -> io.exe.bits(23, 16),
+                "b11".U -> io.exe.bits(31, 24),
+              ),
+            ),
+            DATA_WIDTH,
+            info.op_type(0).asBool,
+          ),
+          MemOpType.h -> Extend(
+            MateDefault(
+              result(1, 0),
+              0.U,
+              List(
+                "b00".U -> io.exe.bits(15, 0),
+                "b10".U -> io.exe.bits(31, 16),
+              ),
+            ),
+            DATA_WIDTH,
+            info.op_type(0).asBool,
+          ),
+        ),
+      ),
+      result,
+    )
+  }
+
   // 前递
   io.es.we       := to_info.is_wf
   io.es.addr     := to_info.dest

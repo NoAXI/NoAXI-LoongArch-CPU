@@ -38,42 +38,6 @@ class IM extends Module with Parameters {
   // 传递信息
   val to_info = WireDefault(0.U.asTypeOf(new info))
   to_info := info
-  to_info.result := Mux(
-    info.func_type === FuncType.mem && MemOpType.isread(info.op_type),  // 是否是读操作
-    MateDefault(
-      info.op_type(2, 1),  // 看是h类型还是b类型
-      info.rdata,  // 默认是readw
-      List(
-        MemOpType.b -> Extend(
-          MateDefault(
-            info.piece,
-            0.U,
-            List(
-              "b00".U -> info.rdata(7, 0),
-              "b01".U -> info.rdata(15, 8),
-              "b10".U -> info.rdata(23, 16),
-              "b11".U -> info.rdata(31, 24),
-            ),
-          ),
-          DATA_WIDTH,
-          info.op_type(0).asBool,
-        ),
-        MemOpType.h -> Extend(
-          MateDefault(
-            info.piece,
-            0.U,
-            List(
-              "b00".U -> info.rdata(15, 0),
-              "b10".U -> info.rdata(31, 16),
-            ),
-          ),
-          DATA_WIDTH,
-          info.op_type(0).asBool,
-        ),
-      ),
-    ),
-    info.result,
-  )
   io.to.bits := to_info
 
   // 前递
