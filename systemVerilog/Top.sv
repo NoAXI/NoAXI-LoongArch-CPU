@@ -86,7 +86,7 @@ module IF(	// @[src/main/scala/stages/IF/IF.scala:35:7]
   wire        _next_pc_T_4 = (br_taken | io_br_bus_br_taken) & ~bf_exc_en;	// @[src/main/scala/stages/IF/IF.scala:40:35, :43:29, :60:25, :67:{14,17}]
   reg         r;	// @[src/main/scala/stages/IF/IF.scala:72:58]
   wire        io_to_valid_0 = ~(io_br_bus_br_taken & ~bf_exc_en | ~r) & info_valid;	// @[src/main/scala/config/Configs.scala:44:24, :48:13, src/main/scala/stages/IF/IF.scala:40:35, :67:17, :72:{27,41,44,58,79}, :73:17]
-  reg         io_request_r;	// @[src/main/scala/stages/IF/IF.scala:97:86]
+  reg         io_request_r;	// @[src/main/scala/stages/IF/IF.scala:98:86]
   always @(posedge clock) begin	// @[src/main/scala/stages/IF/IF.scala:35:7]
     if (reset) begin	// @[src/main/scala/stages/IF/IF.scala:35:7]
       info_valid <= 1'h0;	// @[src/main/scala/config/Configs.scala:44:24]
@@ -115,7 +115,7 @@ module IF(	// @[src/main/scala/stages/IF/IF.scala:35:7]
     end
     bf_exc_en <= io_exc_bus_en;	// @[src/main/scala/stages/IF/IF.scala:40:35]
     r <= io_fetch_valid;	// @[src/main/scala/stages/IF/IF.scala:72:58]
-    io_request_r <= io_fetch_valid;	// @[src/main/scala/stages/IF/IF.scala:97:86]
+    io_request_r <= io_fetch_valid;	// @[src/main/scala/stages/IF/IF.scala:98:86]
   end // always @(posedge)
   `ifdef ENABLE_INITIAL_REG_	// @[src/main/scala/stages/IF/IF.scala:35:7]
     `ifdef FIRRTL_BEFORE_INITIAL	// @[src/main/scala/stages/IF/IF.scala:35:7]
@@ -137,7 +137,7 @@ module IF(	// @[src/main/scala/stages/IF/IF.scala:35:7]
         br_taken = _RANDOM[4'hD][30];	// @[src/main/scala/stages/IF/IF.scala:35:7, :42:29, :43:29]
         br_exc_taken = _RANDOM[4'hD][31];	// @[src/main/scala/stages/IF/IF.scala:35:7, :42:29, :44:29]
         r = _RANDOM[4'hE][0];	// @[src/main/scala/stages/IF/IF.scala:35:7, :72:58]
-        io_request_r = _RANDOM[4'hE][1];	// @[src/main/scala/stages/IF/IF.scala:35:7, :72:58, :97:86]
+        io_request_r = _RANDOM[4'hE][1];	// @[src/main/scala/stages/IF/IF.scala:35:7, :72:58, :98:86]
       `endif // RANDOMIZE_REG_INIT
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/IF/IF.scala:35:7]
@@ -146,12 +146,12 @@ module IF(	// @[src/main/scala/stages/IF/IF.scala:35:7]
   `endif // ENABLE_INITIAL_REG_
   assign io_to_valid = io_to_valid_0;	// @[src/main/scala/config/Configs.scala:48:13, src/main/scala/stages/IF/IF.scala:35:7, :72:79, :73:17]
   assign io_to_bits_pc = pc;	// @[src/main/scala/stages/IF/IF.scala:35:7, :42:29]
-  assign io_to_bits_inst = io_fetch_bits;	// @[src/main/scala/stages/IF/IF.scala:35:7]
+  assign io_to_bits_inst = (|(pc[1:0])) ? 32'h0 : io_fetch_bits;	// @[src/main/scala/stages/IF/IF.scala:35:7, :42:29, :81:{23,30}, :87:20, :89:21, :91:18]
   assign io_to_bits_this_exc = |(pc[1:0]);	// @[src/main/scala/stages/IF/IF.scala:35:7, :42:29, :81:{23,30}]
   assign io_to_bits_exc_type = (|(pc[1:0])) ? 7'h8 : 7'h25;	// @[src/main/scala/stages/IF/IF.scala:35:7, :42:29, :81:{23,30}, :85:20, :89:21, :90:24]
-  assign io_to_bits_wrong_addr = (|(pc[1:0])) ? pc : 32'h0;	// @[src/main/scala/stages/IF/IF.scala:35:7, :42:29, :81:{23,30}, :84:28, :89:21, :91:24]
+  assign io_to_bits_wrong_addr = (|(pc[1:0])) ? pc : 32'h0;	// @[src/main/scala/stages/IF/IF.scala:35:7, :42:29, :81:{23,30}, :84:28, :89:21, :92:24]
   assign io_request =
-    (_io_request_T | io_exc_bus_en) & ~io_fetch_valid & ~io_request_r & ~io_has_exc;	// @[src/main/scala/config/Configs.scala:52:18, src/main/scala/stages/IF/IF.scala:35:7, :97:{31,49,53,69,72,86,107,110}]
+    (_io_request_T | io_exc_bus_en) & ~io_fetch_valid & ~io_request_r & ~io_has_exc;	// @[src/main/scala/config/Configs.scala:52:18, src/main/scala/stages/IF/IF.scala:35:7, :98:{31,49,53,69,72,86,107,110}]
   assign io_addr =
     exc_en ? _next_pc_T_2 : _next_pc_T_4 ? io_br_bus_br_target : _next_pc_T;	// @[src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/stages/IF/IF.scala:35:7, :61:29, :64:8, :66:47, :67:14]
 endmodule
@@ -737,7 +737,7 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:40:7]
                                                                                                                                                                                               ? 6'h4
                                                                                                                                                                                               : _GEN_55
                                                                                                                                                                                                   ? 6'h5
-                                                                                                                                                                                                  : 6'h3F;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:58:46, :60:46]
+                                                                                                                                                                                                  : 6'h3F;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:112:18, :114:18, :115:18, :116:18, :124:48]
   wire        _GEN_68 = _GEN_36 | _GEN_37 | _GEN_60;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
   wire        _GEN_69 =
     _GEN_15 | _GEN_16 | _GEN_17 | _GEN_18 | _GEN_19 | _GEN_20 | _GEN_21;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39]
@@ -786,19 +786,6 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:40:7]
                                                                                   : _GEN_57
                                                                                       ? 3'h3
                                                                                       : _GEN_70;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/config/Configs.scala:93:28]
-  wire        _exception_T_9 = func_type == 4'h8;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:40:7, :58:18]
-  wire        _to_info_csr_we_T_2 = op_type == 6'h2;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:58:46]
-  wire        _to_info_csr_we_T_1 = op_type == 6'h1;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:60:46]
-  wire [6:0]  exception =
-    (&op_type) & (|info_pc)
-      ? 7'hD
-      : _exception_T_9 & _to_info_csr_we_T_2
-          ? 7'hC
-          : _exception_T_9 & op_type == 6'h0
-              ? 7'hB
-              : _exception_T_9 & _to_info_csr_we_T_1 ? 7'h26 : 7'h25;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/ID/ID.scala:57:{16,32,43}, :58:{18,35,46}, :59:{35,46}, :60:{35,46}]
-  wire        io_this_exc_0 =
-    info_this_exc ? info_this_exc : {exception[5], exception[3:0]} != 5'h15;	// @[src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/ID/ID.scala:65:{21,62}]
   wire        _to_info_src2_T_4 = src_type2 == 3'h6;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:70:13]
   reg  [31:0] casez_tmp;	// @[src/main/scala/config/Configs.scala:93:28]
   wire [3:0]  inst_type =
@@ -850,14 +837,14 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:40:7]
                                                                                            : {_GEN_53
                                                                                                 | _GEN_56,
                                                                                               1'h0}};	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, :34:39, src/main/scala/stages/ID/ID.scala:40:7]
-  wire [31:0] _GEN_71 = {24'h0, inst_type == 4'h0 ? info_inst[17:10] : 8'h0};	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:40:7, :71:25]
-  wire [31:0] _GEN_72 = {18'h0, info_inst[23:10]};	// @[src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:73:25]
+  wire [31:0] _GEN_71 = {24'h0, inst_type == 4'h0 ? info_inst[17:10] : 8'h0};	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:40:7, :58:25]
+  wire [31:0] _GEN_72 = {18'h0, info_inst[23:10]};	// @[src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:60:25]
   always_comb begin	// @[src/main/scala/config/Configs.scala:93:28]
     casez (inst_type)	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:93:28]
       4'b0000:
         casez_tmp = _GEN_71;	// @[src/main/scala/config/Configs.scala:93:28]
       4'b0001:
-        casez_tmp = {_to_info_src2_T_4 ? 20'h0 : {20{info_inst[21]}}, info_inst[21:10]};	// @[src/main/scala/config/Configs.scala:43:24, :60:20, :61:{44,49}, :66:44, :70:{8,13}, :93:28, src/main/scala/stages/ID/ID.scala:72:32]
+        casez_tmp = {_to_info_src2_T_4 ? 20'h0 : {20{info_inst[21]}}, info_inst[21:10]};	// @[src/main/scala/config/Configs.scala:43:24, :60:20, :61:{44,49}, :66:44, :70:{8,13}, :93:28, src/main/scala/stages/ID/ID.scala:59:32]
       4'b0010:
         casez_tmp = _GEN_71;	// @[src/main/scala/config/Configs.scala:93:28]
       4'b0011:
@@ -868,19 +855,19 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:40:7]
         casez_tmp = _GEN_72;	// @[src/main/scala/config/Configs.scala:93:28]
       4'b0110:
         casez_tmp =
-          {_to_info_src2_T_4 ? 14'h0 : {14{info_inst[25]}}, info_inst[25:10], 2'h0};	// @[src/main/scala/config/Configs.scala:43:24, :60:20, :61:{44,49}, :66:44, :70:{8,13}, :93:28, src/main/scala/stages/ID/ID.scala:74:36]
+          {_to_info_src2_T_4 ? 14'h0 : {14{info_inst[25]}}, info_inst[25:10], 2'h0};	// @[src/main/scala/config/Configs.scala:43:24, :60:20, :61:{44,49}, :66:44, :70:{8,13}, :93:28, src/main/scala/stages/ID/ID.scala:61:36]
       4'b0111:
-        casez_tmp = {info_inst[24:5], 12'h0};	// @[src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:75:{31,36}]
+        casez_tmp = {info_inst[24:5], 12'h0};	// @[src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:62:{31,36}]
       4'b1000:
-        casez_tmp = {{4{info_inst[9]}}, info_inst[9:0], info_inst[25:10], 2'h0};	// @[src/main/scala/config/Configs.scala:43:24, :60:20, :61:{44,49}, :93:28, src/main/scala/stages/ID/ID.scala:74:36, :76:42]
+        casez_tmp = {{4{info_inst[9]}}, info_inst[9:0], info_inst[25:10], 2'h0};	// @[src/main/scala/config/Configs.scala:43:24, :60:20, :61:{44,49}, :93:28, src/main/scala/stages/ID/ID.scala:61:36, :63:42]
       4'b1001:
-        casez_tmp = {27'h0, info_inst[14:10]};	// @[src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:77:25]
+        casez_tmp = {27'h0, info_inst[14:10]};	// @[src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:64:25]
       4'b1010:
-        casez_tmp = {26'h0, info_inst[15:10]};	// @[src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:78:25]
+        casez_tmp = {26'h0, info_inst[15:10]};	// @[src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:65:25]
       4'b1011:
-        casez_tmp = {10'h0, info_inst[31:10]};	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:79:25]
+        casez_tmp = {10'h0, info_inst[31:10]};	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:66:25]
       4'b1100:
-        casez_tmp = {17'h0, info_inst[14:0]};	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:80:25]
+        casez_tmp = {17'h0, info_inst[14:0]};	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:67:25]
       4'b1101:
         casez_tmp = _GEN_71;	// @[src/main/scala/config/Configs.scala:93:28]
       4'b1110:
@@ -891,8 +878,31 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:40:7]
   end // always_comb
   wire        _to_info_src2_T_10 = src_type2 == 3'h3;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:93:28]
   wire [4:0]  reg_io_raddr2 =
-    (&src_type2) | _to_info_src2_T_10 ? info_inst[4:0] : info_inst[14:10];	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:77:25, :87:16]
-  wire        io_csr_re_0 = func_type == 4'h7;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:40:7, :105:29]
+    (&src_type2) | _to_info_src2_T_10 ? info_inst[4:0] : info_inst[14:10];	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:64:25, :74:16]
+  wire        io_csr_re_0 = func_type == 4'h7;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:40:7, :92:29]
+  wire        _es_mem_we_T = func_type == 4'h2;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:40:7, :103:29]
+  wire        es_mem_re = _es_mem_we_T & op_type[3];	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/isa/LA32.scala:109:50, src/main/scala/stages/ID/ID.scala:103:{29,46}]
+  wire [31:0] _io_br_bus_br_target_T_2 = io_ds_reg_data_data_0 + casez_tmp;	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:105:28]
+  wire        _to_info_csr_we_T_1 = op_type == 6'h1;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:112:18]
+  wire        _exception_T_36 = op_type == 6'h0;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:113:18]
+  wire        _exception_T_38 = func_type == 4'h8;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:40:7, :124:20]
+  wire        _to_info_csr_we_T_2 = op_type == 6'h2;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:124:48]
+  wire [6:0]  exception =
+    info_valid & _es_mem_we_T & ~es_mem_re & ~io_has_exc | es_mem_re
+      ? (_to_info_csr_we_T_1 & _io_br_bus_br_target_T_2[0] | _exception_T_36
+         & (|(_io_br_bus_br_target_T_2[1:0])) | op_type == 6'hB
+         & _io_br_bus_br_target_T_2[0] | op_type == 6'hA & _io_br_bus_br_target_T_2[0]
+         | op_type == 6'hC & (|(_io_br_bus_br_target_T_2[1:0]))
+           ? 7'h9
+           : 7'h25)
+      : (&op_type) & (|info_pc)
+          ? 7'hD
+          : _exception_T_38 & _to_info_csr_we_T_2
+              ? 7'hC
+              : _exception_T_38 & _exception_T_36
+                  ? 7'hB
+                  : _exception_T_38 & _to_info_csr_we_T_1 ? 7'h26 : 7'h25;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/config/Configs.scala:43:24, :44:24, src/main/scala/stages/ID/ID.scala:103:{29,46}, :104:{46,49}, :105:28, :107:22, :108:{17,30,34,47}, :112:{18,39,49}, :113:{18,39,49,56}, :114:{18,38}, :115:{18,39}, :116:{18,38,55}, :123:{18,34,45}, :124:{20,37,48}, :125:37, :126:37]
+  wire        io_this_exc_0 = info_this_exc ? info_this_exc : exception != 7'h25;	// @[src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/ID/ID.scala:107:22, :132:{24,65}]
   wire        _to_info_csr_val_T_1 = op_type == 6'h4;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:93:28]
   wire        _to_info_csr_val_T_5 = op_type == 6'h5;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:93:28]
   wire        _info_T = io_from_valid & io_from_ready_0;	// @[src/main/scala/config/Configs.scala:47:23, :52:18]
@@ -948,22 +958,22 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:40:7]
       `FIRRTL_AFTER_INITIAL	// @[src/main/scala/stages/ID/ID.scala:40:7]
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  REG reg_0 (	// @[src/main/scala/stages/ID/ID.scala:90:19]
+  REG reg_0 (	// @[src/main/scala/stages/ID/ID.scala:77:19]
     .clock           (clock),
     .reset           (reset),
-    .io_raddr1       (info_inst[9:5]),	// @[src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/ID/ID.scala:85:16]
+    .io_raddr1       (info_inst[9:5]),	// @[src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/ID/ID.scala:72:16]
     .io_raddr2       (reg_io_raddr2),	// @[src/main/scala/config/Configs.scala:93:28]
     .io_rdata1       (io_ds_reg_info_ini_data_0),
     .io_rdata2       (io_ds_reg_info_ini_data_1),
     .io_rf_bus_we    (io_rf_bus_we),
     .io_rf_bus_waddr (io_rf_bus_waddr),
     .io_rf_bus_wdata (io_rf_bus_wdata)
-  );	// @[src/main/scala/stages/ID/ID.scala:90:19]
+  );	// @[src/main/scala/stages/ID/ID.scala:77:19]
   assign io_from_ready = io_from_ready_0;	// @[src/main/scala/config/Configs.scala:47:23, src/main/scala/stages/ID/ID.scala:40:7]
   assign io_to_valid = info_valid;	// @[src/main/scala/config/Configs.scala:44:24, src/main/scala/stages/ID/ID.scala:40:7]
   assign io_to_bits_pc = info_pc;	// @[src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/ID/ID.scala:40:7]
   assign io_to_bits_func_type = func_type;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:40:7]
-  assign io_to_bits_op_type = {4'h0, op_type};	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:40:7, :135:21]
+  assign io_to_bits_op_type = {4'h0, op_type};	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/stages/ID/ID.scala:40:7, :153:21]
   assign io_to_bits_is_wf =
     _GEN | _GEN_0 | _GEN_1 | _GEN_2 | _GEN_3 | _GEN_4 | _GEN_5 | _GEN_6 | _GEN_7 | _GEN_8
     | _GEN_9 | _GEN_10 | _GEN_11 | _GEN_12 | _GEN_13 | _GEN_14 | _GEN_69 | ~_GEN_63
@@ -974,7 +984,7 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:40:7]
   assign io_to_bits_dest =
     info_inst[31:26] == 6'h15
       ? 5'h1
-      : _GEN_52 == 27'h300 ? info_inst[9:5] : info_inst[4:0];	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/ID/ID.scala:40:7, :85:16, :87:16, :162:13, :163:13]
+      : _GEN_52 == 27'h300 ? info_inst[9:5] : info_inst[4:0];	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/ID/ID.scala:40:7, :72:16, :74:16, :180:13, :181:13]
   assign io_to_bits_rkd_value = io_ds_reg_data_data_1;	// @[src/main/scala/stages/ID/ID.scala:40:7]
   assign io_to_bits_src1 =
     (_GEN | _GEN_0 | _GEN_1 | _GEN_2 | _GEN_3 | _GEN_4 | _GEN_5 | _GEN_6 | _GEN_7 | _GEN_8
@@ -1001,24 +1011,25 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:40:7]
       : (&src_type2) | _to_info_src2_T_4 | src_type2 == 3'h5
           ? casez_tmp
           : src_type2 == 3'h0 ? 32'h4 : io_ds_reg_data_data_1;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:70:13, :93:28, src/main/scala/stages/ID/ID.scala:40:7]
-  assign io_to_bits_this_exc = io_this_exc_0;	// @[src/main/scala/stages/ID/ID.scala:40:7, :65:21]
-  assign io_to_bits_exc_type = info_this_exc ? info_exc_type : exception;	// @[src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/ID/ID.scala:40:7, :177:27]
-  assign io_to_bits_csr_we = io_csr_re_0 & (_to_info_csr_we_T_1 | _to_info_csr_we_T_2);	// @[src/main/scala/stages/ID/ID.scala:40:7, :58:46, :60:46, :105:29, :174:{51,80}]
+  assign io_to_bits_this_exc = io_this_exc_0;	// @[src/main/scala/stages/ID/ID.scala:40:7, :132:24]
+  assign io_to_bits_exc_type = info_this_exc ? info_exc_type : exception;	// @[src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/ID/ID.scala:40:7, :107:22, :197:28]
+  assign io_to_bits_csr_we = io_csr_re_0 & (_to_info_csr_we_T_1 | _to_info_csr_we_T_2);	// @[src/main/scala/stages/ID/ID.scala:40:7, :92:29, :112:18, :124:48, :194:{52,81}]
   assign io_to_bits_csr_mask = io_ds_reg_data_data_0;	// @[src/main/scala/stages/ID/ID.scala:40:7]
-  assign io_to_bits_csr_addr = casez_tmp[13:0];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:40:7, :104:63]
+  assign io_to_bits_csr_addr = casez_tmp[13:0];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:40:7, :91:63]
   assign io_to_bits_csr_val =
     io_csr_re_0 & _to_info_csr_val_T_1
       ? io_counter[63:32]
-      : io_csr_re_0 & _to_info_csr_val_T_5 ? io_counter[31:0] : io_ds_reg_data_csr_val;	// @[src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:40:7, :105:29, :169:{35,79}, :170:{35,79}]
-  assign io_to_bits_ecode = casez_tmp[14:0];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:40:7, :175:27]
-  assign io_to_bits_wrong_addr = info_wrong_addr;	// @[src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/ID/ID.scala:40:7]
-  assign io_ds_reg_info_addr_0 = info_inst[9:5];	// @[src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/ID/ID.scala:40:7, :85:16]
+      : io_csr_re_0 & _to_info_csr_val_T_5 ? io_counter[31:0] : io_ds_reg_data_csr_val;	// @[src/main/scala/chisel3/util/Mux.scala:126:16, src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:40:7, :92:29, :189:{35,79}, :190:{35,79}]
+  assign io_to_bits_ecode = casez_tmp[14:0];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:40:7, :195:28]
+  assign io_to_bits_wrong_addr =
+    info_this_exc ? info_wrong_addr : _io_br_bus_br_target_T_2;	// @[src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/ID/ID.scala:40:7, :105:28, :198:28]
+  assign io_ds_reg_info_addr_0 = info_inst[9:5];	// @[src/main/scala/config/Configs.scala:43:24, src/main/scala/stages/ID/ID.scala:40:7, :72:16]
   assign io_ds_reg_info_addr_1 = reg_io_raddr2;	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:40:7]
-  assign io_ds_reg_info_csr_addr = casez_tmp[13:0];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:40:7, :104:63]
+  assign io_ds_reg_info_csr_addr = casez_tmp[13:0];	// @[src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:40:7, :91:63]
   assign io_ds_reg_info_csr_ini_data = io_csr_rdata;	// @[src/main/scala/stages/ID/ID.scala:40:7]
-  assign io_this_exc = io_this_exc_0;	// @[src/main/scala/stages/ID/ID.scala:40:7, :65:21]
-  assign io_csr_re = io_csr_re_0;	// @[src/main/scala/stages/ID/ID.scala:40:7, :105:29]
-  assign io_csr_raddr = _GEN_52 == 27'h300 ? 14'h40 : casez_tmp[13:0];	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:40:7, :104:{22,28,63}]
+  assign io_this_exc = io_this_exc_0;	// @[src/main/scala/stages/ID/ID.scala:40:7, :132:24]
+  assign io_csr_re = io_csr_re_0;	// @[src/main/scala/stages/ID/ID.scala:40:7, :92:29]
+  assign io_csr_raddr = _GEN_52 == 27'h300 ? 14'h40 : casez_tmp[13:0];	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:93:28, src/main/scala/stages/ID/ID.scala:40:7, :91:{22,28,63}]
   assign io_br_bus_br_taken =
     (op_type == 6'h6
        ? io_ds_reg_data_data_0 > io_ds_reg_data_data_1
@@ -1032,9 +1043,9 @@ module ID(	// @[src/main/scala/stages/ID/ID.scala:40:7]
                        ? io_ds_reg_data_data_0 != io_ds_reg_data_data_1
                        : ~_to_info_csr_we_T_1
                          | io_ds_reg_data_data_0 == io_ds_reg_data_data_1) & info_valid
-    & func_type == 4'h0;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:44:24, :93:28, src/main/scala/stages/ID/ID.scala:40:7, :58:46, :60:46, :121:35, :122:35, :123:42, :124:42, :125:35, :126:35, :128:{5,20,34}]
+    & func_type == 4'h0;	// @[src/main/scala/chisel3/util/Lookup.scala:34:39, src/main/scala/config/Configs.scala:44:24, :93:28, src/main/scala/stages/ID/ID.scala:40:7, :112:18, :124:48, :139:35, :140:35, :141:42, :142:42, :143:35, :144:35, :146:{5,20,34}]
   assign io_br_bus_br_target =
-    info_inst[31:26] == 6'h13 ? io_ds_reg_data_data_0 + casez_tmp : info_pc + casez_tmp;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:40:7, :129:{29,35,59,74}]
+    info_inst[31:26] == 6'h13 ? _io_br_bus_br_target_T_2 : info_pc + casez_tmp;	// @[src/main/scala/chisel3/util/Lookup.scala:31:38, src/main/scala/config/Configs.scala:43:24, :93:28, src/main/scala/stages/ID/ID.scala:40:7, :105:28, :147:{29,35,74}]
 endmodule
 
 module DIV(	// @[src/main/scala/stages/EXE/DIV.scala:70:7]

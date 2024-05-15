@@ -88,6 +88,7 @@ class IF extends Module with Parameters {
   to_info.this_exc := io.this_exc
   when(io.this_exc) {
     to_info.exc_type   := ECodes.ADEF
+    to_info.inst := 0.U
     to_info.wrong_addr := pc
   }
   io.to.bits := to_info

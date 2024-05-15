@@ -51,19 +51,6 @@ class ID extends Module with Parameters with InstType {
   val List(inst_type, func_type, op_type, is_wf, src_type1, src_type2) =
     ListLookup(inst, List("b0000000".U, "b111".U, "b111111".U, "b0".U, "b111".U, "b111".U), LA32.table)
 
-  val exception = MuxCase(
-    ECodes.NONE,
-    List(
-      (op_type === "b111111".U && info.pc =/= 0.U)               -> ECodes.INE, // 意思就是说没这个指令，并且不是flush导致的
-      (func_type === FuncType.exc && op_type === ExcOpType.brk)  -> ECodes.BRK,
-      (func_type === FuncType.exc && op_type === ExcOpType.sys)  -> ECodes.SYS,
-      (func_type === FuncType.exc && op_type === ExcOpType.ertn) -> ECodes.ertn,
-    ),
-  )
-
-  io.flush_apply := 0.U
-  io.this_exc := Mux(info.this_exc, info.this_exc, exception =/= ECodes.NONE)
-
   val imm = MateDefault(
     inst_type,
     0.U,
@@ -112,6 +99,37 @@ class ID extends Module with Parameters with InstType {
 
   val rj_value  = io.ds_reg_data.data(0)
   val rkd_value = io.ds_reg_data.data(1)
+
+  val es_mem_re = func_type === FuncType.mem && MemOpType.isread(op_type)
+  val es_mem_we = func_type === FuncType.mem && !es_mem_re
+  val result    = rj_value + imm
+
+  val exception = Mux(
+    io.to.valid && es_mem_we && (!io.has_exc) || es_mem_re,
+    MuxCase(
+      ECodes.NONE,
+      List(
+        (op_type === MemOpType.writeh && (result(0) =/= "b0".U))     -> ECodes.ALE,
+        (op_type === MemOpType.writew && (result(1, 0) =/= "b00".U)) -> ECodes.ALE,
+        (op_type === MemOpType.readh && (result(0) =/= "b0".U))      -> ECodes.ALE,
+        (op_type === MemOpType.readhu && (result(0) =/= "b0".U))     -> ECodes.ALE,
+        (op_type === MemOpType.readw && (result(1, 0) =/= "b00".U))  -> ECodes.ALE,
+        // (result(31) === 1.U) -> ECodes.ADEM,
+      ),
+    ),
+    MuxCase(
+      ECodes.NONE,
+      List(
+        (op_type === "b111111".U && info.pc =/= 0.U)               -> ECodes.INE, // 意思就是说没这个指令，并且不是flush导致的
+        (func_type === FuncType.exc && op_type === ExcOpType.brk)  -> ECodes.BRK,
+        (func_type === FuncType.exc && op_type === ExcOpType.sys)  -> ECodes.SYS,
+        (func_type === FuncType.exc && op_type === ExcOpType.ertn) -> ECodes.ertn,
+      ),
+    ),
+  )
+
+  io.flush_apply := 0.U
+  io.this_exc    := Mux(info.this_exc, info.this_exc, exception =/= ECodes.NONE)
 
   // 分支跳转
   io.br_bus.br_taken := MateDefault(
@@ -165,15 +183,18 @@ class ID extends Module with Parameters with InstType {
   )
   to_info.rkd_value := rkd_value
   to_info.csr_addr  := imm(13, 0)
-  to_info.csr_val   := MuxCase(io.ds_reg_data.csr_val, List(
+  to_info.csr_val := MuxCase(
+    io.ds_reg_data.csr_val,
+    List(
       (func_type === FuncType.csr && op_type === CsrOpType.cnth) -> io.counter(63, 32),
       (func_type === FuncType.csr && op_type === CsrOpType.cntl) -> io.counter(31, 0),
-    )
+    ),
   )
-  to_info.csr_mask  := rj_value
-  to_info.csr_we    := func_type === FuncType.csr && (op_type === CsrOpType.wr || op_type === CsrOpType.xchg)
-  to_info.ecode     := imm(14, 0)
-  to_info.this_exc  := io.this_exc
-  to_info.exc_type  := Mux(info.this_exc, info.exc_type, exception)
-  io.to.bits        := to_info
+  to_info.csr_mask   := rj_value
+  to_info.csr_we     := func_type === FuncType.csr && (op_type === CsrOpType.wr || op_type === CsrOpType.xchg)
+  to_info.ecode      := imm(14, 0)
+  to_info.this_exc   := io.this_exc
+  to_info.exc_type   := Mux(info.this_exc, info.exc_type, exception)
+  to_info.wrong_addr := Mux(info.this_exc, info.wrong_addr, result)
+  io.to.bits         := to_info
 }
