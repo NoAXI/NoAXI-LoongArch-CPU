@@ -34,25 +34,10 @@ class controller_IO extends Bundle {
 
   val ds_reg_info = Input(new dsRegInfo)
   val ds_reg_data = Output(new dsRegData)
-
-  val flush_en    = Output(Vec(5, Bool()))
-  val flush_apply = Input(Vec(5, UInt(5.W)))
 }
 
 class controller extends Module {
   val io = IO(new controller_IO)
-
-  // flush control
-  io.flush_en := MuxCase(
-    io.flush_apply(4),
-    Seq(
-      (io.flush_apply(4).asUInt =/= 0.U) -> io.flush_apply(4),
-      (io.flush_apply(3).asUInt =/= 0.U) -> io.flush_apply(3),
-      (io.flush_apply(2).asUInt =/= 0.U) -> io.flush_apply(2),
-      (io.flush_apply(1).asUInt =/= 0.U) -> io.flush_apply(1),
-      (io.flush_apply(0).asUInt =/= 0.U) -> io.flush_apply(0),
-    ),
-  ).asBools
 
   // csr register 前递
   val addr = io.ds_reg_info.csr_addr

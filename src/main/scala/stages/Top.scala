@@ -68,7 +68,6 @@ class Top extends Module with Parameters {
   fs.io.from.bits  := RegInit(0.U.asTypeOf(new info))
   fs.io.br_bus     <> ds.io.br_bus
   // fs.io.flush_en        := ctrl.io.flush_en(0)
-  fs.io.flush_en := false.B
   fs.io.exc_bus  := csr.io.exc_bus
   fs.io.has_exc  := ds.io.this_exc || es.io.this_exc || ms.io.this_exc || ws.io.this_exc
 
@@ -78,7 +77,6 @@ class Top extends Module with Parameters {
   ds.io.ds_reg_data <> ctrl.io.ds_reg_data
   ds.io.csr_rdata   := csr.io.rdata
   // ds.io.flush_en    := ctrl.io.flush_en(1)
-  ds.io.flush_en := false.B
   ds.io.has_exc  := es.io.this_exc || ms.io.this_exc || ws.io.this_exc
   ds.io.counter  := csr.io.counter
 
@@ -96,19 +94,16 @@ class Top extends Module with Parameters {
   es.io.from        <> ds.io.to
   es.io.ds_reg_info := ds.io.ds_reg_info
   // es.io.flush_en    := ctrl.io.flush_en(2)
-  es.io.flush_en := false.B
   es.io.has_exc  := ms.io.this_exc || ws.io.this_exc
 
   ms.io.from <> es.io.to
   // ms.io.data_sram_rdata := io.data_sram_rdata
   // ms.io.flush_en        := ctrl.io.flush_en(3)
-  ms.io.flush_en := false.B
   ms.io.has_exc  := ws.io.this_exc
 
   ws.io.from     <> ms.io.to
   // ws.io.to.ready := !(icache.io.stall || dcache.io.stall)
   ws.io.to.ready := true.B
-  ws.io.flush_en := ctrl.io.flush_en(4)
 
   csr.io.re     := ds.io.csr_re
   csr.io.raddr  := ds.io.csr_raddr
@@ -139,11 +134,6 @@ class Top extends Module with Parameters {
   ctrl.io.ws             <> ws.io.ws
   ctrl.io.csr_ws         <> ws.io.csr_ws
   ctrl.io.ds_reg_info    <> ds.io.ds_reg_info
-  ctrl.io.flush_apply(0) := fs.io.flush_apply
-  ctrl.io.flush_apply(1) := ds.io.flush_apply
-  ctrl.io.flush_apply(2) := es.io.flush_apply
-  ctrl.io.flush_apply(3) := ms.io.flush_apply
-  ctrl.io.flush_apply(4) := ws.io.flush_apply
 }
 
 object main extends App {

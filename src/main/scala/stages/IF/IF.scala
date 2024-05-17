@@ -13,9 +13,7 @@ class IF_IO extends Bundle with Parameters {
   val from = Flipped(DecoupledIO(new info))
   val to   = DecoupledIO(new info)
 
-  // act with controller
-  val flush_en    = Input(Bool())
-  val flush_apply = Output(UInt(5.W))
+
   val this_exc    = Output(Bool())
   val has_exc     = Input(Bool())
 
@@ -47,7 +45,7 @@ class IF extends Module with Parameters {
     br_taken := true.B
   }.elsewhen(io.to.valid) {
     br_taken := false.B
-  } // 设计的不太好，会导致br_taken持续过长
+  }
 
   when(io.exc_bus.en) {
     exc_pc := io.exc_bus.pc
@@ -69,7 +67,7 @@ class IF extends Module with Parameters {
   )
 
   // 若是分支但前一拍是异常入口，则无需跳转且正常流水
-  when(io.br_bus.br_taken && !bf_exc_en || !ShiftRegister(io.fetch.valid, 1)) {
+  when(io.br_bus.br_taken && !bf_exc_en || !ShiftRegister(io.fetch.valid, 1) || (io.has_exc && !exc_en)) {
     io.to.valid := false.B
   }
 
@@ -77,7 +75,6 @@ class IF extends Module with Parameters {
     pc := next_pc
   }
 
-  io.flush_apply := 0.U
   io.this_exc    := pc(1, 0) =/= "b00".U
 
   // 传递流水信息
@@ -95,7 +92,7 @@ class IF extends Module with Parameters {
 
   // 与指令内存的接口
   io.fetch.ready := true.B
-  io.request := (io.from.fire || io.exc_bus.en) && (!io.fetch.valid && !ShiftRegister(io.fetch.valid, 1)) && !io.has_exc// vivado专属傻呗版本
+  io.request := (io.from.fire || io.exc_bus.en) && (!io.fetch.valid && !ShiftRegister(io.fetch.valid, 1))
   // io.finish      := io.to.fire // ?
   io.finish := true.B
   // io.finish := next_pc =/= ShiftRegister(next_pc, 1)

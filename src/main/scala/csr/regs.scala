@@ -37,7 +37,7 @@ class CRMD extends base {
     val init = WireDefault(0.U.asTypeOf(new CRMD_info))
     init.da := true.B
     init
-  })
+  }).suggestName("CRMD")
   override val id = CSRCodes.CRMD
   override val rw = "b0000_0000_0000_0000_0000_0001_1111_1111".U
 }
@@ -52,7 +52,7 @@ class PRMD_info extends Bundle {
 }
 
 class PRMD extends base {
-  override val info = RegInit({ WireDefault(0.U.asTypeOf(new PRMD_info)) })
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new PRMD_info)) }).suggestName("PRMD")
   override val id   = CSRCodes.PRMD
   override val rw   = "b0000_0000_0000_0000_0000_0000_0000_0111".U
 }
@@ -65,7 +65,7 @@ class EUEN_info extends Bundle {
 }
 
 class EUEN extends base {
-  override val info = RegInit({ WireDefault(0.U.asTypeOf(new EUEN_info)) })
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new EUEN_info)) }).suggestName("EUEN")
   override val id   = CSRCodes.EUEN
   override val rw   = "b0000_0000_0000_0000_0000_0000_0000_0001".U
 }
@@ -80,7 +80,7 @@ class ECFG_info extends Bundle {
 }
 
 class ECFG extends base {
-  override val info = RegInit({ WireDefault(0.U.asTypeOf(new ECFG_info)) })
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new ECFG_info)) }).suggestName("ECFG")
   override val id   = CSRCodes.ECFG
   override val rw   = "b0000_0000_0000_0000_0001_1011_1111_1111".U
 }
@@ -100,7 +100,7 @@ class ESTAT_info extends Bundle {
 }
 
 class ESTAT extends base {
-  override val info = RegInit({ WireDefault(0.U.asTypeOf(new ESTAT_info)) })
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new ESTAT_info)) }).suggestName("ESTAT")
   override val id   = CSRCodes.ESTAT
   override val rw   = "b0000_0000_0000_0000_0000_0000_0000_0011".U
 }
@@ -112,7 +112,7 @@ class ERA_info extends Bundle with Parameters {
 }
 
 class ERA extends base {
-  override val info = RegInit({ WireDefault(0.U.asTypeOf(new ERA_info)) })
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new ERA_info)) }).suggestName("ERA")
   override val id   = CSRCodes.ERA
   override val rw   = "b1111_1111_1111_1111_1111_1111_1111_1111".U
 }
@@ -124,7 +124,7 @@ class BADV_info extends Bundle with Parameters {
 }
 
 class BADV extends base with Parameters {
-  override val info = RegInit({ WireDefault(0.U.asTypeOf(new BADV_info)) })
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new BADV_info)) }).suggestName("BADV")
   override val id   = CSRCodes.BADV
   override val rw   = "b1111_1111_1111_1111_1111_1111_1111_1111".U
 }
@@ -137,7 +137,7 @@ class EENTRY_info extends Bundle with Parameters {
 }
 
 class EENTRY extends base with Parameters {
-  override val info = RegInit({ WireDefault(0.U.asTypeOf(new EENTRY_info)) })
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new EENTRY_info)) }).suggestName("EENTRY")
   override val id   = CSRCodes.EENTRY
   override val rw   = "b1111_1111_1111_1111_1111_1111_1100_0000".U
 }
@@ -149,7 +149,7 @@ class SAVE0_info extends Bundle with Parameters {
 }
 
 class SAVE0 extends base with Parameters {
-  override val info = RegInit({ WireDefault(0.U.asTypeOf(new SAVE0_info)) })
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new SAVE0_info)) }).suggestName("SAVE0")
   override val id   = CSRCodes.SAVE0
   override val rw   = "b1111_1111_1111_1111_1111_1111_1111_1111".U
 }
@@ -163,7 +163,7 @@ class SAVE1_rwType extends Bundle {
 }
 
 class SAVE1 extends base with Parameters {
-  override val info = RegInit({ WireDefault(0.U.asTypeOf(new SAVE1_info)) })
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new SAVE1_info)) }).suggestName("SAVE1")
   override val id   = CSRCodes.SAVE1
   override val rw   = "b1111_1111_1111_1111_1111_1111_1111_1111".U
 }
@@ -173,7 +173,7 @@ class SAVE2_info extends Bundle with Parameters {
 }
 
 class SAVE2 extends base with Parameters {
-  override val info = RegInit({ WireDefault(0.U.asTypeOf(new SAVE2_info)) })
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new SAVE2_info)) }).suggestName("SAVE2")
   override val id   = CSRCodes.SAVE2
   override val rw   = "b1111_1111_1111_1111_1111_1111_1111_1111".U
 }
@@ -183,7 +183,7 @@ class SAVE3_info extends Bundle with Parameters {
 }
 
 class SAVE3 extends base with Parameters {
-  override val info = RegInit({ WireDefault(0.U.asTypeOf(new SAVE3_info)) })
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new SAVE3_info)) }).suggestName("SAVE3")
   override val id   = CSRCodes.SAVE3
   override val rw   = "b1111_1111_1111_1111_1111_1111_1111_1111".U
 }
@@ -195,7 +195,7 @@ class TID_info extends Bundle with Parameters {
 }
 
 class TID extends base with Parameters {
-  override val info = RegInit({ WireDefault(0.U.asTypeOf(new TID_info)) })
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new TID_info)) }).suggestName("TID")
   override val id   = CSRCodes.TID
   override val rw   = "b1111_1111_1111_1111_1111_1111_1111_1111".U
 }
@@ -210,7 +210,7 @@ class TCFG_info extends Bundle with Parameters {
 }
 
 class TCFG extends base with Parameters {
-  override val info     = RegInit({ WireDefault(0.U.asTypeOf(new TCFG_info)) })
+  override val info     = RegInit({ WireDefault(0.U.asTypeOf(new TCFG_info)) }).suggestName("TCFG")
   override val id       = CSRCodes.TCFG
   override val rw       = "b0000_1111_1111_1111_1111_1111_1111_1111".U
 }
@@ -224,7 +224,7 @@ class TVAL_info extends Bundle with Parameters {
 
 class TVAL extends base with Parameters {
   override val info = RegInit({
-    val init = WireDefault(0.U.asTypeOf(new TVAL_info))
+    val init = WireDefault(0.U.asTypeOf(new TVAL_info)).suggestName("TVAL")
     init.timeval := 1.U  // 为防止问题，稍微设个初值
     init
   })
@@ -240,7 +240,7 @@ class TICLR_info extends Bundle with Parameters {
 }
 
 class TICLR extends base with Parameters {
-  override val info = RegInit({ WireDefault(0.U.asTypeOf(new TICLR_info)) })
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new TICLR_info)) }).suggestName("TICLR")
   override val id   = CSRCodes.TICLR
   override val rw   = "b0000_0000_0000_0000_0000_0000_0000_0001".U
 }

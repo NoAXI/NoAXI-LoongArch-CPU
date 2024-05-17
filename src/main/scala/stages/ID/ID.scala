@@ -16,9 +16,7 @@ class ID_IO extends Bundle with Parameters {
 
   // act with controller
   val ds_reg_info = Output(new dsRegInfo)
-  val flush_apply = Output(UInt(5.W))
   val this_exc    = Output(Bool())
-  val flush_en    = Input(Bool())
   val has_exc     = Input(Bool())
   val ds_reg_data = Input(new dsRegData)
 
@@ -42,7 +40,7 @@ class ID extends Module with Parameters with InstType {
 
   val info = ConnectGetBus(io.from, io.to)
 
-  when(io.flush_en || io.has_exc) {
+  when(io.has_exc) {
     info := WireDefault(0.U.asTypeOf(new info))
   }
 
@@ -128,7 +126,6 @@ class ID extends Module with Parameters with InstType {
     ),
   )
 
-  io.flush_apply := 0.U
   io.this_exc    := Mux(info.this_exc, info.this_exc, exception =/= ECodes.NONE)
 
   // 分支跳转

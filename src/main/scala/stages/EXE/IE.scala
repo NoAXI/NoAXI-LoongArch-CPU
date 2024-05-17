@@ -12,8 +12,6 @@ import config.Functions._
 class IE_IO extends Bundle with Parameters {
   val from        = Flipped(DecoupledIO(new info))
   val to          = DecoupledIO(new info)
-  val flush_en    = Input(Bool())
-  val flush_apply = Output(UInt(5.W))
 
   val this_exc = Output(Bool())
   val has_exc  = Input(Bool())
@@ -39,10 +37,9 @@ class IE extends Module with Parameters {
 
   // 与上一流水级握手，获取上一流水级信息
   val info = ConnectGetBus(io.from, io.to)
-  when(io.flush_en || io.has_exc) {
+  when(io.has_exc) {
     info := WireDefault(0.U.asTypeOf(new info))
   }
-  io.flush_apply := 0.U
   // io.this_exc := info.this_exc
 
   val es_mem_re = info.func_type === FuncType.mem && MemOpType.isread(info.op_type)
@@ -131,7 +128,7 @@ class IE extends Module with Parameters {
   io.finish    := true.B
   io.ren       := es_mem_re
   io.wen       := es_mem_we
-  io.size      := 4.U // not sure
+  io.size      := 2.U
   io.wstrb := Mux(
     es_mem_we && (!io.has_exc) && (exception === ECodes.NONE),
     MateDefault(

@@ -49,7 +49,7 @@ object Functions {
     when(x.ready) {
       valid := x.valid
     }
-    when(x.valid && x.ready) {
+    when(x.fire) {
       info := x.bits
     }
     info

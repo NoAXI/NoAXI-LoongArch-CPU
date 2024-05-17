@@ -122,7 +122,7 @@ class CSR extends Module with Parameters {
           ESTAT.info.is_11 := false.B
         }
         when(x.id === CSRCodes.TCFG) {
-          TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 1.U(2.W) + 10.U
+          TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 1.U(2.W) + 10.U // to do:must be improved
         }
       }
     }

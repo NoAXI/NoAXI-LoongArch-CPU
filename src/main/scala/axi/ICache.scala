@@ -47,12 +47,11 @@ class ICache extends Module with Parameters {
         ar.addr  := io.addr
         r.ready  := false.B
         ar.len   := 0.U
-        ar.size  := 4.U
+        ar.size  := 2.U
         state    := state0
       }
     }
     is(state0) {
-      // ar.addr  := io.addr
       stall := true.B
       when(io.axi.arready) {
         ar.valid := false.B

@@ -77,6 +77,3 @@ object WireBreak {
     val SWI0   = 1.U(7.W)
     val SWI1   = 0.U(7.W)
 }
-
-//to do
-/* 优化Decoder、把流水级缓存单独拎出来、exe的ready信号由mul和div直接控制 */

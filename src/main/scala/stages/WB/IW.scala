@@ -10,10 +10,8 @@ import controller._
 import config.Functions._
 
 class IW_IO extends Bundle with Parameters {
-  val from        = Flipped(DecoupledIO(new info))
-  val to          = DecoupledIO(new info)
-  val flush_en    = Input(Bool())
-  val flush_apply = Output(UInt(5.W))
+  val from = Flipped(DecoupledIO(new info))
+  val to   = DecoupledIO(new info)
 
   val this_exc = Output(Bool())
 
@@ -40,11 +38,7 @@ class IW extends Module with Parameters {
 
   // 与上一流水级握手，获取上一流水级信息
   val info = ConnectGetBus(io.from, io.to)
-  when(io.flush_en) {
-    info := WireDefault(0.U.asTypeOf(new info))
-  }
-  io.flush_apply := 0.U
-  io.this_exc    := info.this_exc
+  io.this_exc := info.this_exc
 
   io.exc_start := WireDefault(false.B)
   io.exc_end   := WireDefault(false.B)
@@ -73,13 +67,13 @@ class IW extends Module with Parameters {
 
   // 例外跳转
   when(info.this_exc && info.exc_type =/= ECodes.ertn) {
-    io.flush_apply := "b11111".U
-    io.exc_start   := true.B
+    io.exc_start  := true.B
+    info.this_exc := false.B
   }
 
   when(info.this_exc && info.exc_type === ECodes.ertn) {
-    io.flush_apply := "b11111".U
-    io.exc_end     := true.B
+    io.exc_end    := true.B
+    info.this_exc := false.B
   }
 
   io.debug_wb_pc       := info.pc
