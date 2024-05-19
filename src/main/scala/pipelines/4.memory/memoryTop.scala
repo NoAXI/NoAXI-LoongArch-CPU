@@ -28,7 +28,7 @@ class MemoryTop extends Module {
   io.data_sram.addr   := mmu.data_sram.addr
   io.data_sram.wdata  := mmu.data_sram.wdata
   mmu.data_sram.rdata := io.data_sram.rdata
-  busy                := mmu.busy
+  busy                := mmu.busy && info.pc =/= ShiftRegister(info.pc, 1)
 
   val to_info = WireDefault(0.U.asTypeOf(new info))
   to_info        := info
@@ -43,5 +43,5 @@ class MemoryTop extends Module {
   io.flush_apply := false.B
 
   Forward(to_info, io.forward_data)
-  io.load_complete := ShiftRegister(busy, 1) // can change to busy then not busy status
+  io.load_complete := ShiftRegister(busy, 1) && info.ld_tag // can change to busy then not busy status
 }

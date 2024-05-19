@@ -25,9 +25,9 @@ object AluOpType {
   def sub  = "b00001".U
   def slt  = "b00010".U
   def sltu = "b00011".U
-  def and  = "b00100".U
+  def nor  = "b00100".U
 
-  def nor = "b10000".U
+  def and = "b10000".U
   def or  = "b10001".U
   def xor = "b10010".U
 

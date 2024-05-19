@@ -87,11 +87,6 @@ class Mmu extends Module {
     ),
   )
 
-  val busy_lock = RegInit(false.B)
-  io.busy := re // to do: if axi, then should change to the stall signal from dcache
-  busy_lock := io.busy // foolish
-  when(busy_lock) {
-    io.busy := false.B
-  }
+  io.busy := re
   io.data := Mux(re, rdata, io.result)
 }

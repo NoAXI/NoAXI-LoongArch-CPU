@@ -72,6 +72,7 @@ class Top extends Module {
   forwarder.load_complete := memory.load_complete
   forwarder.forward_query := decoder.forward_query
   decoder.forward_ans     := forwarder.forward_ans
+  execute.forward_tag     := forwarder.tag
 
   // fetch
   io.inst_sram_en       := fetch.inst_sram.en
