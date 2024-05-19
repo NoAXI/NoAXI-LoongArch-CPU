@@ -68,7 +68,7 @@ class ExecuteTop extends Module {
   // to do: can add a signal to info that indicates the jirl inst
   // also: can not delete the add!!
   io.br.tar      := Mux(info.inst === LA32R.JIRL, info.rj, info.pc) + info.imm
-  io.flush_apply := bru.br_en
+  io.flush_apply := bru.br_en && io.to.valid && !info.bubble
 
   Forward(to_info, io.forward_data)
   when(info.isload) {

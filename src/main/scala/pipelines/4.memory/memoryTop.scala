@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 
 import bundles._
+import const.ECodes
 import const.Parameters._
 import Funcs.Functions._
 
@@ -34,13 +35,14 @@ class MemoryTop extends Module {
   to_info        := info
   to_info.isload := false.B
   to_info.result := mmu.data
+  to_info.exc_type  := Mux(info.exc_type =/= ECodes.NONE, info.exc_type, mmu.exc_type)
   when(io.flush) {
     to_info        := 0.U.asTypeOf(new info)
     to_info.bubble := true.B
   }
   io.to.bits := to_info
 
-  io.flush_apply := false.B
+  io.flush_apply := to_info.exc_type =/= ECodes.NONE && io.to.valid && !info.bubble
 
   Forward(to_info, io.forward_data)
   io.load_complete := ShiftRegister(busy, 1) && info.ld_tag // can change to busy then not busy status

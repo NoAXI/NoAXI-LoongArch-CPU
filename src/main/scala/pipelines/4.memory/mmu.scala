@@ -5,6 +5,7 @@ import chisel3.util._
 
 import isa._
 import bundles._
+import const.ECodes
 import const.Parameters._
 import Funcs.Functions._
 
@@ -19,6 +20,8 @@ class MmuIO extends Bundle {
 
   val busy = Output(Bool())
   val data = Output(UInt(DATA_WIDTH.W))
+
+  val exc_type = Output(ECodes())
 }
 
 class Mmu extends Module {
@@ -85,6 +88,21 @@ class Mmu extends Module {
       MemOpType.ish(io.op_type) -> rdata_h,
       MemOpType.isb(io.op_type) -> rdata_b,
     ),
+  )
+
+  io.exc_type := Mux(
+    (re || we),
+    MuxCase(
+      ECodes.NONE,
+      List(
+        (io.op_type === MemOpType.writeh && (io.result(0) =/= "b0".U))     -> ECodes.ALE,
+        (io.op_type === MemOpType.writew && (io.result(1, 0) =/= "b00".U)) -> ECodes.ALE,
+        (io.op_type === MemOpType.readh && (io.result(0) =/= "b0".U))      -> ECodes.ALE,
+        (io.op_type === MemOpType.readhu && (io.result(0) =/= "b0".U))     -> ECodes.ALE,
+        (io.op_type === MemOpType.readw && (io.result(1, 0) =/= "b00".U))  -> ECodes.ALE,
+      ),
+    ),
+    ECodes.NONE,
   )
 
   io.busy := re

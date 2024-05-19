@@ -3,6 +3,7 @@ package stages
 import chisel3._
 import chisel3.util._
 
+import csr._
 import bundles._
 import controller._
 import const.Parameters._
@@ -39,6 +40,7 @@ class Top extends Module {
   val writeback = Module(new WriteBackTop).io
   val flusher   = Module(new Flusher).io
   val forwarder = Module(new Forwarder).io
+  val csr       = Module(new CSR).io
 
   // handshake
   fetch.from.valid   := RegNext(!reset.asBool) & !reset.asBool
@@ -73,6 +75,12 @@ class Top extends Module {
   forwarder.forward_query := decoder.forward_query
   decoder.forward_ans     := forwarder.forward_ans
   execute.forward_tag     := forwarder.tag
+
+  // csr
+  csr.exc_happen   := writeback.exc_happen
+  fetch.br_exc     := csr.br_exc
+  csr.csr_write    := writeback.csr_write
+  csr.csr_reg_read <> writeback.csr_reg_read
 
   // fetch
   io.inst_sram_en       := fetch.inst_sram.en

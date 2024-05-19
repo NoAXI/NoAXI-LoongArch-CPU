@@ -5,6 +5,7 @@ import chisel3.util._
 
 import isa._
 import bundles._
+import const.ECodes
 import const.Parameters._
 import Funcs.Functions._
 
@@ -29,7 +30,7 @@ class DecoderTop extends Module {
   gr_reg.rf_bus             := io.gr_write
   io.forward_query.addr     := addr
   io.forward_query.ini_data := gr_reg.rdata
-  busy := io.forward_ans.notld
+  busy                      := io.forward_ans.notld
 
   val decoder = Module(new Decoder).io
   decoder.inst := info.inst
@@ -48,11 +49,14 @@ class DecoderTop extends Module {
   to_info.rd        := io.forward_ans.data(2)
   to_info.iswf      := decoder.iswf && !info.bubble
   to_info.wfreg     := decoder.wfreg
+  to_info.csr_iswf  := decoder.csr_iswf
+  to_info.csr_addr := decoder.csr_wfreg
+  to_info.exc_type  := Mux(info.exc_type =/= ECodes.NONE, info.exc_type, decoder.exc_type)
   when(io.flush) {
     to_info        := 0.U.asTypeOf(new info)
     to_info.bubble := true.B
   }
   io.to.bits := to_info
 
-  io.flush_apply := false.B
+  io.flush_apply := to_info.exc_type =/= ECodes.NONE && io.to.valid && !info.bubble
 }

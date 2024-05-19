@@ -94,9 +94,9 @@ object LA32R{
 
     val table = Array (
         // act with stable_counter, then write to rd 
-        // RDCNTID   -> List(FuncType.csr,   CsrOpType.cntrd,     IsWf.y,   SrcType.rj,   SrcType.rj      ),
-        // RDCNTVHW  -> List(FuncType.csr,   CsrOpType.cnth,      IsWf.y,   SrcType.rd,   SrcType.rd      ),
-        // RDCNTVLW  -> List(FuncType.csr,   CsrOpType.cntl,      IsWf.y,   SrcType.rd,   SrcType.rd      ),
+        RDCNTID   -> List(FuncType.csr,   CsrOpType.cntrd    ),
+        RDCNTVHW  -> List(FuncType.csr,   CsrOpType.cnth     ),
+        RDCNTVLW  -> List(FuncType.csr,   CsrOpType.cntl     ),
 
         // rj, rk calculated by ALU, then write to rd
         ADD_W     -> List(FuncType.alu,   AluOpType.add      ),
@@ -132,14 +132,14 @@ object LA32R{
         XORI      -> List(FuncType.alu_imm,   AluOpType.xor  ),
 
         // exception
-        // BREAK     -> List(FuncType.exc,   ExcOpType.brk,       IsWf.n,   SrcType.is4,  SrcType.is4     ),
-        // SYSCALL   -> List(FuncType.exc,   ExcOpType.sys,       IsWf.n,   SrcType.is4,  SrcType.is4     ),
-        // ERTN      -> List(FuncType.exc,   ExcOpType.ertn,      IsWf.n,   SrcType.is4,  SrcType.is4     ),
-
-        // // act with csr and rd
-        // CSRRD     -> List(FuncType.csr,   CsrOpType.rd,        IsWf.y,   SrcType.rj,   SrcType.rd      ),
-        // CSRWR     -> List(FuncType.csr,   CsrOpType.wr,        IsWf.y,   SrcType.rj,   SrcType.rd      ),//rj as mask
-        // CSRXCHG   -> List(FuncType.csr,   CsrOpType.xchg,      IsWf.y,   SrcType.rj,   SrcType.rd      ),
+        BREAK     -> List(FuncType.exc,   ExcOpType.brk    ),
+        SYSCALL   -> List(FuncType.exc,   ExcOpType.sys    ),
+        ERTN      -> List(FuncType.exc,   ExcOpType.ertn   ),
+ 
+        // act with csr and rd 
+        CSRRD     -> List(FuncType.csr,   CsrOpType.rd     ),
+        CSRWR     -> List(FuncType.csr,   CsrOpType.wr     ),//rj as mask
+        CSRXCHG   -> List(FuncType.csr,   CsrOpType.xchg   ),
 
         // mem, load and store, address should calculated by ALU.add:rj + imm
         LD_B      -> List(FuncType.mem,   MemOpType.readb  ),
