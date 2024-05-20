@@ -18,6 +18,10 @@ class MemoryTop extends Module {
   val io   = IO(new MemoryTopIO)
   val busy = WireDefault(false.B)
   val info = StageConnect(io.from, io.to, busy)
+  when(io.flush) {
+    info        := 0.U.asTypeOf(new info)
+    info.bubble := true.B
+  }
 
   val mmu = Module(new Mmu).io
   mmu.func_type       := info.func_type
@@ -31,11 +35,15 @@ class MemoryTop extends Module {
   mmu.data_sram.rdata := io.data_sram.rdata
   busy                := mmu.busy && info.pc =/= ShiftRegister(info.pc, 1)
 
+  val has_exc = info.exc_type =/= ECodes.NONE
+
   val to_info = WireDefault(0.U.asTypeOf(new info))
-  to_info        := info
-  to_info.isload := false.B
-  to_info.result := mmu.data
-  to_info.exc_type  := Mux(info.exc_type =/= ECodes.NONE, info.exc_type, mmu.exc_type)
+  to_info           := info
+  to_info.isload    := false.B
+  to_info.result    := mmu.data
+  to_info.exc_type  := Mux(has_exc, info.exc_type, mmu.exc_type)
+  to_info.exc_vaddr := Mux(has_exc, info.exc_vaddr, mmu.exc_vaddr)
+  to_info.iswf      := Mux(to_info.exc_type =/= ECodes.NONE, false.B, info.iswf)
   when(io.flush) {
     to_info        := 0.U.asTypeOf(new info)
     to_info.bubble := true.B

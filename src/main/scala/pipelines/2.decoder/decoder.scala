@@ -6,6 +6,7 @@ import chisel3.util._
 import isa._
 import bundles._
 import const.ECodes
+import const.CSRCodes
 import const.Parameters._
 import Funcs.Functions._
 
@@ -25,14 +26,19 @@ class DecoderIO extends Bundle {
   val iswf  = Output(Bool())
   val wfreg = Output(UInt(REG_WIDTH.W))
 
-  val csr_iswf = Output(Bool())
-  val csr_wfreg = Output(UInt(CSR_WIDTH.W))
+  val csr_reg_read = new csrRegRead
+  val csr_iswf     = Output(Bool())
+  val csr_wmask    = Output(UInt(DATA_WIDTH.W))
+  val csr_wfreg    = Output(UInt(CSR_WIDTH.W))
+  val csr_value    = Output(UInt(DATA_WIDTH.W))
 
   val exc_type = Output(ECodes())
 }
 
 class Decoder extends Module {
   val io = IO(new DecoderIO)
+
+  val stable_counter = Module(new StableCounter).io
 
   val rj = io.inst(9, 5)
   val rk = io.inst(14, 10)
@@ -92,10 +98,11 @@ class Decoder extends Module {
     ),
   )
 
+  val is_none        = func_type === FuncType.none
   val is_exc         = func_type === FuncType.exc
   val is_st          = func_type === FuncType.mem && !MemOpType.isread(op_type)
   val br_not_jirl_bl = func_type === FuncType.bru && !is_jirl_bl
-  io.iswf := !(is_exc || is_st || br_not_jirl_bl)
+  io.iswf := !(is_exc || is_st || is_none || br_not_jirl_bl)
   io.wfreg := MuxCase(
     rd,
     List(
@@ -104,16 +111,30 @@ class Decoder extends Module {
     ),
   )
 
-  io.csr_iswf := func_type === FuncType.csr && (op_type === CsrOpType.wr || op_type === CsrOpType.xchg)
-  io.csr_wfreg := imm(13, 0)
+  val is_csr  = func_type === FuncType.csr
+  val is_wr   = op_type === CsrOpType.wr
+  val is_xchg = op_type === CsrOpType.xchg
+  io.csr_reg_read.re    := is_csr
+  io.csr_reg_read.raddr := Mux(io.inst === LA32R.RDCNTID, CSRCodes.TID, imm(13, 0))
+  io.csr_iswf           := is_csr && (is_wr || is_xchg)
+  io.csr_wfreg          := imm(13, 0)
+  io.csr_wmask          := Mux(is_xchg, rj_value, ALL_MASK.U)
+  io.csr_value := MateDefault(
+    op_type,
+    io.csr_reg_read.rdata,
+    Seq(
+      CsrOpType.cnth -> stable_counter.counter(63, 32),
+      CsrOpType.cntl -> stable_counter.counter(31, 0),
+    ),
+  )
 
   io.exc_type := MuxCase(
     ECodes.NONE,
     List(
-      (func_type === FuncType.none && io.pc =/= 0.U) -> ECodes.INE, // inst does not exist and is not caused by flush
-      (is_exc && op_type === ExcOpType.brk)          -> ECodes.BRK,
-      (is_exc && op_type === ExcOpType.sys)          -> ECodes.SYS,
-      (is_exc && op_type === ExcOpType.ertn)         -> ECodes.ertn,
+      (is_none && io.pc =/= 0.U)             -> ECodes.INE, // inst does not exist and is not caused by flush
+      (is_exc && op_type === ExcOpType.brk)  -> ECodes.BRK,
+      (is_exc && op_type === ExcOpType.sys)  -> ECodes.SYS,
+      (is_exc && op_type === ExcOpType.ertn) -> ECodes.ertn,
     ),
   )
 }

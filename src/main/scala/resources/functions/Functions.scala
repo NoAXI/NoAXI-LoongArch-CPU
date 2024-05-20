@@ -26,6 +26,10 @@ object Functions {
     y.isld := x.isload
     y.addr := x.wfreg
     y.data := x.result
+
+    y.csr_we   := x.csr_iswf
+    y.csr_addr := x.csr_addr
+    y.csr_data := x.rd
   }
 
   // StallPrevious: just set busy to true.B

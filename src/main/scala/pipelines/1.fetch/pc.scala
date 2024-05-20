@@ -9,7 +9,6 @@ import Funcs.Functions._
 
 class PCIO extends Bundle {
   val br      = Input(new br)
-  val flush   = Input(Bool())
   val en      = Input(Bool())
   val pc      = Output(UInt(ADDR_WIDTH.W))
   val next_pc = Output(UInt(ADDR_WIDTH.W))
@@ -19,14 +18,7 @@ class PC extends Module {
   val io = IO(new PCIO)
 
   val pc = RegInit(START_ADDR.U(ADDR_WIDTH.W))
-  val next_pc = MuxCase(
-    pc + 4.U,
-    Seq(
-      //   io.exc_bus.en                      -> io.exc_bus.pc,
-      //   (io.br_bus.br_taken && !bf_exc_en) -> io.br_bus.br_target,
-      io.br.en -> io.br.tar,
-    ),
-  )
+  val next_pc = Mux(io.br.en, io.br.tar, pc + 4.U)
 
   when(io.en) { pc := next_pc }
 

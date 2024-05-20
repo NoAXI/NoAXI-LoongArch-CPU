@@ -21,7 +21,8 @@ class MmuIO extends Bundle {
   val busy = Output(Bool())
   val data = Output(UInt(DATA_WIDTH.W))
 
-  val exc_type = Output(ECodes())
+  val exc_type  = Output(ECodes())
+  val exc_vaddr = Output(UInt(ADDR_WIDTH.W))
 }
 
 class Mmu extends Module {
@@ -31,9 +32,25 @@ class Mmu extends Module {
   val we    = io.func_type === FuncType.mem && !re
   val piece = io.result(1, 0)
 
+  io.exc_type := Mux(
+    (re || we),
+    MuxCase(
+      ECodes.NONE,
+      List(
+        (io.op_type === MemOpType.writeh && (io.result(0) =/= "b0".U))     -> ECodes.ALE,
+        (io.op_type === MemOpType.writew && (io.result(1, 0) =/= "b00".U)) -> ECodes.ALE,
+        (io.op_type === MemOpType.readh && (io.result(0) =/= "b0".U))      -> ECodes.ALE,
+        (io.op_type === MemOpType.readhu && (io.result(0) =/= "b0".U))     -> ECodes.ALE,
+        (io.op_type === MemOpType.readw && (io.result(1, 0) =/= "b00".U))  -> ECodes.ALE,
+      ),
+    ),
+    ECodes.NONE,
+  )
+  io.exc_vaddr := io.result
+
   io.data_sram.en := true.B
   io.data_sram.we := Mux(
-    we,
+    we && io.exc_type === ECodes.NONE,
     MateDefault(
       io.op_type,
       0.U,
@@ -88,21 +105,6 @@ class Mmu extends Module {
       MemOpType.ish(io.op_type) -> rdata_h,
       MemOpType.isb(io.op_type) -> rdata_b,
     ),
-  )
-
-  io.exc_type := Mux(
-    (re || we),
-    MuxCase(
-      ECodes.NONE,
-      List(
-        (io.op_type === MemOpType.writeh && (io.result(0) =/= "b0".U))     -> ECodes.ALE,
-        (io.op_type === MemOpType.writew && (io.result(1, 0) =/= "b00".U)) -> ECodes.ALE,
-        (io.op_type === MemOpType.readh && (io.result(0) =/= "b0".U))      -> ECodes.ALE,
-        (io.op_type === MemOpType.readhu && (io.result(0) =/= "b0".U))     -> ECodes.ALE,
-        (io.op_type === MemOpType.readw && (io.result(1, 0) =/= "b00".U))  -> ECodes.ALE,
-      ),
-    ),
-    ECodes.NONE,
   )
 
   io.busy := re

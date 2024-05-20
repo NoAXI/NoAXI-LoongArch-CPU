@@ -13,8 +13,9 @@ class CSR_IO extends Bundle {
   val csr_reg_read = Flipped(new csrRegRead)
 
   // from wb
-  val exc_happen = Input(new excHappen)
-  val csr_write  = Input(new CSRWrite)
+  val exc_happen   = Input(new excHappen)
+  val flush_by_csr = Output(Bool())
+  val csr_write    = Input(new CSRWrite)
 
   // to fs
   val br_exc = Output(new br)
@@ -22,6 +23,12 @@ class CSR_IO extends Bundle {
 
 class CSR extends Module {
   val io = IO(new CSR_IO)
+
+  val saved_info = RegInit(0.U.asTypeOf(new info))
+  when (!io.exc_happen.info.bubble) {
+    saved_info := io.exc_happen.info
+  }
+  val info = Mux(io.exc_happen.info.bubble, saved_info, io.exc_happen.info)
 
   val CRMD   = new CRMD
   val PRMD   = new PRMD
@@ -135,14 +142,16 @@ class CSR extends Module {
 
   // 例外跳转
   io.br_exc := WireDefault(0.U.asTypeOf(new br))
+  io.flush_by_csr := false.B
   when(start) {
-    PRMD.info.pplv := CRMD.info.plv
-    PRMD.info.pie  := CRMD.info.ie
-    CRMD.info.plv  := 0.U
-    CRMD.info.ie   := 0.U
+    io.flush_by_csr := true.B
+    PRMD.info.pplv  := CRMD.info.plv
+    PRMD.info.pie   := CRMD.info.ie
+    CRMD.info.plv   := 0.U
+    CRMD.info.ie    := 0.U
     // 中断>例外的优先级
     ESTAT.info.ecode := MuxCase(
-      io.exc_happen.info.exc_type,
+      info.exc_type,
       List(
         ESTAT.info.is_1_0.orR -> ECodes.INT,
         ESTAT.info.is_9_2.orR -> ECodes.INT,
@@ -150,15 +159,15 @@ class CSR extends Module {
         ESTAT.info.is_12      -> ECodes.INT,
       ),
     )
-    ESTAT.info.esubcode := Mux(io.exc_happen.info.exc_type === ECodes.ADEM, 1.U, 0.U)
-    ERA.info.pc         := io.exc_happen.info.pc
+    ESTAT.info.esubcode := Mux(info.exc_type === ECodes.ADEM, 1.U, 0.U)
+    ERA.info.pc         := info.pc
     BADV.info.vaddr := MateDefault(
-      io.exc_happen.info.exc_type,
+      info.exc_type,
       BADV.info.vaddr,
       List(
-        ECodes.ADEF -> io.exc_happen.info.exc_vaddr,
-        ECodes.ADEM -> io.exc_happen.info.exc_vaddr,
-        ECodes.ALE  -> io.exc_happen.info.exc_vaddr,
+        ECodes.ADEF -> info.exc_vaddr,
+        ECodes.ADEM -> info.exc_vaddr,
+        ECodes.ALE  -> info.exc_vaddr,
       ),
     )
 
@@ -167,8 +176,9 @@ class CSR extends Module {
   }
 
   when(io.exc_happen.end) {
-    CRMD.info.plv := PRMD.info.pplv
-    CRMD.info.ie  := PRMD.info.pie
+    io.flush_by_csr := true.B
+    CRMD.info.plv   := PRMD.info.pplv
+    CRMD.info.ie    := PRMD.info.pie
 
     io.br_exc.en  := true.B
     io.br_exc.tar := ERA.info.pc

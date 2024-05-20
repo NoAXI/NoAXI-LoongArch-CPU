@@ -77,10 +77,11 @@ class Top extends Module {
   execute.forward_tag     := forwarder.tag
 
   // csr
-  csr.exc_happen   := writeback.exc_happen
-  fetch.br_exc     := csr.br_exc
-  csr.csr_write    := writeback.csr_write
-  csr.csr_reg_read <> writeback.csr_reg_read
+  csr.exc_happen         := writeback.exc_happen
+  execute.br_exc         := csr.br_exc
+  csr.csr_write          := writeback.csr_write
+  csr.csr_reg_read       <> decoder.csr_reg_read
+  writeback.flush_by_csr := csr.flush_by_csr
 
   // fetch
   io.inst_sram_en       := fetch.inst_sram.en

@@ -27,8 +27,10 @@ class info extends Bundle {
   val wfreg  = UInt(REG_WIDTH.W)
   val result = UInt(DATA_WIDTH.W)
 
-  val csr_iswf   = Bool()
+  val csr_iswf  = Bool()
+  val csr_wmask = UInt(DATA_WIDTH.W)
   val csr_addr  = UInt(CSR_WIDTH.W)
+  val csr_value = UInt(DATA_WIDTH.W)
 
   val exc_type  = ECodes()
   val exc_vaddr = UInt(ADDR_WIDTH.W)

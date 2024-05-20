@@ -38,6 +38,14 @@ class Forwarder extends Module {
     }
   }
 
+  val csr_addr = io.forward_query.csr_addr
+  io.forward_ans.csr_data := io.forward_query.csr_ini_data
+  for (j <- 0 until 3) {
+    when(csr_addr === io.dataIn(j).csr_addr && io.dataIn(j).csr_we && csr_addr =/= 0.U) {
+      io.forward_ans.csr_data := io.dataIn(j).csr_data
+    }
+  }
+
   when(io.load_complete) {
     io.forward_ans.notld := false.B
   }

@@ -13,12 +13,17 @@ class DecoderTopIO extends StageBundle {
   val forward_query = Output(new ForwardQuery)
   val forward_ans   = Input(new ForwardAns)
   val gr_write      = Input(new GRWrite)
+  val csr_reg_read  = new csrRegRead
 }
 
 class DecoderTop extends Module {
   val io   = IO(new DecoderTopIO)
   val busy = WireDefault(false.B)
   val info = StageConnect(io.from, io.to, busy)
+  when(io.flush) {
+    info        := 0.U.asTypeOf(new info)
+    info.bubble := true.B
+  }
 
   val rj   = info.inst(9, 5)
   val rk   = info.inst(14, 10)
@@ -33,9 +38,14 @@ class DecoderTop extends Module {
   busy                      := io.forward_ans.notld
 
   val decoder = Module(new Decoder).io
-  decoder.inst := info.inst
-  decoder.pc   := info.pc
-  decoder.data := io.forward_ans.data
+  decoder.inst                  := info.inst
+  decoder.pc                    := info.pc
+  decoder.data                  := io.forward_ans.data
+  io.forward_query.csr_addr     := decoder.csr_reg_read.raddr
+  io.forward_query.csr_ini_data := io.csr_reg_read.rdata
+  io.csr_reg_read.re            := decoder.csr_reg_read.re
+  io.csr_reg_read.raddr         := decoder.csr_reg_read.raddr
+  decoder.csr_reg_read.rdata    := io.forward_ans.csr_data
 
   val to_info = WireDefault(0.U.asTypeOf(new info))
   to_info           := info
@@ -50,7 +60,9 @@ class DecoderTop extends Module {
   to_info.iswf      := decoder.iswf && !info.bubble
   to_info.wfreg     := decoder.wfreg
   to_info.csr_iswf  := decoder.csr_iswf
-  to_info.csr_addr := decoder.csr_wfreg
+  to_info.csr_wmask := decoder.csr_wmask
+  to_info.csr_addr  := decoder.csr_wfreg
+  to_info.csr_value := decoder.csr_value
   to_info.exc_type  := Mux(info.exc_type =/= ECodes.NONE, info.exc_type, decoder.exc_type)
   when(io.flush) {
     to_info        := 0.U.asTypeOf(new info)
