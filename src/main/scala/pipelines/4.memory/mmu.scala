@@ -18,7 +18,6 @@ class MmuIO extends Bundle {
   val result   = Input(UInt(DATA_WIDTH.W))
   val rd_value = Input(UInt(DATA_WIDTH.W))
 
-  val busy = Output(Bool())
   val data = Output(UInt(DATA_WIDTH.W))
 
   val exc_type  = Output(ECodes())
@@ -48,7 +47,7 @@ class Mmu extends Module {
   )
   io.exc_vaddr := io.result
 
-  io.data_sram.en := true.B
+  io.data_sram.en := re
   io.data_sram.we := Mux(
     we && io.exc_type === ECodes.NONE,
     MateDefault(
@@ -107,6 +106,5 @@ class Mmu extends Module {
     ),
   )
 
-  io.busy := re
   io.data := Mux(re, rdata, io.result)
 }

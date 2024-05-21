@@ -30,6 +30,8 @@ object Functions {
     y.csr_we   := x.csr_iswf
     y.csr_addr := x.csr_addr
     y.csr_data := x.rd
+
+    y.pc := x.pc
   }
 
   // StallPrevious: just set busy to true.B
@@ -57,5 +59,13 @@ object Functions {
   // for csr------------------------------------------------------------------------------------
   def writeMask(mask: UInt, data: UInt, wdata: UInt): UInt = {
     (wdata & mask) | (data & ~mask)
+  }
+
+  // for axi------------------------------------------------------------------------------------
+  // y := x
+  def AxiConnect[T <: Data](y: DecoupledIO[T], x: DecoupledIO[T]): Unit = {
+    y.bits  := x.bits
+    y.valid := x.valid
+    x.ready := y.ready
   }
 }

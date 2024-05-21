@@ -3,12 +3,13 @@ package stages
 import chisel3._
 import chisel3.util._
 
+import axi._
 import csr._
 import bundles._
 import controller._
 import const.Parameters._
 
-class CpuTopIO extends Bundle {
+class sramTopIO extends Bundle {
   // inst sram interface
   val inst_sram_en    = Output(Bool())
   val inst_sram_we    = Output(UInt(4.W))
@@ -30,8 +31,17 @@ class CpuTopIO extends Bundle {
   val debug_wb_rf_wdata = Output(UInt(32.W))
 }
 
+class axiTopIO extends Bundle {
+  val axi = new AXI_IO
+
+  val debug_wb_pc       = Output(UInt(32.W))
+  val debug_wb_rf_we    = Output(UInt(4.W))
+  val debug_wb_rf_wnum  = Output(UInt(5.W))
+  val debug_wb_rf_wdata = Output(UInt(32.W))
+}
+
 class Top extends Module {
-  val io = IO(new CpuTopIO)
+  val io = IO(new axiTopIO)
 
   val fetch     = Module(new FetchTop).io
   val decoder   = Module(new DecoderTop).io
@@ -41,6 +51,14 @@ class Top extends Module {
   val flusher   = Module(new Flusher).io
   val forwarder = Module(new Forwarder).io
   val csr       = Module(new CSR).io
+  val icache    = Module(new iCache).io
+  val dcache    = Module(new dCache).io
+  val axilayer  = Module(new AXILayer).io
+
+  // axi
+  io.axi          <> axilayer.to
+  axilayer.icache <> icache.axi
+  axilayer.dcache <> dcache.axi
 
   // handshake
   fetch.from.valid   := RegNext(!reset.asBool) & !reset.asBool
@@ -74,7 +92,8 @@ class Top extends Module {
   forwarder.load_complete := memory.load_complete
   forwarder.forward_query := decoder.forward_query
   decoder.forward_ans     := forwarder.forward_ans
-  execute.forward_tag     := forwarder.tag
+  memory.forward_tag      := forwarder.tag
+  memory.forward_pc       := forwarder.tag_pc
 
   // csr
   csr.exc_happen         := writeback.exc_happen
@@ -84,12 +103,8 @@ class Top extends Module {
   writeback.flush_by_csr := csr.flush_by_csr
 
   // fetch
-  io.inst_sram_en       := fetch.inst_sram.en
-  io.inst_sram_we       := fetch.inst_sram.we
-  io.inst_sram_addr     := fetch.inst_sram.addr
-  io.inst_sram_wdata    := fetch.inst_sram.wdata
-  fetch.inst_sram.rdata := io.inst_sram_rdata
-  fetch.br              := execute.br
+  fetch.iCache <> icache.fetch
+  fetch.br     := execute.br
 
   // decoder
   decoder.gr_write := writeback.gr_write
@@ -97,11 +112,7 @@ class Top extends Module {
   // execute
 
   // memory
-  io.data_sram_en        := memory.data_sram.en
-  io.data_sram_we        := memory.data_sram.we
-  io.data_sram_addr      := memory.data_sram.addr
-  io.data_sram_wdata     := memory.data_sram.wdata
-  memory.data_sram.rdata := io.data_sram_rdata
+  memory.dCache <> dcache.mem
 
   // writeback
   io.debug_wb_pc       := writeback.debug_wb.pc

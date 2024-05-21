@@ -12,7 +12,7 @@ class ExecuteTopIO extends StageBundle {
   val br_exc       = Input(new br)
   val br           = Output(new br)
   val forward_data = Output(new ForwardData)
-  val forward_tag  = Input(Bool())
+  // val forward_tag  = Input(Bool())
 }
 
 class ExecuteTop extends Module {
@@ -62,7 +62,7 @@ class ExecuteTop extends Module {
 
   val to_info = WireDefault(0.U.asTypeOf(new info))
   to_info        := info
-  to_info.ld_tag := io.forward_tag
+  // to_info.ld_tag := io.forward_tag
   to_info.result := result
   when(io.flush) {
     to_info        := 0.U.asTypeOf(new info)
@@ -76,10 +76,14 @@ class ExecuteTop extends Module {
   // to do: can add a signal to info that indicates the jirl inst
   // also: can not delete the add!!
   io.br.tar      := Mux(io.br_exc.en, br_tar_exc, br_tar)
-  io.flush_apply := bru.br_en && io.to.valid && !info.bubble
+  io.flush_apply := bru.br_en && !info.bubble
 
   Forward(to_info, io.forward_data)
   when(info.isload) {
     io.forward_data.we := false.B // for data_forward that ld inst's alu's result not used
   }
 }
+/*
+使用axi时，数据前递可能会出现以下问题：它获取了后面流水级的前递数据，但是之所以触发了前递，是因为后面流水级的指令就是dec这条指令
+解决：前递时标记这是第几条指令
+*/

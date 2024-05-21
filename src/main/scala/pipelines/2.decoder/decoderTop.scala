@@ -34,6 +34,7 @@ class DecoderTop extends Module {
   gr_reg.raddr              := addr
   gr_reg.rf_bus             := io.gr_write
   io.forward_query.addr     := addr
+  io.forward_query.pc       := info.pc
   io.forward_query.ini_data := gr_reg.rdata
   busy                      := io.forward_ans.notld
 

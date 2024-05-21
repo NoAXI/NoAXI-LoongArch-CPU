@@ -15,7 +15,7 @@ class info extends Bundle {
   val func_type = FuncType()
   val op_type   = UInt(5.W) // the maximum number of op_type
   val isload    = Bool()
-  val ld_tag    = Bool()
+  // val ld_tag    = Bool()
 
   val imm  = UInt(DATA_WIDTH.W)
   val src1 = UInt(DATA_WIDTH.W)

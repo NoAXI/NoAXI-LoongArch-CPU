@@ -1,4 +1,4 @@
-package csr
+package bundles
 
 import chisel3._
 import chisel3.util._
