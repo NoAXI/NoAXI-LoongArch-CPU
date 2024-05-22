@@ -25,7 +25,7 @@ class CSR extends Module {
   val io = IO(new CSR_IO)
 
   val saved_info = RegInit(0.U.asTypeOf(new info))
-  when (!io.exc_happen.info.bubble) {
+  when(!io.exc_happen.info.bubble) {
     saved_info := io.exc_happen.info
   }
   val info = Mux(io.exc_happen.info.bubble, saved_info, io.exc_happen.info)
@@ -117,7 +117,7 @@ class CSR extends Module {
           ESTAT.info.is_11 := false.B
         }
         when(x.id === CSRCodes.TCFG) {
-          TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 1.U(2.W)
+          TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 3.U(2.W)
         }
       }
     }
@@ -125,7 +125,7 @@ class CSR extends Module {
 
   when(TCFG.info.en) {
     when(TVAL.info.timeval === 0.U) {
-      TVAL.info.timeval := Mux(TCFG.info.preiodic, TCFG.info.initval ## 1.U(2.W), 0.U)
+      TVAL.info.timeval := Mux(TCFG.info.preiodic, TCFG.info.initval ## 3.U(2.W), 0.U)
     }.otherwise {
       TVAL.info.timeval := TVAL.info.timeval - 1.U
     }
@@ -141,7 +141,7 @@ class CSR extends Module {
   val start = io.exc_happen.start || (any_exc.orR && CRMD.info.ie)
 
   // 例外跳转
-  io.br_exc := WireDefault(0.U.asTypeOf(new br))
+  io.br_exc       := WireDefault(0.U.asTypeOf(new br))
   io.flush_by_csr := false.B
   when(start) {
     io.flush_by_csr := true.B
@@ -160,7 +160,8 @@ class CSR extends Module {
       ),
     )
     ESTAT.info.esubcode := Mux(info.exc_type === ECodes.ADEM, 1.U, 0.U)
-    ERA.info.pc         := info.pc
+    // 软中断的ERApc是下一个pc
+    ERA.info.pc         := Mux(ESTAT.info.is_1_0.orR, info.pc + 4.U, info.pc)
     BADV.info.vaddr := MateDefault(
       info.exc_type,
       BADV.info.vaddr,
@@ -171,8 +172,9 @@ class CSR extends Module {
       ),
     )
 
-    io.br_exc.en  := true.B
-    io.br_exc.tar := EENTRY.info.asUInt
+    io.br_exc.en     := true.B
+    io.br_exc.exc_en := true.B
+    io.br_exc.tar    := EENTRY.info.asUInt
   }
 
   when(io.exc_happen.end) {
