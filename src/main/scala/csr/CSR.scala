@@ -117,12 +117,16 @@ class CSR extends Module {
           ESTAT.info.is_11 := false.B
         }
         when(x.id === CSRCodes.TCFG) {
-          TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 3.U(2.W)
+          // TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 3.U(2.W) 
+          TVAL.info.timeval := wdata(COUNT_N - 1, 4) ## 15.U(4.W) //暂时这么搞
         }
       }
     }
   }
-
+  /*
+  未防止出现timeval = 0 但是开启计时，很快计时到0，但是记录异常的pc未到下一条指令，需要标记开始计时的指令pc
+  暂时未实现，单纯把initalval 拉大
+   */
   when(TCFG.info.en) {
     when(TVAL.info.timeval === 0.U) {
       TVAL.info.timeval := Mux(TCFG.info.preiodic, TCFG.info.initval ## 3.U(2.W), 0.U)
@@ -161,7 +165,7 @@ class CSR extends Module {
     )
     ESTAT.info.esubcode := Mux(info.exc_type === ECodes.ADEM, 1.U, 0.U)
     // 软中断的ERApc是下一个pc
-    ERA.info.pc         := Mux(ESTAT.info.is_1_0.orR, info.pc + 4.U, info.pc)
+    ERA.info.pc := Mux(ESTAT.info.is_1_0.orR, info.pc_add_4, info.pc)
     BADV.info.vaddr := MateDefault(
       info.exc_type,
       BADV.info.vaddr,

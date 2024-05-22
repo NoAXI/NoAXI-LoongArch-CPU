@@ -8,9 +8,10 @@ import const._
 import const.Parameters._
 
 class info extends Bundle {
-  val bubble = Bool()
-  val pc     = UInt(ADDR_WIDTH.W)
-  val inst   = UInt(INST_WIDTH.W)
+  val bubble   = Bool()
+  val pc       = UInt(ADDR_WIDTH.W)
+  val pc_add_4 = UInt(ADDR_WIDTH.W)
+  val inst     = UInt(INST_WIDTH.W)
 
   val func_type = FuncType()
   val op_type   = UInt(5.W) // the maximum number of op_type

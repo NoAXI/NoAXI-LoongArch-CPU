@@ -55,6 +55,7 @@ class FetchTop extends Module {
 
   val to_info = WireDefault(0.U.asTypeOf(new info))
   to_info           := info
+  to_info.pc_add_4  := pc_reg.pc_add_4
   to_info.pc        := pc_reg.pc
   to_info.inst      := Mux(is_adef, 0.U, io.iCache.answer.bits)
   to_info.exc_type  := Mux(is_adef, ECodes.ADEF, ECodes.NONE)
