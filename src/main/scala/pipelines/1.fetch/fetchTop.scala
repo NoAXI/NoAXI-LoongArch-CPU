@@ -20,25 +20,24 @@ class FetchTop extends Module {
   val info = StageConnect(io.from, io.to, busy)
 
   val next_inst_invalid = RegInit(false.B)
-  val exc_br_en         = RegInit(false.B)
+  val br_en             = RegInit(false.B)
   val saved_addr        = RegInit(0.U(ADDR_WIDTH.W))
 
   val pc_reg = Module(new PC).io
-  pc_reg.br     := io.br
-  pc_reg.exc_en := io.br.exc_en
-  pc_reg.en     := io.from.fire
+  pc_reg.br := io.br
+  pc_reg.en := io.from.fire
 
-  when(exc_br_en) {
+  when(br_en) {
     pc_reg.br.en  := true.B
     pc_reg.br.tar := saved_addr
   }
 
-  when(io.br.exc_en) {
+  when(io.br.en) {
     next_inst_invalid := true.B
-    exc_br_en         := true.B
+    br_en             := true.B
     saved_addr        := io.br.tar
   }
-  val invalid = next_inst_invalid || io.br.exc_en
+  val invalid = next_inst_invalid || io.br.en
 
   io.iCache.request.bits  := pc_reg.next_pc
   io.iCache.request.valid := io.from.fire
@@ -48,7 +47,7 @@ class FetchTop extends Module {
   busy := !io.iCache.answer.fire
 
   when(pc_reg.pc === saved_addr) {
-    exc_br_en := false.B
+    br_en := false.B
   }
 
   val is_adef = pc_reg.pc(1, 0) =/= "b00".U
@@ -81,4 +80,12 @@ class FetchTop extends Module {
 解决：这个不需要执行的指令替换为气泡
 需要保证撤销的操作不是我需要跳转的异常
 需要想办法让异常跳转的指令生效，取指1c008000（它的持续时间很短,io.br.exc_en的持续时间很短）
+
+遇到了axi如果太快，导致之前的某个跳转，未冲刷到后面指令的问题，导致跳转后指令被执行
+有a b c三个指令
+a是跳转指令，在b取指操作前，需要告诉fetch有跳转
+现在的问题是
+a是跳转指令，在b取指操作后，才知道fetch有跳转，导致对c取指
+
+计时器异常导致异常跳转，需要撤销之前的跳转操作
  */

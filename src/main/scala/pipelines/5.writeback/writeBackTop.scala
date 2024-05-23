@@ -57,7 +57,7 @@ class WriteBackTop extends Module {
   }
   io.to.bits := to_info
 
-  io.flush_apply := io.flush_by_csr && io.to.valid
+  io.flush_apply := io.flush_by_csr
 
   Forward(to_info, io.forward_data)
 

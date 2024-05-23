@@ -177,7 +177,6 @@ class CSR extends Module {
     )
 
     io.br_exc.en     := true.B
-    io.br_exc.exc_en := true.B
     io.br_exc.tar    := EENTRY.info.asUInt
   }
 

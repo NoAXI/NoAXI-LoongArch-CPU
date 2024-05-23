@@ -9,7 +9,6 @@ import Funcs.Functions._
 
 class PCIO extends Bundle {
   val br       = Input(new br)
-  val exc_en   = Input(Bool())
   val en       = Input(Bool())
   val pc       = Output(UInt(ADDR_WIDTH.W))
   val pc_add_4 = Output(UInt(ADDR_WIDTH.W))

@@ -70,13 +70,14 @@ class ExecuteTop extends Module {
   }
   io.to.bits := to_info
 
-  val br_tar     = Mux(info.inst === LA32R.JIRL, info.rj, info.pc) + info.imm
-  val br_tar_exc = io.br_exc.tar
-  io.br.en := bru.br_en || io.br_exc.en
+  val br_tar            = Mux(info.inst === LA32R.JIRL, info.rj, info.pc) + info.imm
+  val br_tar_exc        = io.br_exc.tar
+  val br_exc_en_extend  = io.br_exc.en || ShiftRegister(io.br_exc.en, 1) || ShiftRegister(io.br_exc.en, 2)
+  val br_tar_exc_extend = io.br_exc.tar | ShiftRegister(io.br_exc.tar, 1) | ShiftRegister(io.br_exc.tar, 2)
+  io.br.en := bru.br_en || br_exc_en_extend
   // to do: can add a signal to info that indicates the jirl inst
   // also: can not delete the add!!
-  io.br.exc_en   := io.br_exc.en
-  io.br.tar      := Mux(io.br_exc.en, br_tar_exc, br_tar)
+  io.br.tar      := Mux(br_exc_en_extend, br_tar_exc_extend, br_tar)
   io.flush_apply := bru.br_en && !info.bubble
 
   Forward(to_info, io.forward_data)
