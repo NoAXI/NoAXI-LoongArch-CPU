@@ -24,8 +24,9 @@ class FetchTop extends Module {
   val saved_addr        = RegInit(0.U(ADDR_WIDTH.W))
 
   val pc_reg = Module(new PC).io
-  pc_reg.br := io.br
-  pc_reg.en := io.from.fire
+  pc_reg.br.en  := WireDefault(false.B)
+  pc_reg.br.tar := 0.U
+  pc_reg.en     := io.from.fire
 
   when(br_en) {
     pc_reg.br.en  := true.B
@@ -59,17 +60,8 @@ class FetchTop extends Module {
   to_info.inst      := Mux(is_adef, 0.U, io.iCache.answer.bits)
   to_info.exc_type  := Mux(is_adef, ECodes.ADEF, ECodes.NONE)
   to_info.exc_vaddr := pc_reg.pc
-  when(io.flush) {
-    to_info        := 0.U.asTypeOf(new info)
-    to_info.bubble := true.B
-  }
-  when(invalid && !busy) {
-    when(pc_reg.pc =/= saved_addr) {
-      to_info        := WireDefault(0.U.asTypeOf(new info))
-      to_info.bubble := true.B
-    }
-    next_inst_invalid := false.B
-  }
+  FlushWhen(to_info, io.flush)
+  FlushWhen(to_info, br_en)
   io.to.bits := to_info
 
   io.flush_apply := to_info.exc_type =/= ECodes.NONE && io.to.valid && !info.bubble

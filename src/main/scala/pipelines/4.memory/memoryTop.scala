@@ -21,10 +21,7 @@ class MemoryTop extends Module {
   val io   = IO(new MemoryTopIO)
   val busy = WireDefault(false.B)
   val info = StageConnect(io.from, io.to, busy)
-  when(io.flush) {
-    info        := 0.U.asTypeOf(new info)
-    info.bubble := true.B
-  }
+  FlushWhen(info, io.flush)
 
   val complete = RegInit(false.B)
   when(io.dCache.answer.fire) { complete := true.B }
@@ -54,10 +51,7 @@ class MemoryTop extends Module {
   to_info.exc_type  := Mux(has_exc, info.exc_type, mmu.exc_type)
   to_info.exc_vaddr := Mux(has_exc, info.exc_vaddr, mmu.exc_vaddr)
   to_info.iswf      := Mux(to_info.exc_type =/= ECodes.NONE, false.B, info.iswf)
-  when(io.flush) {
-    to_info        := 0.U.asTypeOf(new info)
-    to_info.bubble := true.B
-  }
+  FlushWhen(to_info, io.flush)
   io.to.bits := to_info
 
   io.flush_apply := to_info.exc_type =/= ECodes.NONE && io.to.valid && !info.bubble

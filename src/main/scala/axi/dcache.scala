@@ -29,7 +29,7 @@ class dCache extends Module {
   val req_w_ready = RegInit(true.B)
   val stall       = RegInit(false.B)
 
-  val idle :: state0 :: state1 :: state2 :: state3 :: state4 :: state5 :: waiting :: Nil = Enum(8)
+  val idle :: state0 :: state1 :: state2 :: state3 :: state4 :: state5 :: Nil = Enum(7)
 
   val state = RegInit(idle)
   switch(state) {

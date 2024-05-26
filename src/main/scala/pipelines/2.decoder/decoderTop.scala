@@ -20,10 +20,7 @@ class DecoderTop extends Module {
   val io   = IO(new DecoderTopIO)
   val busy = WireDefault(false.B)
   val info = StageConnect(io.from, io.to, busy)
-  when(io.flush) {
-    info        := 0.U.asTypeOf(new info)
-    info.bubble := true.B
-  }
+  FlushWhen(info, io.flush)
 
   val rj   = info.inst(9, 5)
   val rk   = info.inst(14, 10)
@@ -65,10 +62,7 @@ class DecoderTop extends Module {
   to_info.csr_addr  := decoder.csr_wfreg
   to_info.csr_value := decoder.csr_value
   to_info.exc_type  := Mux(info.exc_type =/= ECodes.NONE, info.exc_type, decoder.exc_type)
-  when(io.flush) {
-    to_info        := 0.U.asTypeOf(new info)
-    to_info.bubble := true.B
-  }
+  FlushWhen(to_info, io.flush)
   io.to.bits := to_info
 
   io.flush_apply := to_info.exc_type =/= ECodes.NONE && io.to.valid && !info.bubble

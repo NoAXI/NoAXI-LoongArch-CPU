@@ -34,6 +34,13 @@ object Functions {
     y.pc := x.pc
   }
 
+  def FlushWhen(x: info, y: Bool): Unit = {
+    when (y) {
+      x := 0.U.asTypeOf(new info)
+      x.bubble := true.B
+    }
+  }
+
   // StallPrevious: just set busy to true.B
 
   // for decoder--------------------------------------------------------------------------------
@@ -61,11 +68,4 @@ object Functions {
     (wdata & mask) | (data & ~mask)
   }
 
-  // for axi------------------------------------------------------------------------------------
-  // y := x
-  def AxiConnect[T <: Data](y: DecoupledIO[T], x: DecoupledIO[T]): Unit = {
-    y.bits  := x.bits
-    y.valid := x.valid
-    x.ready := y.ready
-  }
 }

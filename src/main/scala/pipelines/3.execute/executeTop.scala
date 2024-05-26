@@ -19,10 +19,7 @@ class ExecuteTop extends Module {
   val io   = IO(new ExecuteTopIO)
   val busy = WireDefault(false.B)
   val info = StageConnect(io.from, io.to, busy)
-  when(io.flush) {
-    info        := 0.U.asTypeOf(new info)
-    info.bubble := true.B
-  }
+  FlushWhen(info, io.flush)
 
   val alu = Module(new Alu).io
   alu.func_type := info.func_type
@@ -64,20 +61,15 @@ class ExecuteTop extends Module {
   to_info := info
   // to_info.ld_tag := io.forward_tag
   to_info.result := result
-  when(io.flush) {
-    to_info        := 0.U.asTypeOf(new info)
-    to_info.bubble := true.B
-  }
+  FlushWhen(to_info, io.flush)
   io.to.bits := to_info
 
   val br_tar            = Mux(info.inst === LA32R.JIRL, info.rj, info.pc) + info.imm
   val br_tar_exc        = io.br_exc.tar
   val br_exc_en_extend  = io.br_exc.en || ShiftRegister(io.br_exc.en, 1) || ShiftRegister(io.br_exc.en, 2)
   val br_tar_exc_extend = io.br_exc.tar | ShiftRegister(io.br_exc.tar, 1) | ShiftRegister(io.br_exc.tar, 2)
-  io.br.en := bru.br_en || br_exc_en_extend
-  // to do: can add a signal to info that indicates the jirl inst
-  // also: can not delete the add!!
-  io.br.tar      := Mux(br_exc_en_extend, br_tar_exc_extend, br_tar)
+  io.br.en := bru.br_en || io.br_exc.en
+  io.br.tar      := Mux(io.br_exc.en, io.br_exc.tar, br_tar)
   io.flush_apply := bru.br_en && !info.bubble
 
   Forward(to_info, io.forward_data)
@@ -88,4 +80,7 @@ class ExecuteTop extends Module {
 /*
 使用axi时，数据前递可能会出现以下问题：它获取了后面流水级的前递数据，但是之所以触发了前递，是因为后面流水级的指令就是dec这条指令
 解决：前递时标记这是第几条指令
+
+这里的信号延迟处理有没有更好的方法？？
+todo
  */

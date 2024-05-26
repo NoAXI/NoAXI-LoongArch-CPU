@@ -40,6 +40,7 @@ class AXILayer extends Module {
   io.to.ar.bits.id    := ar_sel
   io.to.ar.bits.addr  := Mux(ar_sel, io.dcache.ar.bits.addr, io.icache.ar.bits.addr)
   io.to.ar.bits.size  := Mux(ar_sel, io.dcache.ar.bits.size, io.icache.ar.bits.size)
+  io.to.ar.bits.len   := Mux(ar_sel, io.dcache.ar.bits.len, io.icache.ar.bits.len)
   io.to.ar.valid      := Mux(ar_sel, io.dcache.ar.valid, io.icache.ar.valid)
   io.icache.ar.ready  := io.to.ar.ready && !ar_sel
   io.dcache.ar.ready  := io.to.ar.ready && ar_sel
