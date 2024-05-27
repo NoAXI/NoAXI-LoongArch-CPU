@@ -38,7 +38,25 @@ class iCache extends Module {
   val hit     = WireDefault(VecInit(Seq.fill(WAY_WIDTH)(false.B))).suggestName("hit")
   val hitdata = WireDefault(0.U(DATA_WIDTH.W))
   // val writepos = RegInit(1.U(4.W))
-  val lru = RegInit(2.U(2.W)) // random temp
+
+  // lru
+  val lru = RegInit(VecInit(Seq.fill(3)(true.B)))
+  def updatelru(way: UInt): Unit = {
+    switch (way) {
+      is(0.U) {lru(0) := true.B}
+      is(1.U) {lru(0) := false.B}
+      is(2.U) {lru(1) := true.B}
+      is(3.U) {lru(1) := false.B}
+    }
+    lru(2) := Mux(way(1), true.B, false.B)
+  }
+  def indexchosen(): UInt = {
+    Mux(
+      lru(2),
+      Mux(lru(1), 3.U, 2.U),
+      Mux(lru(0), 1.U, 0.U),
+    )
+  }
 
   val ar          = RegInit(0.U.asTypeOf(new AR))
   val arvalid     = RegInit(false.B)
@@ -65,7 +83,7 @@ class iCache extends Module {
   }
 
   val cached = true.B
-  ar.id    := DontCare
+  ar.id := DontCare
   // ar.len   := 0.U
   ar.size  := 2.U
   ar.burst := 1.U
@@ -87,8 +105,8 @@ class iCache extends Module {
           qindex  := _qindex
           qoffset := io.fetch.request.bits(3, 0)
           for (i <- 0 until WAY_WIDTH) {
-            valid(i)          := validreg(_qindex)(i)
-            dirty(i)          := dirtyreg(_qindex)(i)
+            valid(i) := validreg(_qindex)(i)
+            dirty(i) := dirtyreg(_qindex)(i)
           }
           state := checkhit
         }.elsewhen(saved_query) {
@@ -99,12 +117,13 @@ class iCache extends Module {
           qindex  := _qindex
           qoffset := saved_addr(3, 0)
           for (i <- 0 until WAY_WIDTH) {
-            valid(i)          := validreg(_qindex)(i)
-            dirty(i)          := dirtyreg(_qindex)(i)
+            valid(i) := validreg(_qindex)(i)
+            dirty(i) := dirtyreg(_qindex)(i)
           }
           state := checkhit
         }
       }.otherwise {
+        // uncached
         when(io.fetch.request.fire) {
           arvalid := true.B
           ar.addr := io.fetch.request.bits
@@ -207,11 +226,11 @@ class iCache extends Module {
           wmask := wmask << 1.U
         }.otherwise {
           rready                := false.B
-          datasram(lru).wea     := true.B
-          datasram(lru).dina    := wdata
-          tagsram(lru).wea      := true.B
-          tagsram(lru).dina     := qtag
-          validreg(qindex)(lru) := true.B
+          datasram(indexchosen()).wea     := true.B
+          datasram(indexchosen()).dina    := wdata
+          tagsram(indexchosen()).wea      := true.B
+          tagsram(indexchosen()).dina     := qtag
+          validreg(qindex)(indexchosen()) := true.B
           wdata                 := 0.U
           wmask                 := 1.U
         }
@@ -220,7 +239,7 @@ class iCache extends Module {
       }
     }
     is(waiting) {
-      // 如果在这个阶段收到请求，需要保存住
+      // if has request at this state, should save
       when(io.fetch.request.valid) {
         saved_query := true.B
         saved_addr  := io.fetch.request.bits

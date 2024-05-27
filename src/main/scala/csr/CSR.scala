@@ -107,6 +107,8 @@ class CSR extends Module {
     }
   }
 
+  val conuter_run = WireDefault(true.B)
+
   when(io.csr_write.we) {
     for (x <- csrlist) {
       when(io.csr_write.waddr === x.id) {
@@ -117,20 +119,17 @@ class CSR extends Module {
           ESTAT.info.is_11 := false.B
         }
         when(x.id === CSRCodes.TCFG) {
-          // TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 3.U(2.W) 
-          TVAL.info.timeval := wdata(COUNT_N - 1, 4) ## 15.U(4.W) //暂时这么搞
+          conuter_run := false.B
+          TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 3.U(2.W)
         }
       }
     }
   }
-  /*
-  未防止出现timeval = 0 但是开启计时，很快计时到0，但是记录异常的pc未到下一条指令，需要标记开始计时的指令pc
-  暂时未实现，单纯把initalval 拉大
-   */
+
   when(TCFG.info.en) {
     when(TVAL.info.timeval === 0.U) {
       TVAL.info.timeval := Mux(TCFG.info.preiodic, TCFG.info.initval ## 3.U(2.W), 0.U)
-    }.otherwise {
+    }.elsewhen(conuter_run) {
       TVAL.info.timeval := TVAL.info.timeval - 1.U
     }
   }
@@ -176,8 +175,8 @@ class CSR extends Module {
       ),
     )
 
-    io.br_exc.en     := true.B
-    io.br_exc.tar    := EENTRY.info.asUInt
+    io.br_exc.en  := true.B
+    io.br_exc.tar := EENTRY.info.asUInt
   }
 
   when(io.exc_happen.end) {

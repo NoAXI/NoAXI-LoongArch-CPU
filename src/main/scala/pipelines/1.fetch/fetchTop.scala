@@ -19,7 +19,6 @@ class FetchTop extends Module {
   val busy = WireDefault(false.B)
   val info = StageConnect(io.from, io.to, busy)
 
-  val next_inst_invalid = RegInit(false.B)
   val br_en             = RegInit(false.B)
   val saved_addr        = RegInit(0.U(ADDR_WIDTH.W))
 
@@ -34,11 +33,9 @@ class FetchTop extends Module {
   }
 
   when(io.br.en) {
-    next_inst_invalid := true.B
     br_en             := true.B
     saved_addr        := io.br.tar
   }
-  val invalid = next_inst_invalid || io.br.en
 
   io.iCache.request.bits  := pc_reg.next_pc
   io.iCache.request.valid := io.from.fire
@@ -47,7 +44,7 @@ class FetchTop extends Module {
 
   busy := !io.iCache.answer.fire
 
-  when(pc_reg.pc === saved_addr) {
+  when(pc_reg.pc === saved_addr && !io.br.en) {
     br_en := false.B
   }
 
@@ -60,8 +57,7 @@ class FetchTop extends Module {
   to_info.inst      := Mux(is_adef, 0.U, io.iCache.answer.bits)
   to_info.exc_type  := Mux(is_adef, ECodes.ADEF, ECodes.NONE)
   to_info.exc_vaddr := pc_reg.pc
-  FlushWhen(to_info, io.flush)
-  FlushWhen(to_info, br_en)
+  FlushWhen(to_info, io.flush || br_en)
   io.to.bits := to_info
 
   io.flush_apply := to_info.exc_type =/= ECodes.NONE && io.to.valid && !info.bubble
