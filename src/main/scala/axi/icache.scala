@@ -12,7 +12,6 @@ import const.Parameters._
 class iCacheIO extends Bundle {
   val axi   = new iCache_AXI
   val fetch = Flipped(new fetch_iCache_IO)
-  val stall = Output(Bool())
 }
 
 class iCache extends Module {
@@ -29,15 +28,12 @@ class iCache extends Module {
   val qindex  = RegInit(0.U(8.W))
   val qoffset = RegInit(0.U(4.W))
 
-  // val data     = RegInit(VecInit(Seq.fill(WAY_WIDTH)(VecInit(Seq.fill(LINE_SIZE)(0.U(8.W))))))
-  // val tag      = RegInit(VecInit(Seq.fill(WAY_WIDTH)(0.U(TAG_WIDTH.W))))
   val valid   = RegInit(VecInit(Seq.fill(WAY_WIDTH)(false.B)))
   val dirty   = RegInit(VecInit(Seq.fill(WAY_WIDTH)(false.B)))
   val wdata   = RegInit(0.U((LINE_SIZE * 8).W))
   val wmask   = RegInit(1.U(4.W))
   val hit     = WireDefault(VecInit(Seq.fill(WAY_WIDTH)(false.B))).suggestName("hit")
   val hitdata = WireDefault(0.U(DATA_WIDTH.W))
-  // val writepos = RegInit(1.U(4.W))
 
   // lru
   val lru = RegInit(VecInit(Seq.fill(3)(true.B)))
@@ -64,11 +60,10 @@ class iCache extends Module {
   val ans_valid   = RegInit(false.B)
   val ans_bits    = RegInit(0.U(INST_WIDTH.W))
   val req_ready   = RegInit(true.B)
-  val stall       = RegInit(false.B)
   val saved_valid = RegInit(false.B)
   val saved_inst  = RegInit(0.U(INST_WIDTH.W))
   val saved_query = RegInit(false.B)
-  val saved_addr  = RegInit(0.U(32.W))
+  val saved_addr  = RegInit(0.U(ADDR_WIDTH.W))
 
   val ram_addr = Mux(saved_query, saved_addr(11, 4), io.fetch.request.bits(11, 4))
   for (i <- 0 until WAY_WIDTH) {
@@ -139,7 +134,6 @@ class iCache extends Module {
       }
     }
     is(state0) {
-      stall     := true.B
       req_ready := false.B
       when(io.axi.ar.ready) {
         arvalid := false.B
@@ -148,13 +142,11 @@ class iCache extends Module {
       }
     }
     is(state1) {
-      stall     := true.B
       req_ready := false.B
       when(io.axi.r.valid) {
         ans_valid := true.B
         ans_bits  := io.axi.r.bits.data
         when(io.fetch.cango) {
-          stall     := false.B
           req_ready := true.B
           state     := idle
         }.otherwise {
@@ -186,7 +178,6 @@ class iCache extends Module {
       }
       when(hit.asUInt.orR) {
         when(io.fetch.cango) {
-          stall     := false.B
           req_ready := true.B
           state     := idle
         }.otherwise {
@@ -260,5 +251,4 @@ class iCache extends Module {
   io.fetch.answer.valid  := ans_valid
   io.fetch.answer.bits   := ans_bits
   io.fetch.request.ready := req_ready
-  io.stall               := stall
 }

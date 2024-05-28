@@ -30,6 +30,8 @@ class AXILayer extends Module {
     }
   }
 
+  dontTouch(io.to.r.bits.resp)
+
   io.to.ar    <> io.icache.ar
   io.icache.r <> io.to.r
   io.dcache.r <> io.to.r
@@ -48,4 +50,6 @@ class AXILayer extends Module {
   io.to.r.ready         := Mux(r_sel, io.dcache.r.ready, io.icache.r.ready)
   io.icache.r.valid     := io.to.r.valid && !r_sel
   io.dcache.r.valid     := io.to.r.valid && r_sel
+  io.icache.r.bits.last := io.to.r.bits.last && !r_sel
+  io.dcache.r.bits.last := io.to.r.bits.last && r_sel
 }
