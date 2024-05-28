@@ -5,13 +5,15 @@ import chisel3.util._
 
 import isa._
 import bundles._
+import const.predictConst._
 import const.Parameters._
 import Funcs.Functions._
 
 class ExecuteTopIO extends StageBundle {
-  val br_exc       = Input(new br)
-  val br           = Output(new br)
-  val forward_data = Output(new ForwardData)
+  val br_exc        = Input(new br)
+  val predict_check = Output(new brCheck)
+  val br            = Output(new br)
+  val forward_data  = Output(new ForwardData)
   // val forward_tag  = Input(Bool())
 }
 
@@ -64,13 +66,19 @@ class ExecuteTop extends Module {
   FlushWhen(to_info, io.flush)
   io.to.bits := to_info
 
-  val br_tar            = Mux(info.inst === LA32R.JIRL, info.rj, info.pc) + info.imm
-  val br_tar_exc        = io.br_exc.tar
-  val br_exc_en_extend  = io.br_exc.en || ShiftRegister(io.br_exc.en, 1) || ShiftRegister(io.br_exc.en, 2)
-  val br_tar_exc_extend = io.br_exc.tar | ShiftRegister(io.br_exc.tar, 1) | ShiftRegister(io.br_exc.tar, 2)
-  io.br.en := bru.br_en || io.br_exc.en
-  io.br.tar      := Mux(io.br_exc.en, io.br_exc.tar, br_tar)
-  io.flush_apply := bru.br_en && !info.bubble
+  val is_br         = info.func_type === FuncType.bru
+  val is_jirl       = info.inst === LA32R.JIRL
+  val br_tar        = Mux(is_jirl, info.rj, info.pc) + info.imm
+  val succeed       = bru.br_en === info.predict.en && br_tar === info.predict.tar && is_br
+  val br_tar_failed = Mux(bru.br_en, br_tar, info.pc + 4.U)
+  io.predict_check.en      := is_br
+  io.predict_check.succeed := succeed
+  io.predict_check.real    := bru.br_en
+  io.predict_check.index   := info.pc(INDEX_LENGTH + 1, 2)
+
+  io.br.en       := (is_br && !succeed) || io.br_exc.en
+  io.br.tar      := Mux(io.br_exc.en, io.br_exc.tar, br_tar_failed)
+  io.flush_apply := (is_br && !succeed) && !info.bubble
 
   Forward(to_info, io.forward_data)
   when(info.isload) {

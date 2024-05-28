@@ -35,6 +35,8 @@ class info extends Bundle {
 
   val exc_type  = ECodes()
   val exc_vaddr = UInt(ADDR_WIDTH.W)
+
+  val predict = new br
 }
 
 class StageBundle extends Bundle {

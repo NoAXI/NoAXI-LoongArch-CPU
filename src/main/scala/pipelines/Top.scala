@@ -102,6 +102,10 @@ class Top extends Module {
   csr.csr_reg_read       <> decoder.csr_reg_read
   writeback.flush_by_csr := csr.flush_by_csr
 
+  // predict
+  fetch.predict_result  <> decoder.predict_result
+  decoder.predict_check <> execute.predict_check
+
   // fetch
   fetch.iCache <> icache.fetch
   fetch.br     := execute.br

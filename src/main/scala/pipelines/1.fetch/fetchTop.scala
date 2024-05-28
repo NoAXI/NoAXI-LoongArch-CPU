@@ -10,8 +10,9 @@ import const.ECodes
 import axi.iCacheIO
 
 class FetchTopIO extends StageBundle {
-  val br     = Input(new br)
-  val iCache = new fetch_iCache_IO
+  val predict_result = Input(new br)
+  val br             = Input(new br)
+  val iCache         = new fetch_iCache_IO
 }
 
 class FetchTop extends Module {
@@ -19,8 +20,8 @@ class FetchTop extends Module {
   val busy = WireDefault(false.B)
   val info = StageConnect(io.from, io.to, busy)
 
-  val br_en             = RegInit(false.B)
-  val saved_addr        = RegInit(0.U(ADDR_WIDTH.W))
+  val br_en      = RegInit(false.B)
+  val saved_addr = RegInit(0.U(ADDR_WIDTH.W))
 
   val pc_reg = Module(new PC).io
   pc_reg.br.en  := WireDefault(false.B)
@@ -30,11 +31,18 @@ class FetchTop extends Module {
   when(br_en) {
     pc_reg.br.en  := true.B
     pc_reg.br.tar := saved_addr
+  }.elsewhen(io.br.en || io.predict_result.en) {
+    pc_reg.br.en  := true.B
+    pc_reg.br.tar := Mux(io.br.en, io.br.tar, io.predict_result.tar)
   }
 
-  when(io.br.en) {
-    br_en             := true.B
-    saved_addr        := io.br.tar
+  when(pc_reg.pc === saved_addr) {
+    br_en := false.B
+  }
+
+  when(io.br.en || io.predict_result.en) {
+    br_en      := true.B
+    saved_addr := Mux(io.br.en, io.br.tar, io.predict_result.tar)
   }
 
   io.iCache.request.bits  := pc_reg.next_pc
@@ -43,10 +51,6 @@ class FetchTop extends Module {
   io.iCache.cango         := io.to.ready
 
   busy := !io.iCache.answer.fire
-
-  when(pc_reg.pc === saved_addr && !io.br.en) {
-    br_en := false.B
-  }
 
   val is_adef = pc_reg.pc(1, 0) =/= "b00".U
 

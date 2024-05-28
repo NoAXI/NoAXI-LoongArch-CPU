@@ -10,10 +10,12 @@ import const.Parameters._
 import Funcs.Functions._
 
 class DecoderTopIO extends StageBundle {
-  val forward_query = Output(new ForwardQuery)
-  val forward_ans   = Input(new ForwardAns)
-  val gr_write      = Input(new GRWrite)
-  val csr_reg_read  = new csrRegRead
+  val predict_check  = Input(new brCheck)
+  val predict_result = Output(new br)
+  val forward_query  = Output(new ForwardQuery)
+  val forward_ans    = Input(new ForwardAns)
+  val gr_write       = Input(new GRWrite)
+  val csr_reg_read   = new csrRegRead
 }
 
 class DecoderTop extends Module {
@@ -21,6 +23,12 @@ class DecoderTop extends Module {
   val busy = WireDefault(false.B)
   val info = StageConnect(io.from, io.to, busy)
   FlushWhen(info, io.flush)
+
+  val predict = Module(new Predict).io
+  predict.pc        := info.pc
+  predict.inst      := info.inst
+  predict.check     := io.predict_check
+  io.predict_result := predict.result
 
   val rj   = info.inst(9, 5)
   val rk   = info.inst(14, 10)
@@ -47,6 +55,7 @@ class DecoderTop extends Module {
 
   val to_info = WireDefault(0.U.asTypeOf(new info))
   to_info           := info
+  to_info.predict   := predict.result
   to_info.func_type := decoder.func_type
   to_info.op_type   := decoder.op_type
   to_info.isload    := decoder.isload
