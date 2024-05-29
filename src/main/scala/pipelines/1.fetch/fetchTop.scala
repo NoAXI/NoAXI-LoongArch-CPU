@@ -7,12 +7,13 @@ import bundles._
 import const.Parameters._
 import Funcs.Functions._
 import const.ECodes
-import axi.iCacheIO
+// import axi.iCacheIO
 
 class FetchTopIO extends StageBundle {
   val predict_result = Input(new br)
   val br             = Input(new br)
   val iCache         = new fetch_iCache_IO
+  // val iCache = new pipeline_Cache_IO
 }
 
 class FetchTop extends Module {
@@ -44,7 +45,10 @@ class FetchTop extends Module {
     br_en      := true.B
     saved_addr := Mux(io.br.en, io.br.tar, io.predict_result.tar)
   }
-
+  // io.iCache.request.bits.re   := true.B
+  // io.iCache.request.bits.we   := false.B
+  // io.iCache.request.bits.data := 0.U
+  // io.iCache.request.bits.strb := 0.U
   io.iCache.request.bits  := pc_reg.next_pc
   io.iCache.request.valid := io.from.fire
   io.iCache.answer.ready  := true.B

@@ -82,3 +82,15 @@ class mem_dCache_IO extends Bundle {
     val strb = UInt(8.W)
   })
 }
+
+class pipeline_Cache_IO extends Bundle {
+  val answer = Flipped(DecoupledIO(UInt(DATA_WIDTH.W)))
+  val request = DecoupledIO(new Bundle {
+    val re   = Bool()
+    val we   = Bool()
+    val addr = UInt(ADDR_WIDTH.W)
+    val data = UInt(DATA_WIDTH.W)
+    val strb = UInt(8.W)
+  })
+  val cango = Output(Bool())
+}

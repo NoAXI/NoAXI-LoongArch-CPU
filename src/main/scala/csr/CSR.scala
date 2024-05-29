@@ -107,7 +107,8 @@ class CSR extends Module {
     }
   }
 
-  val conuter_run = WireDefault(true.B)
+  val conuter_run    = WireDefault(true.B)
+  val is_soft_int_ex = WireDefault(false.B)
 
   when(io.csr_write.we) {
     for (x <- csrlist) {
@@ -119,8 +120,11 @@ class CSR extends Module {
           ESTAT.info.is_11 := false.B
         }
         when(x.id === CSRCodes.TCFG) {
-          conuter_run := false.B
+          conuter_run       := false.B
           TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 3.U(2.W)
+        }
+        when(x.id === CSRCodes.ESTAT && wdata(1, 0) =/= 0.U) {
+          is_soft_int_ex := true.B
         }
       }
     }
@@ -164,7 +168,7 @@ class CSR extends Module {
     )
     ESTAT.info.esubcode := Mux(info.exc_type === ECodes.ADEM, 1.U, 0.U)
     // 软中断的ERApc是下一个pc
-    ERA.info.pc := Mux(ESTAT.info.is_1_0.orR, info.pc_add_4, info.pc)
+    ERA.info.pc := Mux(is_soft_int_ex, info.pc_add_4, info.pc)
     BADV.info.vaddr := MateDefault(
       info.exc_type,
       BADV.info.vaddr,

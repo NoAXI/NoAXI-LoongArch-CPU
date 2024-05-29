@@ -74,5 +74,5 @@ class DecoderTop extends Module {
   FlushWhen(to_info, io.flush)
   io.to.bits := to_info
 
-  io.flush_apply := to_info.exc_type =/= ECodes.NONE && io.to.valid && !info.bubble
+  io.flush_apply := to_info.exc_type =/= ECodes.NONE && io.to.valid && !info.bubble || io.predict_result.en
 }
