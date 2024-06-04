@@ -57,6 +57,7 @@ class WriteBackTop extends Module {
 
   io.debug_wb.pc       := info.pc
   io.debug_wb.rf_we    := Fill(4, info.iswf && io.to.valid)
+  // io.debug_wb.rf_we    := Fill(4, io.to.valid && !info.bubble) // for debug_commit
   io.debug_wb.rf_wnum  := info.wfreg
   io.debug_wb.rf_wdata := io.gr_write.wdata
 }

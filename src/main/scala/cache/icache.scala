@@ -12,7 +12,6 @@ import const.Parameters._
 class iCacheIO extends Bundle {
   val axi   = new iCache_AXI
   val fetch = Flipped(new fetch_iCache_IO)
-  val stall = Output(Bool())
 }
 
 class iCache extends Module {
@@ -22,7 +21,6 @@ class iCache extends Module {
   val datasram = VecInit.fill(WAY_WIDTH)(Module(new xilinx_single_port_ram_read_first((LINE_SIZE * 8), LINE_WIDTH)).io)
   val tagsram  = VecInit.fill(WAY_WIDTH)(Module(new xilinx_single_port_ram_read_first(TAG_WIDTH, LINE_WIDTH)).io)
   val validreg = RegInit(VecInit(Seq.fill(LINE_WIDTH)(VecInit(Seq.fill(WAY_WIDTH)(false.B)))))
-  val dirtyreg = RegInit(VecInit(Seq.fill(LINE_WIDTH)(VecInit(Seq.fill(WAY_WIDTH)(false.B)))))
 
   val qaddr   = RegInit(0.U(ADDR_WIDTH.W))
   val qtag    = RegInit(0.U(TAG_WIDTH.W))
@@ -37,21 +35,21 @@ class iCache extends Module {
   val hitdata = WireDefault(0.U(DATA_WIDTH.W))
 
   // lru
-  val lru = RegInit(VecInit(Seq.fill(3)(true.B)))
-  def updatelru(way: UInt): Unit = {
+  val lru = RegInit(VecInit(Seq.fill(LINE_WIDTH)(VecInit(Seq.fill(3)(true.B)))))
+  def updatelru(index: UInt, way: UInt): Unit = {
     switch(way) {
-      is(0.U) { lru(0) := true.B }
-      is(1.U) { lru(0) := false.B }
-      is(2.U) { lru(1) := true.B }
-      is(3.U) { lru(1) := false.B }
+      is(0.U) { lru(index)(0) := true.B }
+      is(1.U) { lru(index)(0) := false.B }
+      is(2.U) { lru(index)(1) := true.B }
+      is(3.U) { lru(index)(1) := false.B }
     }
-    lru(2) := Mux(way(1), true.B, false.B)
+    lru(index)(2) := Mux(way(1), false.B, true.B)
   }
-  def indexchosen(): UInt = {
+  def waychosen(index: UInt): UInt = {
     Mux(
-      lru(2),
-      Mux(lru(1), 3.U, 2.U),
-      Mux(lru(0), 1.U, 0.U),
+      lru(index)(2),
+      Mux(lru(index)(1), 3.U, 2.U),
+      Mux(lru(index)(0), 1.U, 0.U),
     )
   }
 
@@ -67,7 +65,7 @@ class iCache extends Module {
   val saved_query = RegInit(false.B)
   val saved_addr  = RegInit(0.U(32.W))
 
-  val addr    = Mux(saved_query && !io.fetch.request.valid, saved_addr, io.fetch.request.bits)
+  val addr     = Mux(io.fetch.request.valid, io.fetch.request.bits, saved_addr)
   val ram_addr = addr(11, 4)
   for (i <- 0 until WAY_WIDTH) {
     datasram(i).clka  := clock
@@ -81,14 +79,14 @@ class iCache extends Module {
   }
 
   val cached = true.B
-  ar.id := DontCare
+  ar.id := 0.U
   // ar.len   := 0.U
   ar.size  := 2.U
   ar.burst := 1.U
   ar.lock  := 0.U
   ar.cache := 0.U
   ar.prot  := 0.U
-  
+
   val _qindex = addr(11, 4)
   qaddr   := addr
   qtag    := addr(31, 12)
@@ -96,13 +94,18 @@ class iCache extends Module {
   qoffset := addr(3, 0)
   for (i <- 0 until WAY_WIDTH) {
     valid(i) := validreg(_qindex)(i)
-    dirty(i) := dirtyreg(_qindex)(i)
+  }
+
+  for (i <- 0 until WAY_WIDTH) {
+    when(valid(i) && tagsram(i).douta === qtag) {
+      hit(i) := true.B
+    }
   }
 
   for (i <- 0 until WAY_WIDTH) {
     val data = datasram(i).douta
-    when(valid(i) && tagsram(i).douta === qtag) {
-      hit(i) := true.B
+    when(hit(i)) {
+      updatelru(qindex, i.U)
       hitdata := MateDefault(
         qoffset(3, 2),
         0.U,
@@ -121,6 +124,11 @@ class iCache extends Module {
 
   val idle :: state0 :: state1 :: waiting :: replace :: Nil = Enum(5)
 
+  val success = RegInit(0.U(32.W))
+  val all     = RegInit(0.U(32.W))
+  dontTouch(success)
+  dontTouch(all)
+
   val state = RegInit(idle)
   switch(state) {
     is(idle) {
@@ -130,8 +138,11 @@ class iCache extends Module {
           req_ready   := false.B
           saved_query := true.B
           saved_addr  := addr
+          all         := all + 1.U
+          // the former inst is hitted?
           when(hitted) {
-            ans_valid   := true.B
+            success   := success + 1.U
+            ans_valid := true.B
             when(io.fetch.cango) {
               stall     := false.B
               req_ready := true.B
@@ -145,7 +156,7 @@ class iCache extends Module {
             arvalid := true.B
             ar.addr := qaddr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
             ar.size := 2.U
-            ar.len  := (BANK_WIDTH / 4).U
+            ar.len  := (BANK_WIDTH / 4 - 1).U
             rready  := false.B
             state   := replace
           }
@@ -200,30 +211,29 @@ class iCache extends Module {
           rready  := true.B
         }
       }.elsewhen(io.axi.r.fire) {
-        when(!io.axi.r.bits.last) {
-          val wmove = Mux1H(
-            Seq(
-              wmask(3) -> 96.U,
-              wmask(2) -> 64.U,
-              wmask(1) -> 32.U,
-              wmask(0) -> 0.U,
-            ),
-          )
-          wdata := wdata | (io.axi.r.bits.data << wmove)
-          wmask := wmask << 1.U
-        }.otherwise {
-          rready                          := false.B
-          datasram(indexchosen()).wea     := true.B
-          datasram(indexchosen()).dina    := wdata
-          tagsram(indexchosen()).wea      := true.B
-          tagsram(indexchosen()).dina     := qtag
-          validreg(qindex)(indexchosen()) := true.B
-          wdata                           := 0.U
-          wmask                           := 1.U
+        val wmove = Mux1H(
+          Seq(
+            wmask(3) -> 96.U,
+            wmask(2) -> 64.U,
+            wmask(1) -> 32.U,
+            wmask(0) -> 0.U,
+          ),
+        )
+        wdata := wdata | (io.axi.r.bits.data << wmove)
+        wmask := wmask << 1.U
+        when(io.axi.r.bits.last) {
+          rready := false.B
         }
       }.elsewhen(!io.axi.r.ready) {
-        ans_valid := true.B
-        state     := idle
+        datasram(waychosen(qindex)).wea     := true.B
+        datasram(waychosen(qindex)).dina    := wdata
+        tagsram(waychosen(qindex)).wea      := true.B
+        tagsram(waychosen(qindex)).dina     := qtag
+        validreg(qindex)(waychosen(qindex)) := true.B // 有问题
+        wdata                               := 0.U
+        wmask                               := 1.U
+        ans_valid                           := true.B
+        state                               := idle
       }
     }
     is(waiting) {
@@ -248,5 +258,14 @@ class iCache extends Module {
   io.fetch.answer.valid  := ans_valid && ans_hitted_valid
   io.fetch.answer.bits   := hitdata
   io.fetch.request.ready := req_ready
-  io.stall               := stall
 }
+/*
+  对于icache
+  一条指令在hit后一定能同时收到下一条指令的请求地址
+  miss其实可以看做fake_hit，但下一条指令的请求地址相同
+
+  如果一条指令在hit后不能立刻收到下一条指令的请求地址
+  那肯定也无法在下一条指令请求时立刻给出答案
+  它总得提前告诉cache请求
+  这样在它正式请求时可以即刻知道答案
+*/

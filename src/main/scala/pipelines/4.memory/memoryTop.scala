@@ -14,7 +14,7 @@ class MemoryTopIO extends StageBundle {
   val forward_tag   = Input(Bool())
   val forward_pc    = Input(UInt(ADDR_WIDTH.W))
   val load_complete = Output(Bool())
-  val dCache        = new mem_dCache_IO
+  val dCache        = new _mem_dCache_IO
 }
 
 class MemoryTop extends Module {
@@ -28,20 +28,26 @@ class MemoryTop extends Module {
   when(io.from.fire) { complete := false.B }
   val finish = io.dCache.answer.fire || complete
   val mmu    = Module(new Mmu).io
-  mmu.func_type                 := info.func_type
-  mmu.op_type                   := info.op_type
-  mmu.result                    := info.result
-  mmu.rd_value                  := info.rd
-  io.dCache.request_r.valid     := mmu.data_sram.en && busy
-  io.dCache.request_r.bits      := mmu.data_sram.addr
-  io.dCache.request_w.valid     := mmu.data_sram.we.orR && busy
-  io.dCache.request_w.bits.strb := mmu.data_sram.we
-  io.dCache.request_w.bits.addr := mmu.data_sram.addr
-  io.dCache.request_w.bits.data := mmu.data_sram.wdata
-  mmu.data_sram.rdata           := io.dCache.answer.bits
-  io.dCache.answer.ready        := true.B
-  busy                          := !finish && info.func_type === FuncType.mem && mmu.exc_type === ECodes.NONE
-
+  mmu.func_type := info.func_type
+  mmu.op_type   := info.op_type
+  mmu.result    := info.result
+  mmu.rd_value  := info.rd
+  // io.dCache.request_r.valid     := mmu.data_sram.en && busy
+  // io.dCache.request_r.bits      := mmu.data_sram.addr
+  // io.dCache.request_w.valid     := mmu.data_sram.we.orR && busy
+  // io.dCache.request_w.bits.strb := mmu.data_sram.we
+  // io.dCache.request_w.bits.addr := mmu.data_sram.addr
+  // io.dCache.request_w.bits.data := mmu.data_sram.wdata
+  io.dCache.request.valid     := (mmu.data_sram.en || mmu.data_sram.we.orR) && !finish
+  io.dCache.request.bits.re   := mmu.data_sram.en
+  io.dCache.request.bits.we   := mmu.data_sram.we
+  io.dCache.request.bits.addr := mmu.data_sram.addr
+  io.dCache.request.bits.data := mmu.data_sram.wdata
+  io.dCache.request.bits.strb := mmu.data_sram.we
+  mmu.data_sram.rdata         := io.dCache.answer.bits
+  io.dCache.answer.ready      := true.B
+  busy                        := !finish && info.func_type === FuncType.mem && mmu.exc_type === ECodes.NONE
+  when(io.dCache.answer_imm) { busy := false.B }
   val has_exc = info.exc_type =/= ECodes.NONE
 
   val to_info = WireDefault(0.U.asTypeOf(new info))

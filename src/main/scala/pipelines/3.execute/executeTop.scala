@@ -14,7 +14,7 @@ class ExecuteTopIO extends StageBundle {
   val predict_check = Output(new brCheck)
   val br            = Output(new br)
   val forward_data  = Output(new ForwardData)
-  // val forward_tag  = Input(Bool())
+  val dcache        = new exe_dCache_IO
 }
 
 class ExecuteTop extends Module {
@@ -58,6 +58,9 @@ class ExecuteTop extends Module {
       FuncType.mul -> mul.result,
     ),
   )
+
+  io.dcache.request.valid     := info.func_type === FuncType.mem
+  io.dcache.request.bits.addr := result
 
   val to_info = WireDefault(0.U.asTypeOf(new info))
   to_info := info

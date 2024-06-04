@@ -114,6 +114,7 @@ class Top extends Module {
   decoder.gr_write := writeback.gr_write
 
   // execute
+  execute.dcache <> dcache.exe
 
   // memory
   memory.dCache <> dcache.mem

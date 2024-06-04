@@ -54,8 +54,8 @@ class Mmu extends Module {
       io.op_type,
       0.U,
       List(
-        MemOpType.writeb -> ("b0001".U << io.result(1, 0)),
-        MemOpType.writeh -> ("b0011".U << io.result(1, 0)),
+        MemOpType.writeb -> ("b0001".U << piece),
+        MemOpType.writeh -> ("b0011".U << piece),
         MemOpType.writew -> "b1111".U,
       ),
     ),
