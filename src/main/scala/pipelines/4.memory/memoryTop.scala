@@ -23,9 +23,16 @@ class MemoryTop extends Module {
   val info = StageConnect(io.from, io.to, busy)
   FlushWhen(info, io.flush)
 
-  val complete = RegInit(false.B)
-  when(io.dCache.answer.fire) { complete := true.B }
-  when(io.from.fire) { complete := false.B }
+  val dcache_saved_ans = RegInit(0.U(DATA_WIDTH.W))
+  val complete         = RegInit(false.B)
+  when(io.dCache.answer.fire) {
+    dcache_saved_ans := io.dCache.answer.bits
+    complete         := true.B
+  }
+  when(io.from.fire) {
+    complete         := false.B
+    dcache_saved_ans := 0.U
+  }
   val finish = io.dCache.answer.fire || complete
   val mmu    = Module(new Mmu).io
   mmu.func_type := info.func_type
@@ -38,13 +45,17 @@ class MemoryTop extends Module {
   // io.dCache.request_w.bits.strb := mmu.data_sram.we
   // io.dCache.request_w.bits.addr := mmu.data_sram.addr
   // io.dCache.request_w.bits.data := mmu.data_sram.wdata
-  io.dCache.request.valid     := (mmu.data_sram.en || mmu.data_sram.we.orR) && !finish
+  io.dCache.request.valid := (mmu.data_sram.en || mmu.data_sram.we.orR)
+  when(ShiftRegister(info.pc, 1) === info.pc && ShiftRegister(finish, 1)) {
+    // when getans and this stage is stall
+    io.dCache.request.valid := false.B
+  }
   io.dCache.request.bits.re   := mmu.data_sram.en
-  io.dCache.request.bits.we   := mmu.data_sram.we
+  io.dCache.request.bits.we   := mmu.data_sram.we.orR
   io.dCache.request.bits.addr := mmu.data_sram.addr
   io.dCache.request.bits.data := mmu.data_sram.wdata
   io.dCache.request.bits.strb := mmu.data_sram.we
-  mmu.data_sram.rdata         := io.dCache.answer.bits
+  mmu.data_sram.rdata         := Mux(io.dCache.answer.fire, io.dCache.answer.bits, dcache_saved_ans)
   io.dCache.answer.ready      := true.B
   busy                        := !finish && info.func_type === FuncType.mem && mmu.exc_type === ECodes.NONE
   when(io.dCache.answer_imm) { busy := false.B }

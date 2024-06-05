@@ -58,7 +58,6 @@ class ExecuteTop extends Module {
       FuncType.mul -> mul.result,
     ),
   )
-
   io.dcache.request.valid     := info.func_type === FuncType.mem
   io.dcache.request.bits.addr := result
 

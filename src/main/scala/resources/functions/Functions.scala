@@ -35,10 +35,26 @@ object Functions {
   }
 
   def FlushWhen(x: info, y: Bool): Unit = {
-    when (y) {
-      x := 0.U.asTypeOf(new info)
+    when(y) {
+      x        := 0.U.asTypeOf(new info)
       x.bubble := true.B
     }
+  }
+
+  /*
+      _________          _________
+  ___|         |________|         |______
+
+           _________          _________
+  ________|         |________|         |______
+
+       __                 __
+  ____|  |_______________|  |____________
+
+  can not be used in continuous sign
+   */
+  def FirstTick(x: Bool): Bool = {
+    x && !ShiftRegister(x, 1)
   }
 
   // StallPrevious: just set busy to true.B
@@ -68,4 +84,10 @@ object Functions {
     (wdata & mask) | (data & ~mask)
   }
 
+  // for cache----------------------------------------------------------------------------------
+  def Merge(wstrb: UInt, linedata: UInt, wdata: UInt, offset: UInt): UInt = {
+    val _wstrb = Cat((3 to 0 by -1).map(i => Fill(8, wstrb(i))))
+    val _move  = VecInit(0.U, 32.U, 64.U, 96.U)
+    writeMask(_wstrb << _move(offset), linedata, wdata << _move(offset))
+  }
 }

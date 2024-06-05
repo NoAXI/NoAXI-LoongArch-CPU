@@ -52,11 +52,11 @@ class iCache_AXI extends Bundle {
 }
 
 class dCache_AXI extends Bundle {
-  val ar = Decoupled(new AR())
-  val r  = Flipped(Decoupled(new R()))
-  val aw = Decoupled(new AW())
-  val w  = Decoupled(new W())
-  val b  = Flipped(Decoupled(new B()))
+  val ar       = Decoupled(new AR())
+  val r        = Flipped(Decoupled(new R()))
+  val aw       = Decoupled(new AW())
+  val w        = Decoupled(new W())
+  val b        = Flipped(Decoupled(new B()))
 }
 
 class AXI_IO extends Bundle {

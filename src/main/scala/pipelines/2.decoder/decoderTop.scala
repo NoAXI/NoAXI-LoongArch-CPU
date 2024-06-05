@@ -8,6 +8,7 @@ import bundles._
 import const.ECodes
 import const.Parameters._
 import Funcs.Functions._
+import configs.CpuConfig
 
 class DecoderTopIO extends StageBundle {
   val predict_check  = Input(new brCheck)
@@ -75,4 +76,10 @@ class DecoderTop extends Module {
   io.to.bits := to_info
 
   io.flush_apply := to_info.exc_type =/= ECodes.NONE && io.to.valid && !info.bubble || io.predict_result.en
+
+  if (CpuConfig.debug_on) {
+    dontTouch(rj)
+    dontTouch(rk)
+    dontTouch(rd)
+  }
 }

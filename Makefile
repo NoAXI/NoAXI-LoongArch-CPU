@@ -8,6 +8,7 @@ EXP = 15
 sim:
 	@mill -i _.runMain Elaborate --target-dir $(generate_path)
 	@sed -i '/xilinx_single_port_ram_read_first.sv/d' $(generate_path)/Top.sv
+	@sed -i '/xilinx_simple_dual_port_1_clock_ram_write_first.sv/d' $(generate_path)/Top.sv
 	@echo -e "\e[32mGenerate Verilog completed. \e[0m"
 	@cd $(generate_path) && cp Top.sv $(myCPU_path) 
 	@cd $(simulator_path) && make clean
