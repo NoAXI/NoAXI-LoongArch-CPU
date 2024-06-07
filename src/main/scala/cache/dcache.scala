@@ -106,7 +106,7 @@ class dCache extends Module {
         when(cached) {
           when(hitted) {
             // io.mem.answer_imm := true.B
-            lru(addr(11, 4)) := !lru(addr(11, 4))
+            lru(io.mem.request.bits.addr(11, 4)) := !lru(io.mem.request.bits.addr(11, 4))
             when(io.mem.request.bits.we) {
               /*
             if only has one port
@@ -286,6 +286,7 @@ class dCache extends Module {
         is_uncached := false.B
         // when operation == read, write directly and send answer to cpu(不复用idle)
         when(!saved_info.op) {
+          // to do :WRONG!
           cached_ans := wdata
         }
         state := idle

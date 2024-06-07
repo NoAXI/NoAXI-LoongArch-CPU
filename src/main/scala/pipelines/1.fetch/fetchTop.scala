@@ -50,7 +50,7 @@ class FetchTop extends Module {
   // io.iCache.request.bits.data := 0.U
   // io.iCache.request.bits.strb := 0.U
   io.iCache.request.bits  := pc_reg.next_pc
-  io.iCache.request.valid := io.from.fire
+  io.iCache.request.valid := ShiftRegister(io.from.fire, 1)
   io.iCache.answer.ready  := true.B
   io.iCache.cango         := io.to.ready
 
