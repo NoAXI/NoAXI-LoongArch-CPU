@@ -4,3 +4,9 @@
 out
 pic
 systemVerilog
+
+# sbt
+.bsp/
+target/
+project/
+Top.sv
