@@ -144,6 +144,9 @@ class iCache extends Module {
       }
     }
     is(waiting) {
+      // to do:
+      // when waiting for a long time, we can request the axi with the next pc
+      // don't waste the time!
       ans_valid   := false.B
       i_ans_valid := true.B
       i_ans_bits  := saved_ans_bits
