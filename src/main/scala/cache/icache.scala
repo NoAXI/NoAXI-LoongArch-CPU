@@ -144,7 +144,7 @@ class iCache extends Module {
       }
     }
     is(waiting) {
-      // to do: when waiting and fetch send request
+      ans_valid   := false.B
       i_ans_valid := true.B
       i_ans_bits  := saved_ans_bits
       state       := Mux(io.fetch.cango, idle, waiting)

@@ -259,6 +259,8 @@ class dCache extends Module {
         }
       }
 
+      val final_linedata = linedata | (io.axi.r.bits.data << wmove)
+      dontTouch(final_linedata)
       // write sram
       // when operation is write, then merge it
       val lru_way = lru(saved_info.index)
@@ -266,11 +268,11 @@ class dCache extends Module {
         saved_info.op,
         Merge(
           saved_info.wstrb,
-          linedata,
+          final_linedata,
           saved_info.wdata,
           saved_info.offset,
         ),
-        linedata,
+        final_linedata,
       )
       when(getline_complete) {
         // write to sram
@@ -286,8 +288,16 @@ class dCache extends Module {
         is_uncached := false.B
         // when operation == read, write directly and send answer to cpu(不复用idle)
         when(!saved_info.op) {
-          // to do :WRONG!
-          cached_ans := wdata
+          cached_ans := MateDefault(
+            saved_info.offset,
+            0.U,
+            Seq(
+              0.U -> final_linedata(31, 0),
+              1.U -> final_linedata(63, 32),
+              2.U -> final_linedata(95, 64),
+              3.U -> final_linedata(127, 96),
+            ),
+          )
         }
         state := idle
       }
