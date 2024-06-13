@@ -22,7 +22,9 @@ class DecoderTopIO extends StageBundle {
 class DecoderTop extends Module {
   val io   = IO(new DecoderTopIO)
   val busy = WireDefault(false.B)
-  val info = StageConnect(io.from, io.to, busy)
+  // val info = StageConnect(io.from, io.to, busy)
+  val from = StageConnect(io.from, io.to, busy)
+  val info = from.info
   FlushWhen(info, io.flush)
 
   val predict = Module(new Predict).io
@@ -37,10 +39,10 @@ class DecoderTop extends Module {
   val addr = Seq(rj, rk, rd)
 
   val gr_reg = Module(new GRReg).io
-  gr_reg.raddr              := addr
-  gr_reg.rf_bus             := io.gr_write
-  io.forward_query.addr     := addr
-  io.forward_query.pc       := info.pc
+  gr_reg.raddr          := addr
+  gr_reg.rf_bus         := io.gr_write
+  io.forward_query.addr := addr
+  // io.forward_query.pc       := info.pc
   io.forward_query.ini_data := gr_reg.rdata
   busy                      := io.forward_ans.notld
 

@@ -22,6 +22,7 @@ class dCache extends Module {
   io.mem.answer_imm := false.B
 
   val idle :: replace_checkdirty :: replace :: uncached_r :: uncached_w :: Nil = Enum(5)
+
   val datasram =
     VecInit.fill(2)(Module(new xilinx_simple_dual_port_1_clock_ram_write_first((LINE_SIZE * 8), LINE_WIDTH)).io)
   val tagsram  = VecInit.fill(2)(Module(new xilinx_simple_dual_port_1_clock_ram_write_first(TAG_WIDTH, LINE_WIDTH)).io)
@@ -30,34 +31,39 @@ class dCache extends Module {
   val write_buffer      = Module(new Queue(new Line(), 4)).io
   val write_buffer_addr = WireDefault(VecInit(Seq.fill(4)(0.U(ADDR_WIDTH.W))))
   val lru               = RegInit(VecInit(Seq.fill(LINE_WIDTH)(false.B)))
-  val ar                = RegInit(0.U.asTypeOf(new AR))
-  val arvalid           = RegInit(false.B)
-  val rready            = RegInit(false.B)
-  val aw                = RegInit(0.U.asTypeOf(new AW))
-  val awvalid           = RegInit(false.B)
-  val w                 = RegInit(0.U.asTypeOf(new W))
-  val wvalid            = RegInit(false.B)
-  val bready            = true.B
-  val axi_idle          = WireDefault(false.B)
-  val ans_valid         = RegInit(false.B)
-  val cached_ans        = RegInit(0.U(DATA_WIDTH.W))
-  val uncached_ans      = RegInit(0.U(DATA_WIDTH.W))
-  val i_ans_valid       = WireDefault(false.B)
-  val i_cached_ans      = WireDefault(0.U(DATA_WIDTH.W))
-  val saved_info        = RegInit(0.U.asTypeOf(new savedInfo))
-  val state             = RegInit(idle)
-  val cached            = WireDefault(true.B)
-  val cacheBusy         = WireDefault(false.B)
-  val hit               = Wire(Vec(2, Bool()))
-  val hitted            = WireDefault(false.B)
-  val hittedway         = WireDefault(false.B)
-  val hitdataline       = WireDefault(0.U((LINE_SIZE * 8).W))
-  val hitdata           = WireDefault(0.U(DATA_WIDTH.W))
-  val is_uncached       = RegInit(false.B)
-  val linedata          = RegInit(0.U((LINE_SIZE * 8).W))
-  val wmask             = RegInit(1.U(4.W))
-  val wmove             = Mux1H((3 to 0 by -1).map(i => wmask(i) -> (i * 32).U))
-  val addr              = RegEnable(io.exe.request.bits.addr, 0.U, io.exe.request.valid)
+
+  val ar      = RegInit(0.U.asTypeOf(new AR))
+  val arvalid = RegInit(false.B)
+  val rready  = RegInit(false.B)
+  val aw      = RegInit(0.U.asTypeOf(new AW))
+  val awvalid = RegInit(false.B)
+  val w       = RegInit(0.U.asTypeOf(new W))
+  val wvalid  = RegInit(false.B)
+  val bready  = true.B
+
+  val axi_idle     = WireDefault(false.B)
+  val ans_valid    = RegInit(false.B)
+  val cached_ans   = RegInit(0.U(DATA_WIDTH.W))
+  val uncached_ans = RegInit(0.U(DATA_WIDTH.W))
+
+  val i_ans_valid  = WireDefault(false.B)
+  val i_cached_ans = WireDefault(0.U(DATA_WIDTH.W))
+
+  val saved_info  = RegInit(0.U.asTypeOf(new savedInfo))
+  val state       = RegInit(idle)
+  val cached      = WireDefault(true.B)
+  val cacheBusy   = WireDefault(false.B)
+  val hit         = Wire(Vec(2, Bool()))
+  val hitted      = WireDefault(false.B)
+  val hittedway   = WireDefault(false.B)
+  val hitdataline = WireDefault(0.U((LINE_SIZE * 8).W))
+  val hitdata     = WireDefault(0.U(DATA_WIDTH.W))
+
+  val is_uncached = RegInit(false.B)
+  val linedata    = RegInit(0.U((LINE_SIZE * 8).W))
+  val wmask       = RegInit(1.U(4.W))
+  val wmove       = Mux1H((3 to 0 by -1).map(i => wmask(i) -> (i * 32).U))
+  val addr        = RegEnable(io.exe.request.bits.addr, 0.U, io.exe.request.valid)
 
   write_buffer.enq.valid := false.B
   write_buffer.deq.ready := false.B
@@ -109,17 +115,19 @@ class dCache extends Module {
             lru(io.mem.request.bits.addr(11, 4)) := !lru(io.mem.request.bits.addr(11, 4))
             when(io.mem.request.bits.we) {
               /*
-            if only has one port
-            if hit and write sram,
-            should wait 2 cycles,
-            the first used to write,
-            the second used to receive addr */
+                if only has one port
+                if hit and write sram,
+                should wait 2 cycles,
+                the first used to write,
+                the second used to receive addr
+               */
 
               /*
-            if has two ports,
-            one to read,
-            one to write
-            then we can write directly */
+                if has two ports,
+                one to read,
+                one to write
+                then we can write directly
+               */
               // if next_addr == this_write_addr don't worry
               // write to sram
 

@@ -18,7 +18,6 @@ class ForwardData extends Bundle {
 }
 
 class ForwardQuery extends Bundle {
-  val pc       = UInt(ADDR_WIDTH.W)
   val addr     = Vec(3, UInt(REG_WIDTH.W))
   val ini_data = Vec(3, UInt(DATA_WIDTH.W))
 

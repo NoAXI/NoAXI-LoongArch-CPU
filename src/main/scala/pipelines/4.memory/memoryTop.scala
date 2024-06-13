@@ -10,9 +10,9 @@ import const.Parameters._
 import Funcs.Functions._
 
 class MemoryTopIO extends StageBundle {
-  val forward_data  = Output(new ForwardData)
-  val forward_tag   = Input(Bool())
-  val forward_pc    = Input(UInt(ADDR_WIDTH.W))
+  val forward_data = Output(new ForwardData)
+  // val forward_tag  = Input(Bool())
+  // val forward_pc    = Input(UInt(ADDR_WIDTH.W))
   val load_complete = Output(Bool())
   val dCache        = new _mem_dCache_IO
 }
@@ -20,7 +20,8 @@ class MemoryTopIO extends StageBundle {
 class MemoryTop extends Module {
   val io   = IO(new MemoryTopIO)
   val busy = WireDefault(false.B)
-  val info = StageConnect(io.from, io.to, busy)
+  val from = StageConnect(io.from, io.to, busy)
+  val info = from.info
   FlushWhen(info, io.flush)
 
   val dcache_saved_ans = RegInit(0.U(DATA_WIDTH.W))
@@ -62,8 +63,8 @@ class MemoryTop extends Module {
   val has_exc = info.exc_type =/= ECodes.NONE
 
   val to_info = WireDefault(0.U.asTypeOf(new info))
-  to_info           := info
-  to_info.isload    := false.B
+  to_info := info
+  // to_info.isload    := false.B
   to_info.result    := mmu.data
   to_info.exc_type  := Mux(has_exc, info.exc_type, mmu.exc_type)
   to_info.exc_vaddr := Mux(has_exc, info.exc_vaddr, mmu.exc_vaddr)
@@ -73,8 +74,8 @@ class MemoryTop extends Module {
 
   io.flush_apply := to_info.exc_type =/= ECodes.NONE && io.to.valid && !info.bubble
 
-  Forward(to_info, io.forward_data)
-  io.load_complete := finish && io.forward_tag && info.pc === io.forward_pc
+  Forward(to_info, io.forward_data, from.valid_signal)
+  io.load_complete := finish // && io.forward_tag && info.pc === io.forward_pc
 }
 /*
 因为写后读冲突需要处理ld指令写完寄存器后才能读

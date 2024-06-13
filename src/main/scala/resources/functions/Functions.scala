@@ -7,7 +7,7 @@ import bundles._
 
 object Functions {
   // for pipelines---------------------------------------------------------------------------
-  def StageConnect(x: DecoupledIO[info], y: DecoupledIO[info], busy: Bool): info = {
+  def StageConnect(x: DecoupledIO[info], y: DecoupledIO[info], busy: Bool): full_info = {
     val info  = RegInit(0.U.asTypeOf(new info))
     val valid = RegInit(false.B)
     x.ready := !valid || (y.ready && !busy)
@@ -18,16 +18,21 @@ object Functions {
     when(x.fire) {
       info := x.bits
     }
-    info
+
+    // return (info, valid_signal) as a bundle
+    val res = Wire(new full_info)
+    res.info         := info
+    res.valid_signal := valid
+    res
   }
 
-  def Forward(x: info, y: ForwardData): Unit = {
-    y.we   := x.iswf
+  def Forward(x: info, y: ForwardData, valid_signal: Bool): Unit = {
+    y.we   := x.iswf && valid_signal
     y.isld := x.isload
     y.addr := x.wfreg
     y.data := x.result
 
-    y.csr_we   := x.csr_iswf
+    y.csr_we   := x.csr_iswf && valid_signal
     y.csr_addr := x.csr_addr
     y.csr_data := x.rd
 

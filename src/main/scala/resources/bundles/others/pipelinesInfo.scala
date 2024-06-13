@@ -39,6 +39,11 @@ class info extends Bundle {
   val predict = new br
 }
 
+class full_info extends Bundle {
+  val info         = new info
+  val valid_signal = Bool()
+}
+
 class StageBundle extends Bundle {
   val from        = Flipped(DecoupledIO(new info))
   val to          = DecoupledIO(new info)

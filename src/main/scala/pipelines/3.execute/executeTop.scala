@@ -20,7 +20,8 @@ class ExecuteTopIO extends StageBundle {
 class ExecuteTop extends Module {
   val io   = IO(new ExecuteTopIO)
   val busy = WireDefault(false.B)
-  val info = StageConnect(io.from, io.to, busy)
+  val from = StageConnect(io.from, io.to, busy)
+  val info = from.info
   FlushWhen(info, io.flush)
 
   val alu = Module(new Alu).io
@@ -82,10 +83,10 @@ class ExecuteTop extends Module {
   io.br.tar      := Mux(io.br_exc.en, io.br_exc.tar, br_tar_failed)
   io.flush_apply := (is_br && !succeed) && !info.bubble
 
-  Forward(to_info, io.forward_data)
-  when(info.isload) {
-    io.forward_data.we := false.B // for data_forward that ld inst's alu's result not used
-  }
+  Forward(to_info, io.forward_data, from.valid_signal)
+  // when(info.isload) {
+  //   io.forward_data.we := false.B // for data_forward that ld inst's alu's result not used
+  // }
 }
 /*
 使用axi时，数据前递可能会出现以下问题：它获取了后面流水级的前递数据，但是之所以触发了前递，是因为后面流水级的指令就是dec这条指令

@@ -19,7 +19,8 @@ class FetchTopIO extends StageBundle {
 class FetchTop extends Module {
   val io   = IO(new FetchTopIO)
   val busy = WireDefault(false.B)
-  val info = StageConnect(io.from, io.to, busy)
+  val from = StageConnect(io.from, io.to, busy)
+  val info = from.info
 
   val br_en      = RegInit(false.B)
   val saved_addr = RegInit(0.U(ADDR_WIDTH.W))

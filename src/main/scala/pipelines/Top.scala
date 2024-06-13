@@ -92,8 +92,8 @@ class Top extends Module {
   forwarder.load_complete := memory.load_complete
   forwarder.forward_query := decoder.forward_query
   decoder.forward_ans     := forwarder.forward_ans
-  memory.forward_tag      := forwarder.tag
-  memory.forward_pc       := forwarder.tag_pc
+  // memory.forward_tag      := forwarder.tag
+  // memory.forward_pc       := forwarder.tag_pc
 
   // csr
   csr.exc_happen         := writeback.exc_happen
