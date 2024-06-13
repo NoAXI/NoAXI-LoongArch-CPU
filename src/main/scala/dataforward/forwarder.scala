@@ -34,7 +34,7 @@ class Forwarder extends Module with ForwarderConst {
     io.forward_ans.data(i) := io.forward_query.ini_data(i)
     for (j <- 0 until FORWARD_NUM) {
       // assume that the program won't use reg_0
-      when(addr === io.dataIn(j).addr && io.dataIn(j).we) {
+      when(addr === io.dataIn(j).addr && io.dataIn(j).we && addr =/= 0.U) {
         io.forward_ans.data(i) := io.dataIn(j).data
         when(io.dataIn(j).isld) {
           if (j == FORWARD_EXE_NUM) {
@@ -52,7 +52,6 @@ class Forwarder extends Module with ForwarderConst {
   io.forward_ans.csr_data := WireDefault(io.forward_query.csr_ini_data)
   for (j <- 0 until FORWARD_NUM) {
     when(csr_addr === io.dataIn(j).csr_addr && io.dataIn(j).csr_we) {
-      // && csr_addr =/= 0.U) {
       io.forward_ans.csr_data := io.dataIn(j).csr_data
     }
   }

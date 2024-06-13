@@ -24,7 +24,7 @@ class DecoderTop extends Module {
   val busy = WireDefault(false.B)
   // val info = StageConnect(io.from, io.to, busy)
   val from = StageConnect(io.from, io.to, busy)
-  val info = from.info
+  val info = from._1
   FlushWhen(info, io.flush)
 
   val predict = Module(new Predict).io

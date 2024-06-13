@@ -21,7 +21,7 @@ class ExecuteTop extends Module {
   val io   = IO(new ExecuteTopIO)
   val busy = WireDefault(false.B)
   val from = StageConnect(io.from, io.to, busy)
-  val info = from.info
+  val info = from._1
   FlushWhen(info, io.flush)
 
   val alu = Module(new Alu).io
@@ -83,7 +83,7 @@ class ExecuteTop extends Module {
   io.br.tar      := Mux(io.br_exc.en, io.br_exc.tar, br_tar_failed)
   io.flush_apply := (is_br && !succeed) && !info.bubble
 
-  Forward(to_info, io.forward_data, from.valid_signal)
+  Forward(to_info, io.forward_data, from._2)
   // when(info.isload) {
   //   io.forward_data.we := false.B // for data_forward that ld inst's alu's result not used
   // }

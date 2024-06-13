@@ -6,6 +6,7 @@ import chisel3.util._
 import bundles._
 import const.Parameters._
 import Funcs.Functions._
+import configs.CpuConfig
 
 class AXILayerIO extends Bundle {
   val icache = Flipped(new iCache_AXI)
@@ -21,7 +22,9 @@ class AXILayer extends Module {
   val ar_sel_val  = RegInit(false.B)
   val ar_sel      = Mux(ar_sel_lock, ar_sel_val, io.dcache.ar.valid)
 
-  dontTouch(io.to)
+  if (CpuConfig.debug_on) {
+    dontTouch(io.to)
+  }
 
   when(io.to.ar.valid) {
     when(io.to.ar.ready) {

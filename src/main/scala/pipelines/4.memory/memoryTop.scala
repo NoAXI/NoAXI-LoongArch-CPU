@@ -21,7 +21,7 @@ class MemoryTop extends Module {
   val io   = IO(new MemoryTopIO)
   val busy = WireDefault(false.B)
   val from = StageConnect(io.from, io.to, busy)
-  val info = from.info
+  val info = from._1
   FlushWhen(info, io.flush)
 
   val dcache_saved_ans = RegInit(0.U(DATA_WIDTH.W))
@@ -74,7 +74,7 @@ class MemoryTop extends Module {
 
   io.flush_apply := to_info.exc_type =/= ECodes.NONE && io.to.valid && !info.bubble
 
-  Forward(to_info, io.forward_data, from.valid_signal)
+  Forward(to_info, io.forward_data, from._2)
   io.load_complete := finish // && io.forward_tag && info.pc === io.forward_pc
 }
 /*

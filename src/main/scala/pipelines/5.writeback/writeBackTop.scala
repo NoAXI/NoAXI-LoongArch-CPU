@@ -25,7 +25,7 @@ class WriteBackTop extends Module {
   val io   = IO(new WriteBackTopIO)
   val busy = WireDefault(false.B)
   val from = StageConnect(io.from, io.to, busy)
-  val info = from.info
+  val info = from._1
   FlushWhen(info, io.flush)
 
   val exc_en = info.exc_type =/= ECodes.NONE && io.to.valid && !info.bubble
@@ -54,7 +54,7 @@ class WriteBackTop extends Module {
 
   io.flush_apply := io.flush_by_csr
 
-  Forward(to_info, io.forward_data, from.valid_signal)
+  Forward(to_info, io.forward_data, from._2)
 
   io.debug_wb.pc    := info.pc
   io.debug_wb.rf_we := Fill(4, info.iswf && io.to.valid)
