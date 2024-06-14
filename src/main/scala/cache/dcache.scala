@@ -14,7 +14,7 @@ import dataclass.data
 class dCacheIO extends Bundle {
   val axi = new dCache_AXI
   val exe = Flipped(new exe_dCache_IO)
-  val mem = Flipped(new _mem_dCache_IO)
+  val mem = Flipped(new mem_dCache_IO)
 }
 
 class dCache extends Module {
@@ -112,7 +112,7 @@ class dCache extends Module {
         when(cached) {
           when(hitted) {
             // io.mem.answer_imm := true.B
-            lru(io.mem.request.bits.addr(11, 4)) := !lru(io.mem.request.bits.addr(11, 4))
+            lru(io.mem.request.bits.addr(11, 4)) := !hittedway
             when(io.mem.request.bits.we) {
               /*
                 if only has one port

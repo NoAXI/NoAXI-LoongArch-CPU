@@ -19,6 +19,9 @@ class CSR_IO extends Bundle {
 
   // to fs
   val br_exc = Output(new br)
+
+  // to tlb
+  val tlb = new csr_TLB_IO
 }
 
 class CSR extends Module {
@@ -42,7 +45,7 @@ class CSR extends Module {
   // val TLBEHI    =
   // val TLBELO0   =
   // val TLBELO1   =
-  // val ASID      =
+  val ASID = new ASID
   // val PGDL      =
   // val PGDH      =
   // val PGD       =
@@ -58,8 +61,8 @@ class CSR extends Module {
   // val LLBCTL    =
   // val TLBRENTRY =
   // val CTAG      =
-  // val DMW0      =
-  // val DMW1      =
+  val DMW0 = new DMW0
+  val DMW1 = new DMW1
 
   val csrlist = Seq(
     CRMD,
@@ -74,7 +77,7 @@ class CSR extends Module {
     // TLBEHI,
     // TLBELO0,
     // TLBELO1,
-    // ASID,
+    ASID,
     // PGDL,
     // PGDH,
     // PGD,
@@ -90,8 +93,8 @@ class CSR extends Module {
     // LLBCTL,
     // TLBRENTRY,
     // CTAG,
-    // DMW0,
-    // DMW1,
+    DMW0,
+    DMW1,
   )
 
   // 读 or 写
@@ -167,7 +170,7 @@ class CSR extends Module {
       ),
     )
     ESTAT.info.esubcode := Mux(info.exc_type === ECodes.ADEM, 1.U, 0.U)
-    // 软中断的ERApc是下一个pc
+    // 软中断的ERApc是下一个pc, TODO:中断标记在某个指令上
     ERA.info.pc := Mux(is_soft_int_ex, info.pc_add_4, info.pc)
     BADV.info.vaddr := MateDefault(
       info.exc_type,
@@ -191,4 +194,10 @@ class CSR extends Module {
     io.br_exc.en  := true.B
     io.br_exc.tar := ERA.info.pc
   }
+
+  io.tlb.is_direct := CRMD.info.da && !CRMD.info.pg
+  io.tlb.asid      := ASID.info
+  io.tlb.crmd      := CRMD.info
+  io.tlb.dmw(0)    := DMW0.info
+  io.tlb.dmw(1)    := DMW1.info
 }

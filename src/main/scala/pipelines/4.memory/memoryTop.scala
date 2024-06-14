@@ -14,7 +14,7 @@ class MemoryTopIO extends StageBundle {
   // val forward_tag  = Input(Bool())
   // val forward_pc    = Input(UInt(ADDR_WIDTH.W))
   val load_complete = Output(Bool())
-  val dCache        = new _mem_dCache_IO
+  val dCache        = new mem_dCache_IO
 }
 
 class MemoryTop extends Module {

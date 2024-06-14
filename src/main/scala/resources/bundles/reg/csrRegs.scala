@@ -147,6 +147,21 @@ class EENTRY extends base {
 
 //-------------------------------------------------------------------------
 
+class ASID_info extends Bundle {
+  val zero2    = UInt(8.W)
+  val asidbits = UInt(8.W)
+  val zero1    = UInt(6.W)
+  val asid     = UInt(10.W)
+}
+
+class ASID extends base {
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new ASID_info)) }).suggestName("ASID")
+  override val id   = CSRCodes.ASID
+  override val rw   = "b0000_0000_0000_0000_0000_0011_1111_1111".U
+}
+
+//-------------------------------------------------------------------------
+
 class SAVE0_info extends Bundle {
   val data = UInt(DATA_WIDTH.W)
 }
@@ -243,3 +258,32 @@ class TICLR extends base {
   override val id   = CSRCodes.TICLR
   override val rw   = "b0000_0000_0000_0000_0000_0000_0000_0001".U
 }
+
+//-------------------------------------------------------------------------
+
+class DMW_info extends Bundle {
+  val vseg  = UInt(3.W)
+  val zero3 = Bool()
+  val pseg  = UInt(3.W)
+  val zero2 = UInt(19.W)
+  val mat   = UInt(2.W)
+  val plv3  = Bool()
+  val zero1 = UInt(2.W)
+  val plv0  = Bool()
+}
+
+class DMW0 extends base {
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new DMW_info)) }).suggestName("DMW0")
+  override val id   = CSRCodes.DMW0
+  override val rw   = "b1110_1110_0000_0000_0000_0000_0011_1001".U
+}
+
+//-------------------------------------------------------------------------
+
+class DMW1 extends base {
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new DMW_info)) }).suggestName("DMW1")
+  override val id   = CSRCodes.DMW1
+  override val rw   = "b1110_1110_0000_0000_0000_0000_0011_1001".U
+}
+
+//-------------------------------------------------------------------------
