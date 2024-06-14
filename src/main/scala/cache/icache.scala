@@ -78,7 +78,8 @@ class iCache extends Module {
       ans_valid := false.B
       when(io.fetch.request.fire) {
         when(hitted) {
-          lru(io.fetch.request.bits(11, 4)) := !lru(io.fetch.request.bits(11, 4))
+          val lru_index = io.fetch.request.bits(11, 4)
+          lru(lru_index) := !hitdataline
 
           state          := Mux(io.fetch.cango, idle, waiting)
           i_ans_valid    := true.B
