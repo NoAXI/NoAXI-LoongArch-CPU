@@ -8,6 +8,7 @@ import csr._
 import bundles._
 import controller._
 import const.Parameters._
+import mmu.TLB
 
 class sramTopIO extends Bundle {
   // inst sram interface
@@ -54,6 +55,7 @@ class Top extends Module {
   val icache    = Module(new iCache).io
   val dcache    = Module(new dCache).io
   val axilayer  = Module(new AXILayer).io
+  val tlb       = Module(new TLB).io
 
   // axi
   io.axi          <> axilayer.to
@@ -92,8 +94,6 @@ class Top extends Module {
   forwarder.load_complete := memory.load_complete
   forwarder.forward_query := decoder.forward_query
   decoder.forward_ans     := forwarder.forward_ans
-  // memory.forward_tag      := forwarder.tag
-  // memory.forward_pc       := forwarder.tag_pc
 
   // csr
   csr.exc_happen         := writeback.exc_happen
@@ -101,6 +101,10 @@ class Top extends Module {
   csr.csr_write          := writeback.csr_write
   csr.csr_reg_read       <> decoder.csr_reg_read
   writeback.flush_by_csr := csr.flush_by_csr
+
+  // tlb
+  tlb.csr <> csr.tlb
+  tlb.mem <> memory.tlb
 
   // predict
   fetch.predict_result  <> decoder.predict_result

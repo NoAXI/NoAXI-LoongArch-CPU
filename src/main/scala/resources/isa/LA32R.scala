@@ -135,7 +135,7 @@ object LA32R{
         BREAK     -> List(FuncType.exc,   ExcOpType.brk    ),
         SYSCALL   -> List(FuncType.exc,   ExcOpType.sys    ),
         ERTN      -> List(FuncType.exc,   ExcOpType.ertn   ),
- 
+
         // act with csr and rd 
         CSRRD     -> List(FuncType.csr,   CsrOpType.rd     ),
         CSRWR     -> List(FuncType.csr,   CsrOpType.wr     ),//rj as mask

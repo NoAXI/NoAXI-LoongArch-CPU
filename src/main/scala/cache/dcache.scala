@@ -101,7 +101,7 @@ class dCache extends Module {
 
   // mem send query constantly, but we only response at once
 
-  cached    := addr(31, 16) =/= 0xbfaf.U
+  cached    := io.mem.request.bits.cached
   cacheBusy := state =/= idle
   switch(state) {
     is(idle) {

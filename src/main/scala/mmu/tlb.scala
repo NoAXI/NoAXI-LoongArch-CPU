@@ -14,10 +14,7 @@ class TLBIO extends Bundle {
   val csr = Flipped(new csr_TLB_IO)
 
   // act with mem
-  val mem      = Flipped(new mem_TLB_IO)
-  val exc_type = Output(ECodes())
-  val pa       = Output(UInt(ADDR_WIDTH.W))
-  val mat      = Output(UInt(2.W))
+  val mem = Flipped(new mem_TLB_IO)
 }
 
 class TLB extends Module {
@@ -26,13 +23,14 @@ class TLB extends Module {
   // Page Table Mapping Mode
   // from the 指令集手册
   val tlb       = RegInit(VecInit(Seq.fill(TLB_ENTRIES)(0.U.asTypeOf(new TLBEntry))))
-  val tlb_found = WireDefault(false.B) // hit
+  val tlb_found = WireDefault(false.B) // tlb_hit
   val found_ps  = WireDefault(0.U(6.W))
   val found     = WireDefault(0.U.asTypeOf(new TLBTransform))
 
   for (i <- 0 until TLB_ENTRIES) {
-    val tlb_vppn = Mux(tlb(i).ps(3), tlb(i).vppn, tlb(i).vppn(18, 10) ## 0.U(10.W))
-    val va_vppn  = Mux(tlb(i).ps(3), io.mem.va(31, 13), io.mem.va(31, 23) ## 0.U(10.W))
+    val tlb_vppn = Mux(tlb(i).ps(3), tlb(i).vppn, tlb(i).vppn(18, 9))
+    val va_vppn  = Mux(tlb(i).ps(3), io.mem.va(31, 13), io.mem.va(31, 22))
+    val page     = Mux(tlb(i).ps(3), io.mem.va(12), io.mem.va(21))
     when(
       (tlb(i).e) &&
         (tlb(i).g || tlb(i).asid === io.csr.asid.asid) &&
@@ -40,7 +38,6 @@ class TLB extends Module {
     ) {
       tlb_found := true.B
       found_ps  := tlb(i).ps
-      val page = found_ps =/= 0.U
       found.v   := tlb(i).v(page)
       found.d   := tlb(i).d(page)
       found.mat := tlb(i).mat(page)
@@ -77,18 +74,18 @@ class TLB extends Module {
 
   // if direct, pa=va, no other things to worry
   when(io.csr.is_direct) {
-    io.pa       := io.mem.va
-    io.mat      := io.csr.crmd.datm // if fetch, then datf
-    io.exc_type := ECodes.NONE
+    io.mem.pa       := io.mem.va
+    io.mem.cached   := io.csr.crmd.datm(0) // if fetch, then datf
+    io.mem.exc_type := ECodes.NONE
   }.elsewhen(direct_hitted) {
     // check if Direct mapping mode
-    io.pa       := Cat(io.csr.dmw(direct_hittedway).pseg, io.mem.va(28, 0))
-    io.mat      := io.csr.dmw(direct_hittedway).mat
-    io.exc_type := ECodes.NONE
+    io.mem.pa       := Cat(io.csr.dmw(direct_hittedway).pseg, io.mem.va(28, 0))
+    io.mem.cached   := io.csr.dmw(direct_hittedway).mat(0)
+    io.mem.exc_type := ECodes.NONE
   }.otherwise {
     // Page Table Mapping Mode
-    io.pa       := Mux(found_ps(3), Cat(found.ppn, io.mem.va(11, 0)), Cat(found.ppn(19, 9), io.mem.va(20, 0)))
-    io.mat      := found.mat
-    io.exc_type := Mux(io.mem.request, exc_type, ECodes.NONE)
+    io.mem.pa       := Mux(found_ps(3), Cat(found.ppn, io.mem.va(11, 0)), Cat(found.ppn(19, 9), io.mem.va(20, 0)))
+    io.mem.cached   := found.mat(0)
+    io.mem.exc_type := exc_type
   }
 }

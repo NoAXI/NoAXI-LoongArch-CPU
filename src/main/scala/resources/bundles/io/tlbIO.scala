@@ -5,6 +5,7 @@ import chisel3.util._
 
 import const.Parameters._
 import const.memType
+import const.ECodes
 
 class csr_TLB_IO extends Bundle {
   val is_direct = Output(Bool())
@@ -14,7 +15,10 @@ class csr_TLB_IO extends Bundle {
 }
 
 class mem_TLB_IO extends Bundle {
-  val request  = Output(Bool())
   val va       = Output(UInt(ADDR_WIDTH.W))
   val mem_type = Output(memType())
+  val exc_type = Input(ECodes())
+  // val exc_vaddr = Input(UInt(ADDR_WIDTH.W))
+  val pa     = Input(UInt(ADDR_WIDTH.W))
+  val cached = Input(Bool())
 }
