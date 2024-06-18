@@ -8,6 +8,8 @@ import bundles._
 import const.predictConst._
 import const.Parameters._
 import Funcs.Functions._
+import const.CSRCodes
+import configs.CpuConfig
 
 class ExecuteTopIO extends StageBundle {
   val br_exc        = Input(new br)
@@ -15,6 +17,7 @@ class ExecuteTopIO extends StageBundle {
   val br            = Output(new br)
   val forward_data  = Output(new ForwardData)
   val dcache        = new exe_dCache_IO
+  // val tlb           = new exe_TLB_IO
 }
 
 class ExecuteTop extends Module {
@@ -48,6 +51,10 @@ class ExecuteTop extends Module {
   bru.rj        := info.src1
   bru.rd        := info.rd
 
+  val is_tlb = info.func_type === FuncType.tlb
+  // io.tlb.tlb_en  := is_tlb
+  // io.tlb.op_type := info.op_type
+
   busy := (div.running && !div.complete) || (mul.running && !mul.complete)
 
   val result = MateDefault(
@@ -66,6 +73,14 @@ class ExecuteTop extends Module {
   to_info := info
   // to_info.ld_tag := io.forward_tag
   to_info.result := result
+
+  // when(is_tlb) {
+  //   to_info.csr_iswf  := true.B
+  //   to_info.csr_addr  := CSRCodes.TLBIDX
+  //   to_info.csr_value := io.tlb.result
+  //   to_info.csr_wmask := ALL_MASK.U
+  // }
+
   FlushWhen(to_info, io.flush)
   io.to.bits := to_info
 
@@ -87,6 +102,10 @@ class ExecuteTop extends Module {
   // when(info.isload) {
   //   io.forward_data.we := false.B // for data_forward that ld inst's alu's result not used
   // }
+
+  if(CpuConfig.debug_on) {
+    dontTouch(br_tar)
+  }
 }
 /*
 使用axi时，数据前递可能会出现以下问题：它获取了后面流水级的前递数据，但是之所以触发了前递，是因为后面流水级的指令就是dec这条指令

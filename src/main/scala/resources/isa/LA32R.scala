@@ -53,15 +53,15 @@ object LA32R{
     def CACOP       = BitPat("b0000011000??????????????????????") // 尚未实现
 
     // tlb
-    def TLBSRCH     = BitPat("b00000110010010000010100000000000") // 尚未实现
-    def TLBRD       = BitPat("b00000110010010000010110000000000") // 尚未实现
-    def TLBWR       = BitPat("b00000110010010000011000000000000") // 尚未实现
-    def TLBFILL     = BitPat("b00000110010010000011010000000000") // 尚未实现
+    def TLBSRCH     = BitPat("b00000110010010000010100000000000")
+    def TLBRD       = BitPat("b00000110010010000010110000000000")
+    def TLBWR       = BitPat("b00000110010010000011000000000000")
+    def TLBFILL     = BitPat("b00000110010010000011010000000000")
 
     // priv
     def ERTN        = BitPat("b00000110010010000011100000000000")
     def IDLE        = BitPat("b00000110010010001???????????????") // 尚未实现
-    def INVTLB      = BitPat("b00000110010010011???????????????") // 尚未实现
+    def INVTLB      = BitPat("b00000110010010011???????????????")
 
     // imm and pc
     def LU12I_W     = BitPat("b0001010?????????????????????????")
@@ -161,6 +161,13 @@ object LA32R{
         BGE       -> List(FuncType.bru,   BruOptype.bge    ),
         BLTU      -> List(FuncType.bru,   BruOptype.bltu   ),
         BGEU      -> List(FuncType.bru,   BruOptype.bgeu   ),
+
+        // tlb, write, read, and search
+        TLBSRCH   -> List(FuncType.tlb,   TlbOpType.srch   ),
+        TLBRD     -> List(FuncType.tlb,   TlbOpType.rd     ),
+        TLBWR     -> List(FuncType.tlb,   TlbOpType.wr     ),
+        TLBFILL   -> List(FuncType.tlb,   TlbOpType.fill   ),
+        INVTLB    -> List(FuncType.tlb,   TlbOpType.inv    ),
     )
 }
 

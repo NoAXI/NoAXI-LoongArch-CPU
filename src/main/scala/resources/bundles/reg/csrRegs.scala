@@ -6,6 +6,7 @@ import chisel3.util._
 import isa._
 import stages._
 import const._
+import const.tlbConst._
 import const.Parameters._
 import Funcs.Functions._
 
@@ -147,6 +148,60 @@ class EENTRY extends base {
 
 //-------------------------------------------------------------------------
 
+class TLBIDX_info extends Bundle {
+  val ne    = Bool()
+  val zero1 = Bool()
+  val ps    = UInt(6.W)
+  val zero2 = UInt((24 - TLB_INDEX_LEN).W)
+  val index = UInt(TLB_INDEX_LEN.W)
+}
+
+class TLBIDX extends base {
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new TLBIDX_info)) }).suggestName("TLBIDX")
+  override val id   = CSRCodes.TLBIDX
+  override val rw   = "b1011_1111_0000_0000_0000_0000_0000_1111".U
+}
+
+//-------------------------------------------------------------------------
+
+class TLBEHI_info extends Bundle {
+  val vppn  = UInt(19.W)
+  val zero1 = UInt(13.W)
+}
+
+class TLBEHI extends base {
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new TLBEHI_info)) }).suggestName("TLBEHI")
+  override val id   = CSRCodes.TLBEHI
+  override val rw   = "b1111_1111_1111_1111_1110_0000_0000_0000".U
+}
+
+//-------------------------------------------------------------------------
+
+class TLBELO_info extends Bundle {
+  val zero2 = UInt(4.W)
+  val ppn   = UInt(20.W)
+  val zero1 = Bool()
+  val g     = Bool()
+  val mat   = UInt(2.W)
+  val plv   = UInt(2.W)
+  val d     = Bool()
+  val v     = Bool()
+}
+
+class TLBELO0 extends base {
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new TLBELO_info)) }).suggestName("TLBELO0")
+  override val id   = CSRCodes.TLBELO0
+  override val rw   = "b0000_1111_1111_1111_1111_1111_0111_1111".U
+}
+
+class TLBELO1 extends base {
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new TLBELO_info)) }).suggestName("TLBELO1")
+  override val id   = CSRCodes.TLBELO1
+  override val rw   = "b0000_1111_1111_1111_1111_1111_0111_1111".U
+}
+
+//-------------------------------------------------------------------------
+
 class ASID_info extends Bundle {
   val zero2    = UInt(8.W)
   val asidbits = UInt(8.W)
@@ -158,6 +213,45 @@ class ASID extends base {
   override val info = RegInit({ WireDefault(0.U.asTypeOf(new ASID_info)) }).suggestName("ASID")
   override val id   = CSRCodes.ASID
   override val rw   = "b0000_0000_0000_0000_0000_0011_1111_1111".U
+}
+
+//-------------------------------------------------------------------------
+
+class PGDL_info extends Bundle {
+  val base = UInt(20.W)
+  val zero = UInt(12.W)
+}
+
+class PGDL extends base {
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new PGDL_info)) }).suggestName("PGDL")
+  override val id   = CSRCodes.PGDL
+  override val rw   = "b1111_1111_1111_1111_1111_0000_0000_0000".U
+}
+
+//-------------------------------------------------------------------------
+
+class PGDH_info extends Bundle {
+  val base = UInt(20.W)
+  val zero = UInt(12.W)
+}
+
+class PGDH extends base {
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new PGDH_info)) }).suggestName("PGDH")
+  override val id   = CSRCodes.PGDH
+  override val rw   = "b1111_1111_1111_1111_1111_0000_0000_0000".U
+}
+
+//-------------------------------------------------------------------------
+
+class PGD_info extends Bundle {
+  val base = UInt(20.W)
+  val zero = UInt(12.W)
+}
+
+class PGD extends base {
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new PGD_info)) }).suggestName("PGD")
+  override val id   = CSRCodes.PGD
+  override val rw   = "b0000_0000_0000_0000_0000_0000_0000_0000".U
 }
 
 //-------------------------------------------------------------------------
@@ -257,6 +351,19 @@ class TICLR extends base {
   override val info = RegInit({ WireDefault(0.U.asTypeOf(new TICLR_info)) }).suggestName("TICLR")
   override val id   = CSRCodes.TICLR
   override val rw   = "b0000_0000_0000_0000_0000_0000_0000_0001".U
+}
+
+//-------------------------------------------------------------------------
+
+class TLBRENTRY_info extends Bundle {
+  val pa   = UInt(26.W)
+  val zero = UInt(6.W)
+}
+
+class TLBRENTRY extends base {
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new TLBRENTRY_info)) }).suggestName("TLBRENTRY")
+  override val id   = CSRCodes.TLBRENTRY
+  override val rw   = "b1111_1111_1111_1111_1111_1111_1100_0000".U
 }
 
 //-------------------------------------------------------------------------

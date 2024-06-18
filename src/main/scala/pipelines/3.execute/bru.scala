@@ -32,9 +32,9 @@ class Bru extends Module {
       BruOptype.beq  -> equal,
       BruOptype.bne  -> !equal,
       BruOptype.blt  -> signed_less,
-      BruOptype.bge  -> (!signed_less && !equal),
+      BruOptype.bge  -> !signed_less,
       BruOptype.bltu -> unsigned_less,
-      BruOptype.bgeu -> (!unsigned_less && !equal),
+      BruOptype.bgeu -> !unsigned_less,
     ),
   ) && (io.func_type === FuncType.bru)
 }

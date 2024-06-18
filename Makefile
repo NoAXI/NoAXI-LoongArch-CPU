@@ -13,7 +13,7 @@ func_path = /mnt/e/CPU/lab_Loongarch/mycpu_env/func
 
 # generate path
 generate_path = ./systemVerilog
-EXP = 15
+EXP = 18
 
 .PHONY: sim
 
@@ -28,7 +28,7 @@ sim:
 	@cd $(simulator_path) && make
 	@echo -e "\e[32mlab$(EXP) Simulating... \e[0m"
 #	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -func -trace 1000000000
-	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -perfdiff -uart -prog 1 -trace 1000000000 
+	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -perfdiff -perfonce -uart -trace 1000000000
 #	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -perfdiff -uart -prog 1 
 	@echo -e "\e[32mlab$(EXP) Simulate completed. \e[0m"
 
@@ -38,9 +38,10 @@ generate:
 #	@cd $(generate_path) && cp Top.sv $(myCPU_path2)
 	@echo -e "\e[32mGenerate Verilog completed. \e[0m"
 
+# make way x=N
 wav:
 #	@cd $(simulator_path) && gtkwave trace.vcd debugwave.out.gtkw
-	@cd $(simulator_path) && gtkwave trace-perf-1.vcd debugdiffwave.out.gtkw
+	@cd $(simulator_path) && gtkwave trace-perf-$(x).vcd debugdiffwave.out.gtkw
 
 # make set EXP=N
 set:

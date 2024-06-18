@@ -14,6 +14,7 @@ class Line extends Bundle {
 
 class savedInfo extends Bundle {
   val linedata = Vec(2, UInt(128.W))
+  val linetag  = Vec(2, UInt(TAG_WIDTH.W))
   val wstrb    = UInt(4.W)
   val wdata    = UInt(DATA_WIDTH.W)
   val addr     = UInt(ADDR_WIDTH.W)

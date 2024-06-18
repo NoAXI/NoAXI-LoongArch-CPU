@@ -13,6 +13,7 @@ object memType {
 object tlbConst {
   val MEM_TYPE_SIZE = 2
   val TLB_ENTRIES   = 16
+  val TLB_INDEX_LEN = 4
 }
 
 /*

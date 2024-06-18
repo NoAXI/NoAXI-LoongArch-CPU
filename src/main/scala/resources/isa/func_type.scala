@@ -13,5 +13,6 @@ object FuncType {
   def alu_imm = "b0110".U
   def csr     = "b0111".U
   def exc     = "b1000".U
-  def apply() = UInt(3.W)
+  def tlb     = "b1001".U
+  def apply() = UInt(4.W)
 }

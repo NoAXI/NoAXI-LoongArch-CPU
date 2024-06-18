@@ -99,3 +99,12 @@ object ExcOpType {
   def brk     = "b10".U
   def apply() = UInt(2.W)
 }
+
+object TlbOpType {
+  def rd      = "b000".U
+  def wr      = "b001".U
+  def srch    = "b010".U
+  def fill    = "b011".U
+  def inv     = "b100".U
+  def apply() = UInt(3.W)
+}

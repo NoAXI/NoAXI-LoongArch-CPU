@@ -53,7 +53,7 @@ class Top extends Module {
   val forwarder = Module(new Forwarder).io
   val csr       = Module(new CSR).io
   val icache    = Module(new iCache).io
-  val dcache    = Module(new dCache).io
+  val dcache    = Module(new dCache_with_cached_writebuffer).io
   val axilayer  = Module(new AXILayer).io
   val tlb       = Module(new TLB).io
 

@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 
 import bundles._
+import configs.CpuConfig
 
 object Functions {
   // for pipelines---------------------------------------------------------------------------
@@ -87,8 +88,8 @@ object Functions {
 
   // for cache----------------------------------------------------------------------------------
   def Merge(wstrb: UInt, linedata: UInt, wdata: UInt, offset: UInt): UInt = {
-    val _wstrb = Cat((3 to 0 by -1).map(i => Fill(8, wstrb(i))))
-    val _move  = VecInit(0.U, 32.U, 64.U, 96.U)
+    val _wstrb      = Cat((3 to 0 by -1).map(i => Fill(8, wstrb(i))))
+    val _move = VecInit(0.U, 32.U, 64.U, 96.U)
     writeMask(_wstrb << _move(offset), linedata, wdata << _move(offset))
   }
 }

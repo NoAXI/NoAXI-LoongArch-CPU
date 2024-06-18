@@ -33,22 +33,22 @@ class CSR extends Module {
   }
   val info = Mux(io.exc_happen.info.bubble, saved_info, io.exc_happen.info)
 
-  val CRMD   = new CRMD
-  val PRMD   = new PRMD
-  val EUEN   = new EUEN
-  val ECFG   = new ECFG
-  val ESTAT  = new ESTAT
-  val ERA    = new ERA
-  val BADV   = new BADV
-  val EENTRY = new EENTRY
-  // val TLBIDX    =
-  // val TLBEHI    =
-  // val TLBELO0   =
-  // val TLBELO1   =
-  val ASID = new ASID
-  // val PGDL      =
-  // val PGDH      =
-  // val PGD       =
+  val CRMD    = new CRMD
+  val PRMD    = new PRMD
+  val EUEN    = new EUEN
+  val ECFG    = new ECFG
+  val ESTAT   = new ESTAT
+  val ERA     = new ERA
+  val BADV    = new BADV
+  val EENTRY  = new EENTRY
+  val TLBIDX  = new TLBIDX
+  val TLBEHI  = new TLBEHI
+  val TLBELO0 = new TLBELO0
+  val TLBELO1 = new TLBELO1
+  val ASID    = new ASID
+  val PGDL    = new PGDL
+  val PGDH    = new PGDH
+  val PGD     = new PGD
   // val CPUID     =
   val SAVE0 = new SAVE0
   val SAVE1 = new SAVE1
@@ -59,7 +59,7 @@ class CSR extends Module {
   val TVAL  = new TVAL
   val TICLR = new TICLR
   // val LLBCTL    =
-  // val TLBRENTRY =
+  val TLBRENTRY = new TLBRENTRY
   // val CTAG      =
   val DMW0 = new DMW0
   val DMW1 = new DMW1
@@ -73,14 +73,14 @@ class CSR extends Module {
     ERA,
     BADV,
     EENTRY,
-    // TLBIDX,
-    // TLBEHI,
-    // TLBELO0,
-    // TLBELO1,
+    TLBIDX,
+    TLBEHI,
+    TLBELO0,
+    TLBELO1,
     ASID,
-    // PGDL,
-    // PGDH,
-    // PGD,
+    PGDL,
+    PGDH,
+    PGD,
     // CPUID,
     SAVE0,
     SAVE1,
@@ -91,7 +91,7 @@ class CSR extends Module {
     TVAL,
     TICLR,
     // LLBCTL,
-    // TLBRENTRY,
+    TLBRENTRY,
     // CTAG,
     DMW0,
     DMW1,
@@ -148,6 +148,9 @@ class CSR extends Module {
 
   val any_exc = Cat(ESTAT.info.is_12, ESTAT.info.is_11, ESTAT.info.is_9_2, ESTAT.info.is_1_0) &
     Cat(ECFG.info.lie_12_11, ECFG.info.lie_9_0)
+  val is_tlb_exc    = ECodes.istlbException(info.exc_type)
+  val is_tlb_refill = info.exc_type === ECodes.TLBR
+
   val start = io.exc_happen.start || (any_exc.orR && CRMD.info.ie)
 
   // 例外跳转
@@ -159,7 +162,7 @@ class CSR extends Module {
     PRMD.info.pie   := CRMD.info.ie
     CRMD.info.plv   := 0.U
     CRMD.info.ie    := 0.U
-    // 中断>例外的优先级
+    // 中断>例外>tlb例外的优先级，不过本身的设计保证例外和tlb例外不会同时发生，且普通例外优先
     ESTAT.info.ecode := MuxCase(
       info.exc_type,
       List(
@@ -184,6 +187,15 @@ class CSR extends Module {
 
     io.br_exc.en  := true.B
     io.br_exc.tar := EENTRY.info.asUInt
+
+    when(is_tlb_exc) {
+      when(is_tlb_refill) {
+        CRMD.info.da  := true.B
+        CRMD.info.pg  := false.B
+        io.br_exc.tar := TLBRENTRY.info.asUInt
+      }
+      TLBEHI.info.vppn := info.exc_vaddr(31, 13)
+    }
   }
 
   when(io.exc_happen.end) {

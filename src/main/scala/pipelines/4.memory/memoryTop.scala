@@ -45,6 +45,7 @@ class MemoryTop extends Module {
   mem.op_type   := info.op_type
   mem.result    := info.result
   mem.rd_value  := info.rd
+  val is_mem      = info.func_type === FuncType.mem
   val mem_has_exc = mem.exc_type =/= ECodes.NONE
   io.dCache.request.valid := (mem.data_sram.en || mem.data_sram.we.orR) && !has_exc && !mem_has_exc
   when(ShiftRegister(info.pc, 1) === info.pc && ShiftRegister(finish, 1)) {
@@ -59,15 +60,18 @@ class MemoryTop extends Module {
   io.dCache.request.bits.strb   := mem.data_sram.we
   mem.data_sram.rdata           := Mux(io.dCache.answer.fire, io.dCache.answer.bits, dcache_saved_ans)
   io.dCache.answer.ready        := true.B
-  busy                          := !finish && info.func_type === FuncType.mem && !mem_has_exc
+  busy                          := !finish && is_mem && !mem_has_exc
   when(io.dCache.answer_imm) { busy := false.B }
 
   val to_info = WireDefault(0.U.asTypeOf(new info))
-  to_info := info
-  // to_info.isload    := false.B
-  to_info.result    := mem.data
-  to_info.exc_type  := Mux(has_exc, info.exc_type, mem.exc_type)
-  to_info.exc_vaddr := Mux(has_exc, info.exc_vaddr, mem.exc_vaddr)
+  to_info        := info
+  to_info.result := mem.data
+  to_info.exc_type := Mux(
+    has_exc,
+    info.exc_type,
+    Mux(mem_has_exc, mem.exc_type, Mux(is_mem, io.tlb.exc_type, ECodes.NONE)),
+  )
+  to_info.exc_vaddr := Mux(has_exc, info.exc_vaddr, Mux(mem_has_exc, mem.exc_vaddr, io.tlb.exc_vaddr))
   to_info.iswf      := Mux(to_info.exc_type =/= ECodes.NONE, false.B, info.iswf)
   FlushWhen(to_info, io.flush)
   io.to.bits := to_info

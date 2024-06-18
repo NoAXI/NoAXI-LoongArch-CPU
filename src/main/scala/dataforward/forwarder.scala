@@ -48,6 +48,7 @@ class Forwarder extends Module with ForwarderConst {
   }
 
   // csr forward
+  // if the write csr operation has mask??
   val csr_addr = io.forward_query.csr_addr
   io.forward_ans.csr_data := WireDefault(io.forward_query.csr_ini_data)
   for (j <- 0 until FORWARD_NUM) {

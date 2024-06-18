@@ -11,16 +11,17 @@ import const.Parameters._
 import configs.CpuConfig
 import dataclass.data
 
-class dCacheIO extends Bundle {
+class dCache_with_cached_writebufferIO extends Bundle {
   val axi = new dCache_AXI
   val exe = Flipped(new exe_dCache_IO)
   val mem = Flipped(new mem_dCache_IO)
 }
 
-class dCache extends Module {
-  val io = IO(new dCacheIO)
+class dCache_with_cached_writebuffer extends Module {
+  val io = IO(new dCache_with_cached_writebufferIO)
   io.mem.answer_imm := false.B
 
+  val w_idle :: w_work :: Nil                                                  = Enum(2)
   val idle :: replace_checkdirty :: replace :: uncached_r :: uncached_w :: Nil = Enum(5)
 
   val datasram =
@@ -51,6 +52,7 @@ class dCache extends Module {
 
   val saved_info  = RegInit(0.U.asTypeOf(new savedInfo))
   val state       = RegInit(idle)
+  val wstate      = RegInit(w_idle)
   val cached      = WireDefault(true.B)
   val cacheBusy   = WireDefault(false.B)
   val hit         = Wire(Vec(2, Bool()))
@@ -138,7 +140,7 @@ class dCache extends Module {
               datasram(hittedway).addra := io.mem.request.bits.addr(11, 4) // use the write port
               datasram(hittedway).dina := Merge(
                 io.mem.request.bits.strb,
-                datasram(hittedway).doutb,
+                hitdataline,
                 io.mem.request.bits.data,
                 io.mem.request.bits.addr(3, 2),
               )
@@ -157,6 +159,7 @@ class dCache extends Module {
             saved_info.linedata := Seq(datasram(0).doutb, datasram(1).doutb)
             saved_info.op       := io.mem.request.bits.we
             saved_info.addr     := io.mem.request.bits.addr
+            saved_info.linetag  := Seq(tagsram(0).doutb, tagsram(1).doutb)
             saved_info.wstrb    := io.mem.request.bits.strb
             saved_info.wdata    := io.mem.request.bits.data
             state               := replace_checkdirty
@@ -169,7 +172,7 @@ class dCache extends Module {
             ar.addr := io.mem.request.bits.addr
             ar.len  := 0.U
             state   := uncached_r
-          }.elsewhen(io.mem.request.bits.we) {
+          }.elsewhen(io.mem.request.bits.we && wstate === w_idle) {
             awvalid := true.B
             aw.addr := io.mem.request.bits.addr
             aw.len  := 0.U
@@ -220,7 +223,7 @@ class dCache extends Module {
         // when full, wait, send message to cpu that is busy
         when(!bufferFull) {
           // check if has any the same addr in the write_buffer
-          when(write_buffer_addr.contains(saved_info.addr)) {
+          when(write_buffer_addr.contains(saved_info.linetag(lru_way) ## saved_info.index ## 0.U(4.W))) {
             // if have, update it
             // how to update it ???
           }.otherwise {
@@ -228,14 +231,16 @@ class dCache extends Module {
             write_buffer.enq.valid := true.B
             // generate the true value
             write_buffer.enq.bits.data  := saved_info.linedata(lru_way)
-            write_buffer.enq.bits.addr  := saved_info.addr
+            write_buffer.enq.bits.addr  := saved_info.linetag(lru_way) ## saved_info.index ## 0.U(4.W)
             write_buffer.enq.bits.valid := true.B
           }
           dirtyreg(saved_info.index)(lru_way) := false.B
           can_replace                         := true.B
         }
         // if full, just wait
-      }.otherwise { can_replace := true.B } // is not dirty
+      }.elsewhen(wstate =/= w_work || aw.addr =/= saved_info.addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)) {
+        can_replace := true.B
+      } // is not dirty
 
       when(can_replace) {
         // act with axi
@@ -291,6 +296,7 @@ class dCache extends Module {
         tagsram(lru_way).addra              := saved_info.index // use the write port
         tagsram(lru_way).dina               := saved_info.tag
         validreg(saved_info.index)(lru_way) := true.B
+        dirtyreg(saved_info.index)(lru_way) := saved_info.op
 
         ans_valid   := true.B
         is_uncached := false.B
@@ -312,14 +318,9 @@ class dCache extends Module {
     }
   }
 
-  val w_idle :: w_work :: Nil = Enum(2)
-
   val wsaved_data  = RegInit(0.U(128.W))
-  val wsaved_addr  = RegInit(0.U(ADDR_WIDTH.W))
   val wbuffer_mask = RegInit(1.U(4.W))
-  val wstate       = RegInit(w_idle)
   // if axi and dcache is idle, then send the write_buffer to it
-
   val sb = WireDefault(false.B)
 
   switch(wstate) {
@@ -331,16 +332,15 @@ class dCache extends Module {
         // pop the write_buffer
         write_buffer.deq.ready := true.B
         wsaved_data            := write_buffer.deq.bits.data
-        wsaved_addr            := write_buffer.deq.bits.addr
 
         // act with axi
         awvalid := true.B
-        aw.addr := wsaved_addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
+        aw.addr := write_buffer.deq.bits.addr
         aw.size := 2.U
         aw.len  := (BANK_WIDTH / 4 - 1).U
 
         wvalid       := true.B
-        w.data       := wsaved_data(31, 0)
+        w.data       := write_buffer.deq.bits.data(31, 0)
         w.strb       := "b1111".U
         w.last       := false.B
         wstate       := w_work
@@ -407,6 +407,7 @@ class dCache extends Module {
   io.exe.request.ready := true.B
 
   if (CpuConfig.debug_on) {
+    dontTouch(axi_idle)
     dontTouch(sb)
     dontTouch(bufferFull)
     dontTouch(bufferEmpty)
