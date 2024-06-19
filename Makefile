@@ -1,14 +1,10 @@
-# simulator home
-# simulator_path = ../test/soc-simulator
-# simulator_path = ../test/soc-simulator-axi
+# simulator path
 simulator_path = ./soc-simulator-axi
 
 # verilog submit path
 top_name = Top.sv
-# myCPU_path1 = /mnt/f/CPU/lab_Loongarch/mycpu_env/myCPU
-myCPU_path1 = /mnt/e/CPU/lab_Loongarch/mycpu_env/myCPU
+myCPU_path1 = /mnt/cpu/myCPU
 myCPU_path2 = $(simulator_path)/myCPU
-# func_path = /mnt/f/CPU/lab_Loongarch/mycpu_env/func
 func_path = /mnt/e/CPU/lab_Loongarch/mycpu_env/func
 
 # generate path
