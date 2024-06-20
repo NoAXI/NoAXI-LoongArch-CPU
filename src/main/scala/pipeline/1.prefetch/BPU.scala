@@ -5,7 +5,7 @@ import chisel3.util._
 
 import bundles._
 import const.Parameters._
-import configs._
+import const._
 
 object predictConst {
   val INDEX_LENGTH   = 6
@@ -80,7 +80,7 @@ class BPU extends Module {
   io.res.addr := 0.U
 
   // debug: hit rate statistic
-  if (CpuConfig.debug_on) {
+  if (Config.debug_on) {
     val tot_time     = RegInit(0.U(20.W))
     val succeed_time = RegInit(0.U(20.W))
     when(io.train.en) {
