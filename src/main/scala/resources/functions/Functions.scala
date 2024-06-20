@@ -8,7 +8,7 @@ import configs.CpuConfig
 
 object Functions {
   // for pipelines---------------------------------------------------------------------------
-  def StageConnect(x: DecoupledIO[info], y: DecoupledIO[info], busy: Bool): (info, Bool) = {
+  def StageConnect(x: DecoupledIO[ConnectInfo], y: DecoupledIO[ConnectInfo], busy: Bool): (info, Bool) = {
     val info  = RegInit(0.U.asTypeOf(new info))
     val valid = RegInit(false.B)
     x.ready := !valid || (y.ready && !busy)
@@ -19,22 +19,21 @@ object Functions {
     when(x.fire) {
       info := x.bits
     }
-
     (info, valid)
   }
 
-  def Forward(x: info, y: ForwardData, valid_signal: Bool): Unit = {
-    y.we   := x.iswf && valid_signal
-    y.isld := x.isload
-    y.addr := x.wfreg
-    y.data := x.result
+  // def Forward(x: info, y: ForwardData, valid_signal: Bool): Unit = {
+  //   y.we   := x.iswf && valid_signal
+  //   y.isld := x.isload
+  //   y.addr := x.wfreg
+  //   y.data := x.result
 
-    y.csr_we   := x.csr_iswf && valid_signal
-    y.csr_addr := x.csr_addr
-    y.csr_data := x.rd
+  //   y.csr_we   := x.csr_iswf && valid_signal
+  //   y.csr_addr := x.csr_addr
+  //   y.csr_data := x.rd
 
-    y.pc := x.pc
-  }
+  //   y.pc := x.pc
+  // }
 
   def FlushWhen(x: info, y: Bool): Unit = {
     when(y) {
@@ -88,8 +87,8 @@ object Functions {
 
   // for cache----------------------------------------------------------------------------------
   def Merge(wstrb: UInt, linedata: UInt, wdata: UInt, offset: UInt): UInt = {
-    val _wstrb      = Cat((3 to 0 by -1).map(i => Fill(8, wstrb(i))))
-    val _move = VecInit(0.U, 32.U, 64.U, 96.U)
+    val _wstrb = Cat((3 to 0 by -1).map(i => Fill(8, wstrb(i))))
+    val _move  = VecInit(0.U, 32.U, 64.U, 96.U)
     writeMask(_wstrb << _move(offset), linedata, wdata << _move(offset))
   }
 }

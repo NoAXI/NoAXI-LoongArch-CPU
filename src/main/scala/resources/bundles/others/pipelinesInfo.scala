@@ -7,6 +7,7 @@ import isa._
 import const._
 import const.Parameters._
 
+// basic info for single pipeline
 class info extends Bundle {
   val bubble   = Bool()
   val pc       = UInt(ADDR_WIDTH.W)
@@ -37,16 +38,35 @@ class info extends Bundle {
   val exc_vaddr = UInt(ADDR_WIDTH.W)
 
   val predict = new br
+
+  val tlb_hit = new Bundle {
+    val inst = UInt(tlbConst.TLB_ENTRIES.W)
+    val data = UInt(tlbConst.TLB_ENTRIES.W)
+  }
 }
 
-class full_info extends Bundle {
-  val info         = new info
+// dual issue info
+class ConnectInfo extends Bundle {
+  val info         = Vec(2, new info)
   val valid_signal = Bool()
 }
 
 class StageBundle extends Bundle {
-  val from        = Flipped(DecoupledIO(new info))
-  val to          = DecoupledIO(new info)
+  val from        = Flipped(DecoupledIO(new ConnectInfo))
+  val to          = DecoupledIO(new ConnectInfo)
   val flush       = Input(Bool())
   val flush_apply = Output(Bool())
 }
+
+// signle issue info
+// class FullInfo extends Bundle {
+//   val info         = new info
+//   val valid_signal = Bool()
+// }
+
+// class StageBundle extends Bundle {
+//   val from        = Flipped(DecoupledIO(new info))
+//   val to          = DecoupledIO(new info)
+//   val flush       = Input(Bool())
+//   val flush_apply = Output(Bool())
+// }

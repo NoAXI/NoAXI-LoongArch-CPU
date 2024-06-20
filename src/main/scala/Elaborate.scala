@@ -1,5 +1,4 @@
-import scala.old.pipelines.Top
-import stages.Top
+import pipeline.Top
 import configs._
 
 object Elaborate extends App {
