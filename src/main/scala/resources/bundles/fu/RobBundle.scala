@@ -11,7 +11,7 @@ object ROB_const {
 
 class ROB_info extends Bundle {
   val pc    = UInt(ADDR_WIDTH.W)
-  val areg  = UInt(REG_WIDTH.W)
+  val areg  = UInt(AREG_WIDTH.W)
   val preg  = UInt(PREG_WIDTH.W)
   val opreg = UInt(PREG_WIDTH.W)
 }

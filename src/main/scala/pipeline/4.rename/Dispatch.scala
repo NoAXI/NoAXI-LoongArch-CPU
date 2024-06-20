@@ -8,10 +8,6 @@ import bundles._
 import Funcs.Functions._
 import const.Parameters._
 
-class RenameTopIO extends StageBundle {
-}
-
-class RenameTop extends Module {
-  val io = IO(new RenameTopIO)
+class Dispatch extends Module {
   
 }

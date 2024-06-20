@@ -9,6 +9,9 @@ import bundles._
 import controller._
 import const.Parameters._
 import mmu.TLB
+import pipeline.frontend.RenameIO
+import pipeline.frontend.RenameTop
+import pipeline.backend.IssueTop
 
 class sramTopIO extends Bundle {
   // inst sram interface
@@ -44,6 +47,23 @@ class axiTopIO extends Bundle {
 class Top extends Module {
   val io = IO(new axiTopIO)
 
+  // pipeline module
+  val rename = Module(new RenameTop).io
+  val issue  = Module(new IssueTop).io
+
+  // memory access module
+  val axilayer = Module(new AXILayer).io
+  val icache   = Module(new iCache).io
+  val dcache   = Module(new dCache_with_cached_writebuffer).io
+
+  // axi
+  io.axi          <> axilayer.to
+  axilayer.icache <> icache.axi
+  axilayer.dcache <> dcache.axi
+}
+
+/*
+  old top
   // val fetch     = Module(new FetchTop).io
   // val decoder   = Module(new DecoderTop).io
   // val execute   = Module(new ExecuteTop).io
@@ -128,4 +148,6 @@ class Top extends Module {
   // io.debug_wb_rf_we    := writeback.debug_wb.rf_we
   // io.debug_wb_rf_wnum  := writeback.debug_wb.rf_wnum
   // io.debug_wb_rf_wdata := writeback.debug_wb.rf_wdata
-}
+
+
+ */

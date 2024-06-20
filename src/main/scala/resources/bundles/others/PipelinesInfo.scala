@@ -25,18 +25,22 @@ class info extends Bundle {
   val rj   = UInt(DATA_WIDTH.W)
   val rd   = UInt(DATA_WIDTH.W)
 
+  // write areg info
   val iswf   = Bool()
-  val wfreg  = UInt(REG_WIDTH.W)
+  val wfreg  = UInt(AREG_WIDTH.W)
   val result = UInt(DATA_WIDTH.W)
 
+  // csr write info
   val csr_iswf  = Bool()
   val csr_wmask = UInt(DATA_WIDTH.W)
   val csr_addr  = UInt(CSR_WIDTH.W)
   val csr_value = UInt(DATA_WIDTH.W)
 
+  // exception
   val exc_type  = ECodes()
   val exc_vaddr = UInt(ADDR_WIDTH.W)
 
+  // branch predict
   val predict = new br
 
   val tlb_hit = new Bundle {
@@ -47,7 +51,7 @@ class info extends Bundle {
 
 // dual issue info
 class ConnectInfo extends Bundle {
-  val info         = Vec(2, new info)
+  val info         = Vec(ISSUE_WIDTH, new info)
   val valid_signal = Bool()
 }
 

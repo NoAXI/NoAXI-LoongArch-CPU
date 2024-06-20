@@ -4,7 +4,6 @@ import chisel3._
 import chisel3.util._
 
 import isa._
-import stages._
 import const._
 import const.tlbConst._
 import const.Parameters._

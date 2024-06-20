@@ -8,10 +8,13 @@ import bundles._
 import Funcs.Functions._
 import const.Parameters._
 
-class RenameTopIO extends StageBundle {
+class RatRecoverInfo extends Bundle {
+  // val aRAT_info 
+}
+class RatIO extends Bundle {
+  
 }
 
-class RenameTop extends Module {
-  val io = IO(new RenameTopIO)
-  
+class Rat extends Module {
+  // val io = IO(new )
 }

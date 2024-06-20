@@ -5,9 +5,10 @@ import chisel3.util._
 
 import const.Parameters._
 
+class ROBIO extends Bundle {
+  
+}
 class ROB extends Module {
-  val io = new Bundle {
-    // val aRAT = Output()
-  }
+  val io = IO(new ROBIO)
 
 }
