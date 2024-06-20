@@ -28,7 +28,7 @@ sim:
 	@cd $(simulator_path) && make
 	@echo -e "\e[32mlab$(EXP) Simulating... \e[0m"
 #	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -func -trace 1000000000
-	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -perfdiff -perfonce -uart -trace 1000000000
+	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -perfdiff -uart -trace 1000000000 -perfonce
 #	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -perfdiff -uart -prog 1 
 	@echo -e "\e[32mlab$(EXP) Simulate completed. \e[0m"
 

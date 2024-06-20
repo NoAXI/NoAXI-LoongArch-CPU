@@ -33,6 +33,8 @@ class iCache extends Module {
   val i_ans_valid    = WireDefault(false.B)
   val i_ans_bits     = WireDefault(0.U(INST_WIDTH.W))
   val saved_ans_bits = RegInit(0.U(INST_WIDTH.W))
+  val total_requests = RegInit(0.U(32.W))
+  val hitted_times   = RegInit(0.U(32.W))
   val hit            = Wire(Vec(2, Bool()))
   val hitted         = WireDefault(false.B)
   val hittedway      = WireDefault(false.B)
@@ -77,7 +79,13 @@ class iCache extends Module {
     is(idle) {
       ans_valid := false.B
       when(io.fetch.request.fire) {
+        if (CpuConfig.statistics_on) {
+          total_requests := total_requests + 1.U
+        }
         when(hitted) {
+          if (CpuConfig.statistics_on) {
+            hitted_times := hitted_times + 1.U
+          }
           val lru_index = io.fetch.request.bits(11, 4)
           lru(lru_index) := !hitdataline
 
@@ -175,5 +183,10 @@ class iCache extends Module {
     dontTouch(hittedway)
     dontTouch(hitdataline)
     dontTouch(hitdata)
+  }
+
+  if (CpuConfig.statistics_on) {
+    dontTouch(total_requests)
+    dontTouch(hitted_times)
   }
 }

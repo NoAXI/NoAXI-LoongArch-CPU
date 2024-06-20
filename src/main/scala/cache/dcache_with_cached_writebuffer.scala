@@ -50,16 +50,18 @@ class dCache_with_cached_writebuffer extends Module {
   val i_ans_valid  = WireDefault(false.B)
   val i_cached_ans = WireDefault(0.U(DATA_WIDTH.W))
 
-  val saved_info  = RegInit(0.U.asTypeOf(new savedInfo))
-  val state       = RegInit(idle)
-  val wstate      = RegInit(w_idle)
-  val cached      = WireDefault(true.B)
-  val cacheBusy   = WireDefault(false.B)
-  val hit         = Wire(Vec(2, Bool()))
-  val hitted      = WireDefault(false.B)
-  val hittedway   = WireDefault(false.B)
-  val hitdataline = WireDefault(0.U((LINE_SIZE * 8).W))
-  val hitdata     = WireDefault(0.U(DATA_WIDTH.W))
+  val saved_info     = RegInit(0.U.asTypeOf(new savedInfo))
+  val state          = RegInit(idle)
+  val wstate         = RegInit(w_idle)
+  val cached         = WireDefault(true.B)
+  val cacheBusy      = WireDefault(false.B)
+  val total_requests = RegInit(0.U(32.W))
+  val hitted_times   = RegInit(0.U(32.W))
+  val hit            = Wire(Vec(2, Bool()))
+  val hitted         = WireDefault(false.B)
+  val hittedway      = WireDefault(false.B)
+  val hitdataline    = WireDefault(0.U((LINE_SIZE * 8).W))
+  val hitdata        = WireDefault(0.U(DATA_WIDTH.W))
 
   val is_uncached = RegInit(false.B)
   val linedata    = RegInit(0.U((LINE_SIZE * 8).W))
@@ -112,7 +114,13 @@ class dCache_with_cached_writebuffer extends Module {
       // this "!ans_valid" has bugs
       when(io.mem.request.fire && !ans_valid) {
         when(cached) {
+          if (CpuConfig.statistics_on) {
+            total_requests := total_requests + 1.U
+          }
           when(hitted) {
+            if (CpuConfig.statistics_on) {
+              hitted_times := hitted_times + 1.U
+            }
             // io.mem.answer_imm := true.B
             lru(io.mem.request.bits.addr(11, 4)) := !hittedway
             when(io.mem.request.bits.we) {
@@ -411,5 +419,10 @@ class dCache_with_cached_writebuffer extends Module {
     dontTouch(sb)
     dontTouch(bufferFull)
     dontTouch(bufferEmpty)
+  }
+
+  if (CpuConfig.statistics_on) {
+    dontTouch(total_requests)
+    dontTouch(hitted_times)
   }
 }
