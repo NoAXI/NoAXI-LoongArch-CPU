@@ -12,7 +12,6 @@ project/
 Top.sv
 
 # other
-doc/
 trashbin/
 soc-simulator-axi
 Makefile

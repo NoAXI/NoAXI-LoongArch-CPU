@@ -33,12 +33,14 @@ class BpuTrain extends Bundle {
   val index   = UInt(INDEX_LENGTH.W)
 }
 
+class BPUIO extends Bundle {
+  val in    = Flipped(new PredictInput)
+  val res   = Output(new PredictInfo)
+  val train = Input(new BpuTrain)
+}
+
 class BPU extends Module {
-  val io = new Bundle {
-    val in    = Input(new PredictInput)
-    val res   = Output(new PredictInfo)
-    val train = Input(new BpuTrain)
-  }
+  val io = new BPUIO
 
   val pFF :: pF :: pTT :: pT :: Nil = Enum(4)
 
