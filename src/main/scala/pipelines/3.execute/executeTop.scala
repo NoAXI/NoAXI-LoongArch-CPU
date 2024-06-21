@@ -33,14 +33,18 @@ class ExecuteTop extends Module {
   alu.src1      := info.src1
   alu.src2      := info.src2
 
-  val mul = Module(new Mul).io
-  mul.running := info.func_type === FuncType.mul
+  val is_mul       = info.func_type === FuncType.mul
+  val is_div       = info.func_type === FuncType.div
+  val mul_complete = RegInit(false.B)
+  val div_complete = RegInit(false.B)
+  val mul          = Module(new Mul).io
+  mul.running := is_mul
   mul.op_type := info.op_type
   mul.src1    := info.src1
   mul.src2    := info.src2
 
   val div = Module(new Div).io
-  div.running := info.func_type === FuncType.div
+  div.running := is_div
   div.op_type := info.op_type
   div.src1    := info.src1
   div.src2    := info.src2
@@ -56,6 +60,27 @@ class ExecuteTop extends Module {
   // io.tlb.op_type := info.op_type
 
   busy := (div.running && !div.complete) || (mul.running && !mul.complete)
+
+  dontTouch(mul_complete)
+  dontTouch(div_complete)
+  // 为防止多发请求：
+  when(is_mul && mul.complete) {
+    mul_complete := true.B
+  }.elsewhen(is_div && div.complete) {
+    div_complete := true.B
+  }
+  when(mul_complete) { // 连了一个从输出到输入的线
+    mul.running := false.B
+    busy        := false.B
+  }
+  when(div_complete) {
+    div.running := false.B
+    busy        := false.B
+  }
+  when(io.from.fire) {
+    mul_complete := false.B
+    div_complete := false.B
+  }
 
   val result = MateDefault(
     info.func_type,
@@ -103,7 +128,7 @@ class ExecuteTop extends Module {
   //   io.forward_data.we := false.B // for data_forward that ld inst's alu's result not used
   // }
 
-  if(CpuConfig.debug_on) {
+  if (CpuConfig.debug_on) {
     dontTouch(br_tar)
   }
 }

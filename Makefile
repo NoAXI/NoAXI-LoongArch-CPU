@@ -8,6 +8,7 @@ top_name = Top.sv
 # myCPU_path1 = /mnt/f/CPU/lab_Loongarch/mycpu_env/myCPU
 myCPU_path1 = /mnt/e/CPU/lab_Loongarch/mycpu_env/myCPU
 myCPU_path2 = $(simulator_path)/myCPU
+myCPU_path3 = /mnt/e/CPU/myCPU
 # func_path = /mnt/f/CPU/lab_Loongarch/mycpu_env/func
 func_path = /mnt/e/CPU/lab_Loongarch/mycpu_env/func
 
@@ -23,6 +24,7 @@ sim:
 	@sed -i '/xilinx_simple_dual_port_1_clock_ram_write_first.sv/d' $(generate_path)/Top.sv
 	@echo -e "\e[32mGenerate Verilog completed. \e[0m"
 	@cd $(generate_path) && cp Top.sv $(myCPU_path1)
+	@cd $(generate_path) && cp Top.sv $(myCPU_path3)
 	@cp $(generate_path)/$(top_name) $(myCPU_path2)/$(top_name)
 	@cd $(simulator_path) && make clean
 	@cd $(simulator_path) && make

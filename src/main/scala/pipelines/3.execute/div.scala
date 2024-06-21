@@ -63,6 +63,10 @@ object Connect {
 
     div.s_axis_dividend_tvalid := top.running && !sent(0)
     div.s_axis_divisor_tvalid  := top.running && !sent(1)
+    when(div.m_axis_dout_tvalid) {
+      div.s_axis_dividend_tvalid := false.B
+      div.s_axis_divisor_tvalid  := false.B
+    }
   }
 }
 
