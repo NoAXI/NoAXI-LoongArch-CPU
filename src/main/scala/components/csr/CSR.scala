@@ -27,7 +27,7 @@ class CSR_IO extends Bundle {
 class CSR extends Module {
   val io = IO(new CSR_IO)
 
-  val saved_info = RegInit(0.U.asTypeOf(new info))
+  val saved_info = RegInit(0.U.asTypeOf(new SingleInfo))
   when(!io.exc_happen.info.bubble) {
     saved_info := io.exc_happen.info
   }

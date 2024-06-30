@@ -1,4 +1,4 @@
-package pipeline.rob
+package pipeline
 
 import chisel3._
 import chisel3.util._

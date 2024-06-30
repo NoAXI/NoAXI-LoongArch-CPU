@@ -3,16 +3,23 @@ package func
 import chisel3._
 import chisel3.util._
 
-import bundles._
 import const._
+import bundles._
+import func.Functions._
+import const.Parameters._
 
 object Functions {
   // for pipelines---------------------------------------------------------------------------
-  def StageConnect(x: DecoupledIO[ConnectInfo], y: DecoupledIO[ConnectInfo], busy: Bool): (info, Bool) = {
-    val info  = RegInit(0.U.asTypeOf(new info))
-    val valid = RegInit(false.B)
-    x.ready := !valid || (y.ready && !busy)
-    y.valid := valid && !busy
+
+  def StageConnect(x: DecoupledIO[ConnectInfo], y: DecoupledIO[ConnectInfo], busy: Vec[Bool]): (DualInfo, Bool) = {
+    val info    = RegInit(0.U.asTypeOf(new DualInfo))
+    val valid   = RegInit(false.B)
+    val allbusy = WireDefault(false.B)
+    for (i <- 0 until ISSUE_WIDTH) {
+      allbusy := allbusy || busy(i).asBool
+    }
+    x.ready := !valid || (y.ready && !allbusy)
+    y.valid := valid && !allbusy
     when(x.ready) {
       valid := x.valid
     }
@@ -22,43 +29,14 @@ object Functions {
     (info, valid)
   }
 
-  // def Forward(x: info, y: ForwardData, valid_signal: Bool): Unit = {
-  //   y.we   := x.iswf && valid_signal
-  //   y.isld := x.isload
-  //   y.addr := x.wfreg
-  //   y.data := x.result
-
-  //   y.csr_we   := x.csr_iswf && valid_signal
-  //   y.csr_addr := x.csr_addr
-  //   y.csr_data := x.rd
-
-  //   y.pc := x.pc
-  // }
-
-  def FlushWhen(x: info, y: Bool): Unit = {
+  def FlushWhen(x: DualInfo, y: Bool): Unit = {
     when(y) {
-      x        := 0.U.asTypeOf(new info)
-      x.bubble := true.B
+      x := 0.U.asTypeOf(new DualInfo)
+      for (i <- 0 until ISSUE_WIDTH) {
+        x.bits(i).bubble := true.B
+      }
     }
   }
-
-  /*
-      _________          _________
-  ___|         |________|         |______
-
-           _________          _________
-  ________|         |________|         |______
-
-       __                 __
-  ____|  |_______________|  |____________
-
-  can not be used in continuous sign
-   */
-  def FirstTick(x: Bool): Bool = {
-    x && !ShiftRegister(x, 1)
-  }
-
-  // StallPrevious: just set busy to true.B
 
   // for decoder--------------------------------------------------------------------------------
   def SignedExtend(a: UInt, len: Int) = {

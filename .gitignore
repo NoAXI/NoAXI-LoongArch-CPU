@@ -15,3 +15,4 @@ Top.sv
 trashbin/
 soc-simulator-axi
 Makefile
+documentResources

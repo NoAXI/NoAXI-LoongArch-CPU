@@ -51,8 +51,13 @@ class Top extends Module {
   val io = IO(new axiTopIO)
 
   // pipeline module
-  val rename = Module(new RenameTop).io
-  val issue  = Module(new IssueTop).io
+  val fetch     = Module(new FetchTop).io
+  // val decoder   = Module(new DecoderTop).io
+  // val execute   = Module(new ExecuteTop).io
+  // val memory    = Module(new MemoryTop).io
+  // val writeback = Module(new WriteBackTop).io
+  val rename    = Module(new RenameTop).io
+  val issue     = Module(new IssueTop).io
 
   // memory access module
   val axilayer = Module(new AXILayer).io

@@ -8,8 +8,7 @@ import const._
 import const.Parameters._
 
 class excHappen extends Bundle {
-  val start     = Bool()
-  val end       = Bool()
-  val info      = new info
+  val start = Bool()
+  val end   = Bool()
+  val info  = new SingleInfo
 }
-
