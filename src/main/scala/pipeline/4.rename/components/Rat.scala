@@ -11,7 +11,6 @@ import const.Parameters._
 class RatIO extends Bundle {
   val recover = new Bundle {
     val valid = Input(Bool())
-    val bits  = Input(Vec(AREG_NUM, UInt(PREG_WIDTH.W)))
   }
   val renameStall = Output(Bool())
   val rename = Vec(
@@ -21,6 +20,13 @@ class RatIO extends Bundle {
       val areg  = Input(UInt(AREG_WIDTH.W))
       val preg  = Output(UInt(PREG_WIDTH.W))
       val opreg = Output(UInt(PREG_WIDTH.W))
+    },
+  )
+  val read = Vec(
+    ISSUE_WIDTH,
+    new Bundle {
+      val areg = Input(Vec(2, UInt(AREG_WIDTH.W)))
+      val preg = Output(Vec(2, UInt(PREG_WIDTH.W)))
     },
   )
   val commit = Vec(
@@ -37,13 +43,23 @@ class RatIO extends Bundle {
 class Rat extends Module {
   val io = IO(new RatIO)
 
-  // stall when freelist is empty (freelistSize < querySize)
+  // stall when freelist is empty (freelistSize < readSize)
   val stall = WireDefault(false.B)
   io.renameStall := stall
 
   // rat def
   val sRat = RegInit(VecInit(Seq.tabulate(AREG_NUM)(i => i.U(PREG_WIDTH.W))))
   val aRat = RegInit(VecInit(Seq.tabulate(AREG_NUM)(i => i.U(PREG_WIDTH.W))))
+
+  // output read info
+  // j goes until 2 cuz there's only rj & rk
+  for (i <- 0 until ISSUE_WIDTH) {
+    for (j <- 0 until 2) {
+      val areg = io.read(i).areg(j)
+      val preg = io.read(i).preg(j)
+      preg := sRat(areg)
+    }
+  }
 
   // rename: sRat update
   // commit: aRat update
@@ -71,7 +87,7 @@ class Rat extends Module {
   val tailPtr    = RegInit(0.U(FREELIST_WIDTH.W)) // inc when push
   val headOffset = WireDefault(0.U(2.W))
   val tailOffset = WireDefault(0.U(2.W))
-  val flSize     = RegInit(FREELIST_NUM.U(FREELIST_WIDTH.W))
+  val fifoSize   = RegInit(FREELIST_NUM.U(FREELIST_WIDTH.W))
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rename(i)
     info.preg  := 0.U
@@ -81,7 +97,7 @@ class Rat extends Module {
   // rename: pop, head inc
   // todo: maybe should adapt to more issue width?
   when(io.rename(0).valid && io.rename(1).valid) {
-    when(flSize < 2.U) {
+    when(fifoSize < 2.U) {
       stall := true.B
     }.otherwise {
       headOffset := 2.U
@@ -90,7 +106,7 @@ class Rat extends Module {
       }
     }
   }.elsewhen(io.rename(0).valid || io.rename(1).valid) {
-    when(flSize < 1.U) {
+    when(fifoSize < 1.U) {
       stall := true.B
     }.otherwise {
       headOffset := 1.U
@@ -112,18 +128,19 @@ class Rat extends Module {
     tailOffset := 1.U
     for (i <- 0 until ISSUE_WIDTH) {
       when(io.commit(i).valid) {
-        freelist(tailPtr + i.U) := io.commit(i).opreg
+        freelist(tailPtr) := io.commit(i).opreg
       }
     }
   }
 
   // when recover, set freelist full
   when(io.recover.valid) {
-    tailPtr := headPtr
-    flSize  := FREELIST_NUM.U
+    tailPtr  := headPtr
+    fifoSize := FREELIST_NUM.U
+    sRat     := aRat
   }.otherwise {
-    flSize  := flSize - headOffset + tailOffset
-    headPtr := headPtr + headOffset
-    tailPtr := tailPtr + tailOffset
+    fifoSize := fifoSize - headOffset + tailOffset
+    headPtr  := headPtr + headOffset
+    tailPtr  := tailPtr + tailOffset
   }
 }

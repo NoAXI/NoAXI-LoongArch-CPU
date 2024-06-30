@@ -17,12 +17,7 @@ class ROBInfo extends Bundle {
   val exc_vaddr = UInt(ADDR_WIDTH.W)
 }
 
-class ROBReg extends Bundle {
-  val reg = RegInit(VecInit(Seq.fill(ROB_NUM)(0.U.asTypeOf(new ROBInfo))))
-  def write(index: UInt, data: ROBInfo): Unit = {
-    reg(index) := data
-  }
-  def read(index: UInt): ROBInfo = {
-    reg(index).asTypeOf(new ROBInfo)
-  }
+class RenameBundle {
+  val areg = UInt(AREG_WIDTH.W)
+  val preg = UInt(PREG_WIDTH.W)
 }

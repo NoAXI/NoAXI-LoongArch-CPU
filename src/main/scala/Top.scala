@@ -7,9 +7,6 @@ import const._
 import bundles._
 import const.Parameters._
 
-import backend._
-import frontend._
-
 import csr._
 import controller._
 

@@ -29,8 +29,12 @@ class SingleInfo extends Bundle {
 
   // write areg
   val iswf   = Bool()
-  val wfreg  = UInt(AREG_WIDTH.W)
   val result = UInt(DATA_WIDTH.W)
+
+  // rename info
+  val rjMap = new RenameBundle
+  val rkMap = new RenameBundle
+  val rdMap = new RenameBundle
 
   // write csr
   val csr_iswf  = Bool()
