@@ -12,8 +12,8 @@ class PrefetchTopIO extends StageBundle {}
 
 class PrefetchTop extends Module {
   val io   = IO(new PrefetchTopIO)
-  val busy = Vec(ISSUE_WIDTH, WireDefault(false.B))
-  StageConnect(io.from, io.to, busy)
+  val busy = WireDefault(0.U.asTypeOf(new BusyInfo))
+  stageConnect(io.from, io.to, busy)
 
   val bpu = Module(new BPU)
 

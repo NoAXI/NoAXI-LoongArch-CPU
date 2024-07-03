@@ -8,36 +8,37 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 
+class RatRenameIO extends Bundle {
+  val valid = Input(Bool())
+  val areg  = Input(UInt(AREG_WIDTH.W))
+  val preg  = Output(UInt(PREG_WIDTH.W))
+  val opreg = Output(UInt(PREG_WIDTH.W))
+}
+
+class RatReadIO extends Bundle {
+  val areg = Input(new Bundle {
+    val rj = UInt(AREG_WIDTH.W)
+    val rk = UInt(AREG_WIDTH.W)
+  })
+  val preg = Output(new Bundle {
+    val rj = UInt(PREG_WIDTH.W)
+    val rk = UInt(PREG_WIDTH.W)
+  })
+}
+
+class RatCommitIO extends Bundle {
+  val valid = Input(Bool())
+  val areg  = Input(UInt(AREG_WIDTH.W))
+  val preg  = Input(UInt(PREG_WIDTH.W))
+  val opreg = Input(UInt(PREG_WIDTH.W))
+}
+
 class RatIO extends Bundle {
-  val recover = new Bundle {
-    val valid = Input(Bool())
-  }
-  val renameStall = Output(Bool())
-  val rename = Vec(
-    ISSUE_WIDTH,
-    new Bundle {
-      val valid = Input(Bool())
-      val areg  = Input(UInt(AREG_WIDTH.W))
-      val preg  = Output(UInt(PREG_WIDTH.W))
-      val opreg = Output(UInt(PREG_WIDTH.W))
-    },
-  )
-  val read = Vec(
-    ISSUE_WIDTH,
-    new Bundle {
-      val areg = Input(Vec(2, UInt(AREG_WIDTH.W)))
-      val preg = Output(Vec(2, UInt(PREG_WIDTH.W)))
-    },
-  )
-  val commit = Vec(
-    ISSUE_WIDTH,
-    new Bundle {
-      val valid = Input(Bool())
-      val areg  = Input(UInt(AREG_WIDTH.W))
-      val preg  = Input(UInt(PREG_WIDTH.W))
-      val opreg = Input(UInt(PREG_WIDTH.W))
-    },
-  )
+  val flush  = Input(Bool())
+  val full   = Output(Bool()) // <> rename
+  val rename = Vec(ISSUE_WIDTH, new RatRenameIO)
+  val read   = Vec(ISSUE_WIDTH, new RatReadIO)
+  val commit = Vec(ISSUE_WIDTH, new RatCommitIO)
 }
 
 class Rat extends Module {
@@ -45,20 +46,16 @@ class Rat extends Module {
 
   // stall when freelist is empty (freelistSize < readSize)
   val stall = WireDefault(false.B)
-  io.renameStall := stall
+  io.full := stall
 
   // rat def
   val sRat = RegInit(VecInit(Seq.tabulate(AREG_NUM)(i => i.U(PREG_WIDTH.W))))
   val aRat = RegInit(VecInit(Seq.tabulate(AREG_NUM)(i => i.U(PREG_WIDTH.W))))
 
   // output read info
-  // j goes until 2 cuz there's only rj & rk
   for (i <- 0 until ISSUE_WIDTH) {
-    for (j <- 0 until 2) {
-      val areg = io.read(i).areg(j)
-      val preg = io.read(i).preg(j)
-      preg := sRat(areg)
-    }
+    io.read(i).preg.rj := sRat(io.read(i).areg.rj)
+    io.read(i).preg.rj := sRat(io.read(i).preg.rj)
   }
 
   // rename: sRat update
@@ -71,7 +68,7 @@ class Rat extends Module {
       }
     }
   }
-  when(!io.recover.valid) {
+  when(!io.flush) {
     for (i <- 0 until ISSUE_WIDTH) {
       val info = io.commit(i)
       when(info.valid) {
@@ -87,7 +84,7 @@ class Rat extends Module {
   val tailPtr    = RegInit(0.U(FREELIST_WIDTH.W)) // inc when push
   val headOffset = WireDefault(0.U(2.W))
   val tailOffset = WireDefault(0.U(2.W))
-  val fifoSize   = RegInit(FREELIST_NUM.U(FREELIST_WIDTH.W))
+  val fifoSize   = RegInit((FREELIST_NUM - 1).U(FREELIST_WIDTH.W))
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rename(i)
     info.preg  := 0.U
@@ -95,7 +92,7 @@ class Rat extends Module {
   }
 
   // rename: pop, head inc
-  // todo: maybe should adapt to more issue width?
+  // TODO: maybe should adapt to more issue width?
   when(io.rename(0).valid && io.rename(1).valid) {
     when(fifoSize < 2.U) {
       stall := true.B
@@ -134,9 +131,9 @@ class Rat extends Module {
   }
 
   // when recover, set freelist full
-  when(io.recover.valid) {
+  when(io.flush) {
     tailPtr  := headPtr
-    fifoSize := FREELIST_NUM.U
+    fifoSize := (FREELIST_NUM - 1).U
     sRat     := aRat
   }.otherwise {
     fifoSize := fifoSize - headOffset + tailOffset

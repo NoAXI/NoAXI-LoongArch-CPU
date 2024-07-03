@@ -12,8 +12,8 @@ class DecodeTopIO extends StageBundle {}
 
 class DecodeTop extends Module {
   val io   = IO(new DecodeTopIO)
-  val busy = Vec(ISSUE_WIDTH, WireDefault(false.B))
-  val from = StageConnect(io.from, io.to, busy)
+  val busy = WireDefault(0.U.asTypeOf(new BusyInfo))
+  val from = stageConnect(io.from, io.to, busy)
 
   val info         = from._1.bits
   val valid_signal = from._2

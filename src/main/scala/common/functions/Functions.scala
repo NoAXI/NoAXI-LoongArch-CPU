@@ -10,16 +10,12 @@ import const.Parameters._
 
 object Functions {
   // for pipelines---------------------------------------------------------------------------
-
-  def StageConnect(x: DecoupledIO[ConnectInfo], y: DecoupledIO[ConnectInfo], busy: Vec[Bool]): (DualInfo, Bool) = {
-    val info    = RegInit(0.U.asTypeOf(new DualInfo))
-    val valid   = RegInit(false.B)
-    val allbusy = WireDefault(false.B)
-    for (i <- 0 until ISSUE_WIDTH) {
-      allbusy := allbusy || busy(i).asBool
-    }
-    x.ready := !valid || (y.ready && !allbusy)
-    y.valid := valid && !allbusy
+  def stageConnect(x: DecoupledIO[DualInfo], y: DecoupledIO[DualInfo], busy: BusyInfo): (DualInfo, Bool) = {
+    val info  = RegInit(0.U.asTypeOf(new DualInfo))
+    val valid = RegInit(false.B)
+    val stall = busy.info.reduce(_ || _)
+    x.ready := !valid || (y.ready && !stall)
+    y.valid := valid && !stall
     when(x.ready) {
       valid := x.valid
     }
@@ -29,11 +25,11 @@ object Functions {
     (info, valid)
   }
 
-  def FlushWhen(x: DualInfo, y: Bool): Unit = {
-    when(y) {
-      x := 0.U.asTypeOf(new DualInfo)
+  def flushWhen(infoReg: DualInfo, flush: Bool): Unit = {
+    when(flush) {
+      infoReg := 0.U.asTypeOf(new DualInfo)
       for (i <- 0 until ISSUE_WIDTH) {
-        x.bits(i).bubble := true.B
+        infoReg.bits(i).bubble := true.B
       }
     }
   }

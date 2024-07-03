@@ -17,7 +17,7 @@ class ROBInfo extends Bundle {
   val exc_vaddr = UInt(ADDR_WIDTH.W)
 }
 
-class RenameBundle {
-  val areg = UInt(AREG_WIDTH.W)
-  val preg = UInt(PREG_WIDTH.W)
+class RenameBundle extends Bundle {
+  val areg  = UInt(AREG_WIDTH.W)
+  val preg  = UInt(PREG_WIDTH.W)
 }
