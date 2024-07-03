@@ -50,7 +50,7 @@ class RenameTop extends Module {
     to.rjMap.preg := io.ratRead(i).preg.rj
     to.rkMap.preg := io.ratRead(i).preg.rk
 
-    // // ===== rob ======
+    // rob
     io.rob(i).valid := valid
     to.robId        := io.rob(i).index
   }
