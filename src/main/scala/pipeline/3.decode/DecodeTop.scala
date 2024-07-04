@@ -17,4 +17,9 @@ class DecodeTop extends Module {
 
   val info         = from._1.bits
   val valid_signal = from._2
+
+  val dec = Module(new Decoder)
+
+  val decVec = Vec(2, Module(new Decoder).io)
+
 }

@@ -14,7 +14,7 @@ import memory.tlb._
 import memory.cache._
 
 class TopIO extends Bundle {
-  val axi               = new AXI_IO
+  val axi               = new AXIIO
   val debug_wb_pc       = Output(UInt(32.W))
   val debug_wb_rf_we    = Output(UInt(4.W))
   val debug_wb_rf_wnum  = Output(UInt(5.W))
@@ -41,8 +41,8 @@ class Top extends Module {
 
   // memory access
   val axilayer = Module(new AXILayer).io
-  val icache   = Module(new iCache).io
-  val dcache   = Module(new dCache_with_cached_writebuffer).io
+  val icache   = Module(new ICache).io
+  // val dcache   = Module(new dCache_with_cached_writebuffer).io
 
   // rename <> rat
   rename.ratRename <> rat.rename
@@ -56,5 +56,5 @@ class Top extends Module {
   // axi
   io.axi          <> axilayer.to
   axilayer.icache <> icache.axi
-  axilayer.dcache <> dcache.axi
+  // axilayer.dcache <> dcache.axi
 }

@@ -5,13 +5,13 @@ import chisel3.util._
 
 import const._
 import bundles._
-import func.Functions._
 import const.Parameters._
+import func.Functions._
 
 class AXILayerIO extends Bundle {
-  val icache = Flipped(new iCache_AXI)
-  val dcache = Flipped(new dCache_AXI)
-  val to     = new AXI_IO
+  val icache = Flipped(new ICacheAXI)
+  val dcache = Flipped(new DCacheAXI)
+  val to     = new AXIIO
 }
 
 class AXILayer extends Module {
@@ -43,10 +43,8 @@ class AXILayer extends Module {
   io.dcache.b <> io.to.b
 
   io.to.aw.bits.addr := io.dcache.aw.bits.addr
-  // io.to.aw.bits.addr := io.dcache.aw.bits.addr & 0x1fffffff.U
   io.to.ar.bits.id   := Mux(ar_sel, io.dcache.ar.bits.id, io.icache.ar.bits.id)
   io.to.ar.bits.addr := Mux(ar_sel, io.dcache.ar.bits.addr, io.icache.ar.bits.addr)
-  // io.to.ar.bits.addr := Mux(ar_sel, io.dcache.ar.bits.addr, io.icache.ar.bits.addr) & 0x1fffffff.U
   io.to.ar.bits.size := Mux(ar_sel, io.dcache.ar.bits.size, io.icache.ar.bits.size)
   io.to.ar.bits.len  := Mux(ar_sel, io.dcache.ar.bits.len, io.icache.ar.bits.len)
   io.to.ar.valid     := Mux(ar_sel, io.dcache.ar.valid, io.icache.ar.valid)

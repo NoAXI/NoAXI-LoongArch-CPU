@@ -8,20 +8,33 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 
-class PrefetchTopIO extends StageBundle {}
+// Predict Failed：需要清空前端流水级里的指令，未实现
+
+class PrefetchTopIO extends StageBundle {
+  val iCache   = new PreFetchICacheIO
+  val tlb      = new PreFetchTLBIO
+  val bpuTrain = Input(new BpuTrain) // 跳转结果
+}
 
 class PrefetchTop extends Module {
   val io   = IO(new PrefetchTopIO)
   val busy = WireDefault(0.U.asTypeOf(new BusyInfo))
   stageConnect(io.from, io.to, busy)
 
-  val bpu = Module(new BPU)
+  val pc      = RegInit(START_ADDR.U(ADDR_WIDTH.W))
+  val next_pc = WireDefault(0.U(ADDR_WIDTH.W))
+  val bpu     = Module(new BPU).io
 
-  val pc        = RegInit(UInt(ADDR_WIDTH.W))
-  val pc_plus_8 = pc + 8.U
-  val pc_plus_4 = pc + 4.U
-  val pc_next   = WireDefault(pc_plus_8)
-  when(pc(0).asBool) {
-    pc_next := pc_plus_4
-  }
+  io.tlb.va              := pc
+  io.iCache.request.bits := pc
+
+  bpu.pc    := pc
+  bpu.train := io.bpuTrain
+
+  next_pc := Mux(!io.bpuTrain.succeed, io.bpuTrain.target, Mux(bpu.res.en, bpu.res.addr, nextLine(pc)))
+  pc      := next_pc
+
+  val toInfo = WireDefault(0.U.asTypeOf(new SingleInfo))
+  toInfo.pc          := pc
+  io.to.bits.bits(0) := toInfo
 }

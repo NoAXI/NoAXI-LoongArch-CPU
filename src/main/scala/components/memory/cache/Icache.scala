@@ -5,17 +5,18 @@ import chisel3.util._
 
 import const._
 import bundles._
-import func.Functions._
 import const.cacheConst._
 import const.Parameters._
+import func.Functions._
 
-class iCacheIO extends Bundle {
-  val axi   = new iCache_AXI
-  val fetch = Flipped(new fetch_iCache_IO)
+class ICacheIO extends Bundle {
+  val axi      = new ICacheAXI
+  val preFetch = Flipped(new PreFetchICacheIO)
+  val fetch    = Flipped(new FetchICacheIO)
 }
 
-class iCache extends Module {
-  val io = IO(new iCacheIO)
+class ICache extends Module {
+  val io = IO(new ICacheIO)
 
   val idle :: replace :: waiting :: Nil = Enum(3)
 
@@ -28,20 +29,21 @@ class iCache extends Module {
   val arvalid        = RegInit(false.B)
   val rready         = RegInit(false.B)
   val ans_valid      = RegInit(false.B)
-  val ans_bits       = RegInit(0.U(INST_WIDTH.W))
+  val ans_bits       = RegInit(Vec(4, 0.U(INST_WIDTH.W)))
   val i_ans_valid    = WireDefault(false.B)
-  val i_ans_bits     = WireDefault(0.U(INST_WIDTH.W))
-  val saved_ans_bits = RegInit(0.U(INST_WIDTH.W))
+  val i_ans_bits     = WireDefault(Vec(4, 0.U(INST_WIDTH.W)))
+  val saved_ans_bits = RegInit(Vec(4, 0.U(INST_WIDTH.W)))
+  val total_requests = RegInit(0.U(32.W))
+  val hitted_times   = RegInit(0.U(32.W))
   val hit            = Wire(Vec(2, Bool()))
   val hitted         = WireDefault(false.B)
   val hittedway      = WireDefault(false.B)
   val hitdataline    = WireDefault(0.U((LINE_SIZE * 8).W))
-  val hitdata        = WireDefault(0.U(DATA_WIDTH.W))
   val linedata       = RegInit(0.U((LINE_SIZE * 8).W))
   val wmask          = RegInit(1.U(4.W))
   val wmove          = Mux1H((3 to 0 by -1).map(i => wmask(i) -> (i * 32).U))
   val saved_info     = RegInit(0.U.asTypeOf(new savedInfo))
-  val next_addr      = io.fetch.request.bits
+  val next_addr      = io.preFetch.request.bits.addr
   val addr           = RegInit(0.U(ADDR_WIDTH.W))
   addr := next_addr
 
@@ -60,30 +62,28 @@ class iCache extends Module {
   hittedway   := PriorityEncoder(hit)
   hitted      := hit.reduce(_ || _)
   hitdataline := Mux1H(hit, VecInit.tabulate(2)(i => datasram(i).douta))
-  hitdata := MateDefault(
-    addr(3, 2),
-    0.U,
-    Seq(
-      0.U -> hitdataline(31, 0),
-      1.U -> hitdataline(63, 32),
-      2.U -> hitdataline(95, 64),
-      3.U -> hitdataline(127, 96),
-    ),
-  )
+
+  val hitdatalineVec = VecInit.tabulate(4)(i => hitdataline((i + 1) * 32 - 1, i * 32))
 
   val state = RegInit(idle)
   switch(state) {
     is(idle) {
       ans_valid := false.B
       when(io.fetch.request.fire) {
+        if (Config.statistic_on) {
+          total_requests := total_requests + 1.U
+        }
         when(hitted) {
+          if (Config.statistic_on) {
+            hitted_times := hitted_times + 1.U
+          }
           val lru_index = io.fetch.request.bits(11, 4)
           lru(lru_index) := !hitdataline
 
           state          := Mux(io.fetch.cango, idle, waiting)
           i_ans_valid    := true.B
-          i_ans_bits     := hitdata
-          saved_ans_bits := hitdata
+          i_ans_bits     := hitdatalineVec
+          saved_ans_bits := hitdatalineVec
         }.otherwise {
           arvalid         := true.B
           ar.addr         := addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
@@ -115,16 +115,7 @@ class iCache extends Module {
       }
 
       val final_linedata = linedata | (io.axi.r.bits.data << wmove)
-      val _ans_bits = MateDefault(
-        saved_info.offset,
-        0.U,
-        Seq(
-          0.U -> final_linedata(31, 0),
-          1.U -> final_linedata(63, 32),
-          2.U -> final_linedata(95, 64),
-          3.U -> final_linedata(127, 96),
-        ),
-      )
+      val _ans_bits = VecInit.tabulate(4)(i => final_linedata((i + 1) * 32 - 1, i * 32))
 
       // write sram
       val lru_way = lru(saved_info.index)
@@ -173,6 +164,11 @@ class iCache extends Module {
     dontTouch(hitted)
     dontTouch(hittedway)
     dontTouch(hitdataline)
-    dontTouch(hitdata)
+    dontTouch(hitdatalineVec)
+  }
+
+  if (Config.statistic_on) {
+    dontTouch(total_requests)
+    dontTouch(hitted_times)
   }
 }

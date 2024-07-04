@@ -10,13 +10,16 @@ import bundles._
 
 class TLBIO extends Bundle {
   // from csr
-  val csr = Flipped(new csr_TLB_IO)
+  val csr = Flipped(new CSRTLBIO)
+
+  // from fetch
+  val fetch = Flipped(new FetchICacheIO)
 
   // from exe
   // val exe = Flipped(new exe_TLB_IO)
 
   // act with mem
-  val mem = Flipped(new mem_TLB_IO)
+  val mem = Flipped(new MemTLBIO)
 }
 
 class TLB extends Module {

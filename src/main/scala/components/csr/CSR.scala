@@ -21,7 +21,7 @@ class CSR_IO extends Bundle {
   val br_exc = Output(new br)
 
   // to tlb
-  val tlb = new csr_TLB_IO
+  val tlb = new CSRTLBIO
 }
 
 class CSR extends Module {

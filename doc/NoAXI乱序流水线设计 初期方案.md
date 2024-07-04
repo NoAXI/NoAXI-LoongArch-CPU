@@ -101,6 +101,34 @@
 
 至此指令开始占用ROB表项，进入后端处理
 
+
+
+
+## 分支预测
+1. 根据pc判断是否为跳转指令
+    - 利用`BHT`表，添加`valid`项，表示pc对应的是否为跳转指令，在更新`BHT`表的时候更新`valid`
+    - 读取`BHT`表，看该pc是否为跳转. 利用`BHT(Branch History Table)`记录pc对应的跳转历史`BHR(Branch History Register)`
+    - 更新时机：`commit`时
+    - TODO:可以使用哈希(如异或)映射pc
+3. 利用`PHT(Pattern History Table)`记录`BHR`对应的跳转历史
+    - 暂定所有分支指令共用一个`PHT`
+4. *基于全局历史`GHR(Global History Register)`的分支预测
+    - 可以理解成`BHT`中只有一个表项，此时`BHT`表就变成了`GHR`，这一项记录所有跳转指令的历史
+5. *竞争的分支预测
+    - 对于一个分支指令，记录其使用`BHR`和使用`GHR`的成功失败信息，如果使用某一个历史失败两次，则转用另一个历史  
+6. 对于直接跳转类型和`CALL`，利用`BTB(Branch Target Buffer)`记录pc对应的跳转地址，同时`BTB`兼顾判断跳转类型(CALL,Return,其他)的职责
+    - 对`tag`进行哈希运算
+    - 如果缺失，顺序取指
+
+    | Valid | Tag   | BTA   | Br_type |
+    |:-----:|:-----:|:-----:|:-------:|
+    | 1 b   | 1 b   | 1 b   | 2 b     |
+
+7. 对于间接跳转类型(`Return`)，利用`RAS(Return Address Stack)`记录最近执行的`CALL`指令的下一条指令地址，并使用栈顶值作为预测跳转地址
+    - `RAS`满时，对`RAS`使用循环更新，即再从底向上开始更新
+    - *TODO:对`RAS`的每一项添加一个计数属性，表示该地址出现的次数
+
+
 ## 后端
 
 后端定义了四个独立的单发射流水线，其中访存流水线强制要求为顺序流水

@@ -46,12 +46,12 @@ class B extends Bundle {
   val resp = UInt(2.W) // response type
 }
 
-class iCache_AXI extends Bundle {
+class ICacheAXI extends Bundle {
   val ar = Decoupled(new AR())
   val r  = Flipped(Decoupled(new R()))
 }
 
-class dCache_AXI extends Bundle {
+class DCacheAXI extends Bundle {
   val ar = Decoupled(new AR())
   val r  = Flipped(Decoupled(new R()))
   val aw = Decoupled(new AW())
@@ -59,7 +59,7 @@ class dCache_AXI extends Bundle {
   val b  = Flipped(Decoupled(new B()))
 }
 
-class AXI_IO extends Bundle {
+class AXIIO extends Bundle {
   val ar = Decoupled(new AR())         // read address channel
   val r  = Flipped(Decoupled(new R())) // read data channel
   val aw = Decoupled(new AW())         // write address channel
@@ -67,13 +67,19 @@ class AXI_IO extends Bundle {
   val b  = Flipped(Decoupled(new B())) // write response channel
 }
 
-class fetch_iCache_IO extends Bundle {
-  val answer  = Flipped(DecoupledIO(UInt(INST_WIDTH.W)))
+class PreFetchICacheIO extends Bundle {
+  val request = DecoupledIO(new Bundle {
+    val addr = UInt(ADDR_WIDTH.W)
+  })
+}
+
+class FetchICacheIO extends Bundle {
+  val answer  = Flipped(DecoupledIO(Vec(4, UInt(INST_WIDTH.W))))
   val request = DecoupledIO(UInt(ADDR_WIDTH.W))
   val cango   = Output(Bool())
 }
 
-class mem_dCache_IO extends Bundle {
+class MemDCacheIO extends Bundle {
   val request = DecoupledIO(new Bundle {
     val cached = Bool()
     val re     = Bool()
@@ -87,7 +93,7 @@ class mem_dCache_IO extends Bundle {
   // val cango  = Output(Bool())
 }
 
-class exe_dCache_IO extends Bundle {
+class ExeDCacheIO extends Bundle {
   val request = DecoupledIO(new Bundle {
     val addr = UInt(ADDR_WIDTH.W)
   })

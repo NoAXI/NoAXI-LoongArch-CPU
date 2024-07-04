@@ -56,6 +56,10 @@ object Functions {
       infoReg.bubble := true.B
     }
   }
+  // TODO: has some CONST
+  def nextLine(x: UInt):UInt = {
+    Cat(x(ADDR_WIDTH - 1, 4) + 1.U, 0.U(4.W))
+  }
 
   // for decoder--------------------------------------------------------------------------------
   def SignedExtend(a: UInt, len: Int) = {
