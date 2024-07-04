@@ -31,7 +31,7 @@ class WritebackTop extends Module {
   io.preg.data  := info.rdInfo.data
 
   // writeback -> rob
-  io.rob.valid := true.B
+  io.rob.valid := valid
   io.rob.index := info.robId
 
   io.rob.bits.done := true.B

@@ -34,7 +34,6 @@ class Top extends Module {
 
   // frontend pipeline
   val rename = Module(new RenameTop).io
-  val issue  = Module(new IssueTop).io
 
   // rename
   val rat  = Module(new Rat).io
@@ -42,7 +41,11 @@ class Top extends Module {
   val preg = Module(new PReg).io
 
   // backend pipeline
-  val readreg = Module(new ReadRegTop).io
+  val issue   = Module(new IssueTop).io
+  val readreg = Seq.fill(BACK_ISSUE_WIDTH)(Module(new ReadRegTop).io)
+  // TODO: add execute unit here
+  val writeback = Seq.fill(BACK_ISSUE_WIDTH)(Module(new WritebackTop).io)
+  val commit    = Module(new CommitTop).io
 
   // backend ctrl
   val forward = Module(new Forward).io
