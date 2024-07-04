@@ -33,7 +33,7 @@ class Forward extends Module {
   val io = IO(new ForwardIO)
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     for (regNum <- 0 to 1) {
-      val req = if (i == 0) io.req(i).rj else io.req(i).rk
+      val req = if (regNum == 0) io.req(i).rj else io.req(i).rk
       req.out := req.in
       for (j <- 0 until BACK_ISSUE_WIDTH) {
         when(req.preg === io.info(j).preg) {

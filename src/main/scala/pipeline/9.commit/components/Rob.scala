@@ -101,5 +101,10 @@ class Rob extends Module {
     fifoSize := fifoSize - headOffset + tailOffset
     headPtr  := headPtr + headOffset
     tailPtr  := tailPtr + tailOffset
+    for (i <- 0 until ISSUE_WIDTH) {
+      when(i.U < tailOffset) {
+        rob(tailPtr + i.U).done := false.B
+      }
+    }
   }
 }
