@@ -26,8 +26,8 @@ class RobIO extends Bundle {
   val flush  = Input(Bool())
   val full   = Output(Bool()) // <> rename
   val rename = Vec(ISSUE_WIDTH, new RobRenameIO)
-  // val write  = Vec(BACK_ISSUE_WIDTH, new RobWriteIO)
-  // val commit = Vec(ISSUE_WIDTH, new RobCommitIO)
+  val write  = Vec(BACK_ISSUE_WIDTH, new RobWriteIO)
+  val commit = Vec(ISSUE_WIDTH, new RobCommitIO)
 }
 class Rob extends Module {
   val io = IO(new RobIO)
@@ -35,12 +35,12 @@ class Rob extends Module {
   val rob = RegInit(VecInit(Seq.fill(ROB_NUM)(0.U.asTypeOf(new ROBInfo))))
 
   // write info from the last stage of backend pipeline
-  // for (i <- 0 until BACK_ISSUE_WIDTH) {
-  //   val info = io.write(i)
-  //   when(info.valid) {
-  //     rob(info.index) := info.bits
-  //   }
-  // }
+  for (i <- 0 until BACK_ISSUE_WIDTH) {
+    val info = io.write(i)
+    when(info.valid) {
+      rob(info.index) := info.bits
+    }
+  }
 
   // rob full info
   val stall = WireDefault(false.B)
@@ -80,17 +80,17 @@ class Rob extends Module {
   }
 
   // commit: pop
-  // for (i <- 0 until ISSUE_WIDTH) {
-  //   io.commit(i).info  := rob(headPtr + i.U)
-  //   io.commit(i).valid := rob(headPtr + i.U).done && fifoSize >= (i + 1).U
-  // }
-  // when(io.commit(0).valid) {
-  //   when(io.commit(1).valid) {
-  //     headOffset := 2.U
-  //   }.otherwise {
-  //     headOffset := 1.U
-  //   }
-  // }
+  for (i <- 0 until ISSUE_WIDTH) {
+    io.commit(i).info  := rob(headPtr + i.U)
+    io.commit(i).valid := rob(headPtr + i.U).done && fifoSize >= (i + 1).U
+  }
+  when(io.commit(0).valid) {
+    when(io.commit(1).valid) {
+      headOffset := 2.U
+    }.otherwise {
+      headOffset := 1.U
+    }
+  }
 
   // fifo update
   when(io.flush) {

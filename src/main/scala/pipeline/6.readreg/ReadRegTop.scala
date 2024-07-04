@@ -38,5 +38,4 @@ class ReadRegTop extends Module {
   // forward -> readreg
   res.rjInfo.data := io.forwardReq.rj.out
   res.rkInfo.data := io.forwardReq.rk.out
-
 }
