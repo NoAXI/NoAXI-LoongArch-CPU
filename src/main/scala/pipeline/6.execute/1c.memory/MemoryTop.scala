@@ -12,7 +12,6 @@ import const.Parameters._
 // memory access inst
 // branch check inst
 class MemoryTopIO extends Bundle {
-
 }
 class MemoryTop extends Module {
   val io = IO(new MemoryTopIO)

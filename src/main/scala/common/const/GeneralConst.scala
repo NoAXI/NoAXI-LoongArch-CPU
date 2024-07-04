@@ -10,6 +10,9 @@ object Parameters {
   val ADDR_WIDTH = 32
   val CSR_WIDTH  = 14
 
+  // decoded info width
+  val OP_TYPE_WIDTH = 5
+
   // reg rename width
   val AREG_WIDTH     = 5
   val AREG_NUM       = 1 << AREG_WIDTH
@@ -19,6 +22,7 @@ object Parameters {
   val FREELIST_NUM   = 1 << FREELIST_WIDTH
   val ROB_WIDTH      = 5
   val ROB_NUM        = 32
+  val OPERAND_MAX    = 2
 
   // issue width
   val ISSUE_WIDTH      = 2

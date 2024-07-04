@@ -10,6 +10,7 @@ import const.Parameters._
 
 object Functions {
   // for pipelines---------------------------------------------------------------------------
+  // dual connect
   def stageConnect(x: DecoupledIO[DualInfo], y: DecoupledIO[DualInfo], busy: BusyInfo): (DualInfo, Bool) = {
     val info  = RegInit(0.U.asTypeOf(new DualInfo))
     val valid = RegInit(false.B)
@@ -24,13 +25,35 @@ object Functions {
     }
     (info, valid)
   }
-
+  // single connect
+  def stageConnect(x: DecoupledIO[SingleInfo], y: DecoupledIO[SingleInfo], busy: Bool): (SingleInfo, Bool) = {
+    val info  = RegInit(0.U.asTypeOf(new SingleInfo))
+    val valid = RegInit(false.B)
+    val stall = busy
+    x.ready := !valid || (y.ready && !stall)
+    y.valid := valid && !stall
+    when(x.ready) {
+      valid := x.valid
+    }
+    when(x.fire) {
+      info := x.bits
+    }
+    (info, valid)
+  }
+  // dual flush
   def flushWhen(infoReg: DualInfo, flush: Bool): Unit = {
     when(flush) {
-      infoReg := 0.U.asTypeOf(new DualInfo)
+      infoReg := 0.U.asTypeOf(infoReg)
       for (i <- 0 until ISSUE_WIDTH) {
         infoReg.bits(i).bubble := true.B
       }
+    }
+  }
+  // single flush
+  def flushWhen(infoReg: SingleInfo, flush: Bool): Unit = {
+    when(flush) {
+      infoReg        := 0.U.asTypeOf(infoReg)
+      infoReg.bubble := true.B
     }
   }
 

@@ -24,11 +24,12 @@ class RenameTop extends Module {
 
   val busy = WireDefault(0.U.asTypeOf(new BusyInfo))
   val raw  = stageConnect(io.from, io.to, busy)
+  flushWhen(raw._1, io.flush)
 
   val info  = raw._1
   val valid = io.to.fire && raw._2
   val res   = WireDefault(info)
-  flushWhen(raw._1, io.flush)
+  io.to.bits := res
 
   when(io.ratFull || io.robFull) {
     busy.info(0) := true.B
@@ -40,19 +41,18 @@ class RenameTop extends Module {
 
     // rename -> rat
     io.ratRename(i).valid := valid
-    io.ratRename(i).areg  := from.rdMap.areg
-    io.ratRead(i).areg.rj := to.rjMap.areg
-    io.ratRead(i).areg.rk := to.rkMap.areg
+    io.ratRename(i).areg  := from.rdInfo.areg
+    io.ratRead(i).areg.rj := to.rjInfo.areg
+    io.ratRead(i).areg.rk := to.rkInfo.areg
 
     // rat -> rename
-    to.opreg      := io.ratRename(i).opreg
-    to.rdMap.preg := io.ratRename(i).preg
-    to.rjMap.preg := io.ratRead(i).preg.rj
-    to.rkMap.preg := io.ratRead(i).preg.rk
+    to.opreg       := io.ratRename(i).opreg
+    to.rdInfo.preg := io.ratRename(i).preg
+    to.rjInfo.preg := io.ratRead(i).preg.rj
+    to.rkInfo.preg := io.ratRead(i).preg.rk
 
     // rob
     io.rob(i).valid := valid
     to.robId        := io.rob(i).index
   }
-  io.to.bits := res
 }

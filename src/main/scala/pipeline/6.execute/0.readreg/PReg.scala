@@ -8,29 +8,25 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 
-class PRegReadIO extends Bundle {
+class PRegAtomicReadIO extends Bundle {
   val index = Input(UInt(PREG_WIDTH.W))
   val data  = Output(UInt(DATA_WIDTH.W))
 }
+
+class PRegReadIO extends Bundle {
+  val rj = new PRegAtomicReadIO
+  val rk = new PRegAtomicReadIO
+}
+
 class PRegWriteIO extends Bundle {
   val en    = Input(Bool())
   val index = Input(UInt(PREG_WIDTH.W))
   val data  = Input(UInt(DATA_WIDTH.W))
 }
+
 class PRegIO extends Bundle {
-  val read = Vec(
-    BACK_ISSUE_WIDTH,
-    new Bundle {
-      val rj = new PRegReadIO
-      val rk = new PRegReadIO
-    },
-  )
-  val write = Vec(
-    BACK_ISSUE_WIDTH,
-    new Bundle {
-      val rd = new PRegWriteIO
-    },
-  )
+  val read  = Vec(BACK_ISSUE_WIDTH, new PRegReadIO)
+  val write = Vec(BACK_ISSUE_WIDTH, new PRegWriteIO)
 }
 
 class PReg extends Module {
@@ -48,7 +44,7 @@ class PReg extends Module {
 
   // write
   for (i <- 0 until BACK_ISSUE_WIDTH) {
-    val rd = io.write(i).rd
+    val rd = io.write(i)
     when(rd.en) {
       preg(rd.index) := rd.data
     }

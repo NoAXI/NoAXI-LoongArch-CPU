@@ -8,6 +8,12 @@ import const._
 import const.Parameters._
 import func.Functions._
 
+class RegInfo extends Bundle {
+  val areg = UInt(AREG_WIDTH.W)
+  val preg = UInt(PREG_WIDTH.W)
+  val data = UInt(DATA_WIDTH.W)
+}
+
 // basic info for single pipeline
 class SingleInfo extends Bundle {
   val bubble = Bool()
@@ -19,27 +25,22 @@ class SingleInfo extends Bundle {
 
   // decoded inst
   val func_type = FuncType()
-  val op_type   = UInt(5.W) // the maximum number of op_type
+  val op_type   = UInt(OP_TYPE_WIDTH.W) // the maximum number of op_type
   val isload    = Bool()
 
-  // data
-  // TODO: I wonder why did you use both src1 & rjData
-  val imm    = UInt(DATA_WIDTH.W)
-  val src1   = UInt(DATA_WIDTH.W)
-  val src2   = UInt(DATA_WIDTH.W)
-  val rjData = UInt(DATA_WIDTH.W)
-  val rdData = UInt(DATA_WIDTH.W)
+  // data info
+  val imm = UInt(DATA_WIDTH.W)
 
   // write reg
   val iswf   = Bool()
   val result = UInt(DATA_WIDTH.W)
 
   // rename info
-  val opreg = UInt(PREG_WIDTH.W)
-  val rjMap = new RenameBundle
-  val rkMap = new RenameBundle
-  val rdMap = new RenameBundle
-  val robId = UInt(ROB_WIDTH.W)
+  val opreg  = UInt(PREG_WIDTH.W) // the old preg id of rd
+  val rjInfo = new RegInfo
+  val rkInfo = new RegInfo
+  val rdInfo = new RegInfo
+  val robId  = UInt(ROB_WIDTH.W)
 
   // write csr
   val csr_iswf  = Bool()
@@ -69,8 +70,8 @@ class StageBundle extends Bundle {
   val flush = Input(Bool())
 }
 
-// this is wire(read-only), don't use it as reg
-// class ConnectInfo extends Bundle {
-//   val infoVec     = new DualInfo
-//   val validSignal = Bool()
-// }
+class SingleStageBundle extends Bundle {
+  val from  = Flipped(DecoupledIO(new SingleInfo))
+  val to    = DecoupledIO(new SingleInfo)
+  val flush = Input(Bool())
+}

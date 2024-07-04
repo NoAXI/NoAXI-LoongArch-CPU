@@ -24,16 +24,22 @@ class TopIO extends Bundle {
 class Top extends Module {
   val io = IO(new TopIO)
 
-  // pipeline module
+  // frontend pipeline
   val rename = Module(new RenameTop).io
   val issue  = Module(new IssueTop).io
 
-  // rename module
+  // rename
   val rat  = Module(new Rat).io
   val rob  = Module(new Rob).io
-  // val preg = Module(new PReg).io
+  val preg = Module(new PReg).io
 
-  // memory access module
+  // backend pipeline
+  val readreg = Module(new ReadRegTop).io
+
+  // backend ctrl
+  val forward = Module(new Forward).io
+
+  // memory access
   val axilayer = Module(new AXILayer).io
   val icache   = Module(new iCache).io
   val dcache   = Module(new dCache_with_cached_writebuffer).io
