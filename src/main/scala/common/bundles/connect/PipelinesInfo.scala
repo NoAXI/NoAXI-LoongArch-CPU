@@ -24,9 +24,9 @@ class SingleInfo extends Bundle {
   val inst     = UInt(INST_WIDTH.W)
 
   // decoded inst
-  val func_type = FuncType()
-  val op_type   = UInt(OP_TYPE_WIDTH.W) // the maximum number of op_type
-  val isload    = Bool()
+  val func_type    = FuncType()
+  val op_type      = UInt(OP_TYPE_WIDTH.W) // the maximum number of op_type
+  val pipelineType = PipelineType()
 
   // data info
   val imm = UInt(DATA_WIDTH.W)
