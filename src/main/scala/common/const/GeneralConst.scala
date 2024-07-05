@@ -10,6 +10,9 @@ object Parameters {
   val ADDR_WIDTH = 32
   val CSR_WIDTH  = 14
 
+  // fetch width
+  val FETCH_DEPTH = 4
+
   // decoded info width
   val OP_TYPE_WIDTH       = 5
   val PIPELINE_TYPE_WIDTH = 2

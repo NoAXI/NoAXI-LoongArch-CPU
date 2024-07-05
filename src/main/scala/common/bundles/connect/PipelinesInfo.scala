@@ -8,6 +8,11 @@ import const._
 import const.Parameters._
 import func.Functions._
 
+class InstV extends Bundle {
+  val inst  = UInt(INST_WIDTH.W)
+  val valid = Bool()
+}
+
 class RegInfo extends Bundle {
   val areg = UInt(AREG_WIDTH.W)
   val preg = UInt(PREG_WIDTH.W)
@@ -22,6 +27,10 @@ class SingleInfo extends Bundle {
   val pc       = UInt(ADDR_WIDTH.W)
   val pc_add_4 = UInt(ADDR_WIDTH.W)
   val inst     = UInt(INST_WIDTH.W)
+
+  // only used between fetch and ib
+  val instV    = Vec(FETCH_DEPTH, new InstV)
+  val fetchExc = Vec(FETCH_DEPTH, ECodes())
 
   // decoded inst
   val func_type    = FuncType()

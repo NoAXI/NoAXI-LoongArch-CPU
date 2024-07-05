@@ -20,7 +20,7 @@ class FetchTop extends Module {
   val busy = WireDefault(0.U.asTypeOf(new BusyInfo))
   val from = stageConnect(io.from, io.to, busy)
 
-  val info         = from._1.bits
+  val info         = from._1.bits(0)
   val valid_signal = from._2
 
   // get paddr from tlb, send to I-Cache
@@ -30,14 +30,15 @@ class FetchTop extends Module {
   io.iCache.cango         := io.to.ready
 
   busy := !io.iCache.answer.fire
-  val is_adef = info(0).pc(1, 0) =/= "b00".U
 
-  val to_info = Vec(4, WireDefault(0.U.asTypeOf(new SingleInfo)))
-  for (i <- 0 until 4) {
-    to_info(i)           := info(0)
-    to_info(i).inst      := Mux(is_adef, 0.U, io.iCache.answer.bits(i))
-    to_info(i).exc_type  := Mux(is_adef, ECodes.ADEF, ECodes.NONE)
-    to_info(i).exc_vaddr := info(0).pc
+  val is_adef = info.pc(1, 0) =/= "b00".U
+
+  val to_info = WireDefault(0.U.asTypeOf(new SingleInfo))
+  to_info.pc := info.pc
+  for (i <- 0 until FETCH_DEPTH) {
+    to_info.instV(i).inst  := Mux(is_adef, 0.U, io.iCache.answer.bits(i))
+    to_info.instV(i).valid := true.B // TODO: read the jump_index from BTB to decide the valid signal
+    to_info.fetchExc(i)    := Mux(is_adef, ECodes.ADEF, ECodes.NONE)
   }
-  io.to.bits := to_info
+  io.to.bits.bits(0).instV := to_info
 }

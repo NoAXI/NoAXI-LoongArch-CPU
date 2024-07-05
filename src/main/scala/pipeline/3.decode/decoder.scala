@@ -16,14 +16,19 @@ class DecoderIO extends Bundle {
 
   val func_type = Output(FuncType())
   val op_type   = Output(UInt(5.W))
-  val isload    = Output(Bool())
 
-  val imm = Output(UInt(DATA_WIDTH.W))
-  val rj  = Output(UInt(5.W))
-  val rk  = Output(UInt(5.W))
-  val rd  = Output(UInt(5.W))
+  val iswf = Output(Bool())
+  val rj   = Output(UInt(AREG_WIDTH.W))
+  val rk   = Output(UInt(AREG_WIDTH.W))
+  val rd   = Output(UInt(AREG_WIDTH.W))
+  val imm  = Output(UInt(DATA_WIDTH.W))
+
+  val csr_iswf  = Output(Bool())
+  val csr_wfreg = Output(UInt(CSR_WIDTH.W))
 
   val exc_type = Output(ECodes())
+
+  val pipelineType = Output(PipelineType())
 }
 
 class Decoder extends Module {
@@ -38,7 +43,6 @@ class Decoder extends Module {
   val List(func_type, op_type) = ListLookup(io.inst, List(0.U, 0.U), LA32R.table)
   io.func_type := func_type
   io.op_type   := op_type
-  io.isload    := func_type === FuncType.mem && MemOpType.isread(op_type)
 
   val imm05   = io.inst(14, 10)
   val imm12   = SignedExtend(io.inst(21, 10), DATA_WIDTH)
@@ -67,8 +71,18 @@ class Decoder extends Module {
   )
   io.imm := imm
 
-  val is_none = func_type === FuncType.none
-  val is_exc  = func_type === FuncType.exc
+  val is_jirl_bl     = func_type === FuncType.bru && (op_type === BruOptype.jirl || op_type === BruOptype.bl)
+  val is_none        = func_type === FuncType.none
+  val is_exc         = func_type === FuncType.exc
+  val is_st          = func_type === FuncType.mem && !MemOpType.isread(op_type)
+  val br_not_jirl_bl = func_type === FuncType.bru && !is_jirl_bl
+  io.iswf := !(is_exc || is_st || is_none || br_not_jirl_bl)
+
+  val is_csr  = func_type === FuncType.csr
+  val is_wr   = op_type === CsrOpType.wr
+  val is_xchg = op_type === CsrOpType.xchg
+  io.csr_iswf  := is_csr && (is_wr || is_xchg)
+  io.csr_wfreg := imm(13, 0)
 
   io.exc_type := MuxCase(
     ECodes.NONE,
@@ -77,6 +91,14 @@ class Decoder extends Module {
       (is_exc && op_type === ExcOpType.brk)  -> ECodes.BRK,
       (is_exc && op_type === ExcOpType.sys)  -> ECodes.SYS,
       (is_exc && op_type === ExcOpType.ertn) -> ECodes.ertn,
+    ),
+  )
+
+  io.pipelineType := MuxCase(
+    PipelineType.memory,
+    List(
+      (func_type === FuncType.alu || func_type === FuncType.alu_imm) -> PipelineType.arith,
+      (func_type === FuncType.mul || func_type === FuncType.div)     -> PipelineType.muldiv,
     ),
   )
 }
