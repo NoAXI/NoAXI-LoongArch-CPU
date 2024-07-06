@@ -8,7 +8,9 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 
-class ArithmeticTopIO extends SingleStageBundle {}
+class ArithmeticTopIO extends SingleStageBundle {
+  val forward = Flipped(new ForwardInfoIO)
+}
 
 class ArithmeticTop extends Module {
   val io = IO(new ArithmeticTopIO)
@@ -21,4 +23,7 @@ class ArithmeticTop extends Module {
   val valid = raw._2
   val res   = WireDefault(info)
   io.to.bits := res
+
+  // arith -> forward -> readreg
+  doForward(io.forward, res, valid)
 }

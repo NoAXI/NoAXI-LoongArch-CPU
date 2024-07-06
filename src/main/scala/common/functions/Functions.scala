@@ -8,6 +8,7 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 import pipeline.AwakeInfo
+import pipeline.ForwardInfoIO
 
 object Functions {
   // for pipelines---------------------------------------------------------------------------
@@ -111,5 +112,12 @@ object Functions {
       realHit(j) := awakeHit(j) || !busy(preg)
     }
     realHit
+  }
+
+  // for forwarder ---------------------------------------------------------------------------
+  def doForward(io: ForwardInfoIO, info: SingleInfo, validInst: Bool): Unit = {
+    io.valid := validInst && info.iswf
+    io.data  := info.rdInfo.data
+    io.preg  := info.rdInfo.preg
   }
 }

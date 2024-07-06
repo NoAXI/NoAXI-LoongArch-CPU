@@ -37,7 +37,7 @@ class Top extends Module {
   // val prefetch = Module(new PrefetchTop).io
   // val fetch    = Module(new FetchTop).io
   // val decode   = Module(new DecodeTop).io
-  val rename   = Module(new RenameTop).io
+  val rename = Module(new RenameTop).io
 
   // backend before execute
   val dispatch = Module(new DispatchTop).io
@@ -58,7 +58,7 @@ class Top extends Module {
   val rat     = Module(new Rat).io
   val rob     = Module(new Rob).io
   val preg    = Module(new PReg).io
-  val forward = Module(new Forward).io
+  val forward = Module(new Forward).io // exe = 0, wb = 1
 
   // memory access
   val axilayer = Module(new AXILayer).io
@@ -108,15 +108,26 @@ class Top extends Module {
     }
   }
 
-  // writeback <> preg, rob
+  // forward <> the last stage of execute
+  // TODO: 需要添加muldiv和memory的前递信号
+  arith(0).forward <> forward.info(0)(0)
+  arith(1).forward <> forward.info(0)(1)
+
+  // writeback <> preg, rob, forward
   for (i <- 0 until BACK_ISSUE_WIDTH) {
-    writeback(i).preg <> preg.write(i)
-    writeback(i).rob  <> rob.write(i)
+    writeback(i).preg    <> preg.write(i)
+    writeback(i).rob     <> rob.write(i)
+    writeback(i).forward <> forward.info(1)(i)
   }
 
-  // commit <> rat, rob
+  // commit <> rat, rob, debug
   commit.rat <> rat.commit
   commit.rob <> rob.commit
+  when(clock.asBool) {
+    io.debug := commit.debug(0)
+  }.otherwise {
+    io.debug := commit.debug(1)
+  }
 
   // axi
   io.axi <> axilayer.to

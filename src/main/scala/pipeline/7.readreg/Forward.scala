@@ -20,8 +20,9 @@ class ForwardRequestIO extends Bundle {
 }
 
 class ForwardInfoIO extends Bundle {
-  val preg = Input(UInt(PREG_WIDTH.W))
-  val data = Input(UInt(DATA_WIDTH.W))
+  val valid = Input(Bool())
+  val preg  = Input(UInt(PREG_WIDTH.W))
+  val data  = Input(UInt(DATA_WIDTH.W))
 }
 
 class ForwardIO extends Bundle {
@@ -38,7 +39,7 @@ class Forward extends Module {
         val req = if (regNum == 0) io.req(i).rj else io.req(i).rk
         req.out := req.in
         for (j <- 0 until BACK_ISSUE_WIDTH) {
-          when(req.preg === info(j).preg) {
+          when(info(j).valid && req.preg === info(j).preg) {
             req.out := info(j).data
           }
         }

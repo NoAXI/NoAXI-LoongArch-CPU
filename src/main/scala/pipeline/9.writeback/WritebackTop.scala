@@ -9,8 +9,9 @@ import func.Functions._
 import const.Parameters._
 
 class WritebackTopIO extends SingleStageBundle {
-  val preg = Flipped(new PRegWriteIO)
-  val rob  = Flipped(new RobWriteIO)
+  val preg    = Flipped(new PRegWriteIO)
+  val rob     = Flipped(new RobWriteIO)
+  val forward = Flipped(new ForwardInfoIO)
 }
 
 class WritebackTop extends Module {
@@ -26,23 +27,26 @@ class WritebackTop extends Module {
   io.to.bits := res
 
   // writeback -> preg
-  io.preg.en    := valid && info.iswf
-  io.preg.index := info.rdInfo.preg
-  io.preg.data  := info.rdInfo.data
+  io.preg.en    := valid && res.iswf
+  io.preg.index := res.rdInfo.preg
+  io.preg.data  := res.rdInfo.data
 
   // writeback -> rob
   io.rob.valid := valid
-  io.rob.index := info.robId
+  io.rob.index := res.robId
 
   io.rob.bits.done := true.B
 
-  io.rob.bits.wen   := info.iswf
-  io.rob.bits.areg  := info.rdInfo.areg
-  io.rob.bits.preg  := info.rdInfo.preg
-  io.rob.bits.opreg := info.opreg
-  io.rob.bits.wdata := info.rdInfo.data
+  io.rob.bits.wen   := res.iswf
+  io.rob.bits.areg  := res.rdInfo.areg
+  io.rob.bits.preg  := res.rdInfo.preg
+  io.rob.bits.opreg := res.opreg
+  io.rob.bits.wdata := res.rdInfo.data
 
-  io.rob.bits.debug_pc  := info.pc
-  io.rob.bits.exc_type  := info.exc_type
-  io.rob.bits.exc_vaddr := info.exc_vaddr
+  io.rob.bits.debug_pc  := res.pc
+  io.rob.bits.exc_type  := res.exc_type
+  io.rob.bits.exc_vaddr := res.exc_vaddr
+
+  // writeback -> forward -> readreg
+  doForward(io.forward, res, valid)
 }
