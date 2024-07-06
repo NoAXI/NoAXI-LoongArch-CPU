@@ -79,8 +79,10 @@ class StageBundle extends Bundle {
   val flush = Input(Bool())
 }
 
-class SingleStageBundle extends Bundle {
-  val from  = Flipped(DecoupledIO(new SingleInfo))
-  val to    = DecoupledIO(new SingleInfo)
+class SingleStageBundleWithoutFlush extends Bundle {
+  val from = Flipped(DecoupledIO(new SingleInfo))
+  val to   = DecoupledIO(new SingleInfo)
+}
+class SingleStageBundle extends SingleStageBundleWithoutFlush {
   val flush = Input(Bool())
 }
