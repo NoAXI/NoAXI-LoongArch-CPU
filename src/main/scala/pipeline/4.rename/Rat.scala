@@ -83,7 +83,7 @@ class Rat extends Module {
   val tailPtr    = RegInit(0.U(FREELIST_WIDTH.W)) // inc when push
   val headOffset = WireDefault(0.U(2.W))
   val tailOffset = WireDefault(0.U(2.W))
-  val fifoSize   = RegInit((FREELIST_NUM - 1).U(FREELIST_WIDTH.W))
+  val fifoSize   = RegInit(FREELIST_NUM.U((FREELIST_WIDTH + 1).W))
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rename(i)
     info.preg  := 0.U
@@ -132,7 +132,7 @@ class Rat extends Module {
   // when recover, set freelist full
   when(io.flush) {
     tailPtr  := headPtr
-    fifoSize := (FREELIST_NUM - 1).U
+    fifoSize := FREELIST_NUM.U
     sRat     := aRat
   }.otherwise {
     fifoSize := fifoSize - headOffset + tailOffset

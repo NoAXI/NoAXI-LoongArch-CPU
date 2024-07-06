@@ -60,7 +60,7 @@ class IssueTop extends Module {
   val busyReg = RegInit(VecInit(Seq.fill(PREG_NUM)(false.B)))
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     when(io.awake(i).valid) {
-      busyReg(i) := false.B
+      busyReg(io.awake(i).preg) := false.B
     }
   }
   for (i <- 0 until BACK_ISSUE_WIDTH) {

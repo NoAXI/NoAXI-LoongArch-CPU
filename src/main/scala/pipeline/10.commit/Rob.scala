@@ -67,7 +67,7 @@ class Rob extends Module {
   val tailPtr    = RegInit(0.U(ROB_WIDTH.W)) // inc when push
   val headOffset = WireDefault(0.U(2.W))
   val tailOffset = WireDefault(0.U(2.W))
-  val fifoSize   = RegInit(0.U(ROB_WIDTH.W))
+  val fifoSize   = RegInit(0.U((ROB_WIDTH + 1).W))
 
   // rename: push
   for (i <- 0 until ISSUE_WIDTH) {
