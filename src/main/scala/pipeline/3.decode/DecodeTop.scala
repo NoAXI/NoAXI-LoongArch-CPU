@@ -34,10 +34,13 @@ class DecodeTop extends Module {
     to_info.bits(i).iswf         := dec(i).iswf && !info(i).bubble
     to_info.bits(i).csr_iswf     := dec(i).csr_iswf
     to_info.bits(i).csr_addr     := dec(i).csr_wfreg
+    to_info.bits(i).isCALL       := dec(i).isCALL
+    to_info.bits(i).isReturn     := dec(i).isReturn
+    to_info.bits(i).predict      := info(i).predict
     to_info.bits(i).exc_type     := Mux(info(i).exc_type =/= ECodes.NONE, info(i).exc_type, dec(i).exc_type)
     to_info.bits(i).exc_vaddr    := info(i).pc
     to_info.bits(i).pipelineType := Mux(to_info.bits(i).exc_type =/= ECodes.NONE, PipelineType.nop, dec(i).pipelineType)
   }
 
-  io.to.bits := to_info
+  io.to.bits := Mux(io.flush, 0.U.asTypeOf(new DualInfo), to_info)
 }

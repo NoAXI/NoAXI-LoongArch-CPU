@@ -12,8 +12,11 @@ class TLBIO extends Bundle {
   // from csr
   val csr = Flipped(new CSRTLBIO)
 
+  // from preFetch
+  val preFetch = Flipped(new PreFetchTLBIO)
+
   // from fetch
-  val fetch = Flipped(new FetchICacheIO)
+  val fetch = Flipped(new FetchTLBIO)
 
   // from exe
   // val exe = Flipped(new exe_TLB_IO)
@@ -24,6 +27,9 @@ class TLBIO extends Bundle {
 
 class TLB extends Module {
   val io = IO(new TLBIO)
+
+  io.fetch.pa     := ShiftRegister(io.preFetch.va, 1)
+  io.fetch.cached := true.B
 
   val tlb       = RegInit(VecInit(Seq.fill(TLB_ENTRIES)(0.U.asTypeOf(new TLBEntry))))
   val tlb_found = WireDefault(false.B) // tlb_hit
@@ -36,8 +42,8 @@ class TLB extends Module {
   for (i <- 0 until TLB_ENTRIES) {
     val tlb_vppn = Mux(tlb(i).ps(3), tlb(i).vppn, tlb(i).vppn(18, 9))
     // val va       = Mux(io.exe.tlb_en, io.csr.tlbehi.vppn, io.mem.va)
-    val va = io.mem.va
-    val va_vppn  = Mux(tlb(i).ps(3), va(31, 13), va(31, 22))
+    val va      = io.mem.va
+    val va_vppn = Mux(tlb(i).ps(3), va(31, 13), va(31, 22))
     // is the vppn compare right?
     val page = Mux(tlb(i).ps(3), va(12), va(21))
     when(

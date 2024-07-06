@@ -29,6 +29,9 @@ class DecoderIO extends Bundle {
   val exc_type = Output(ECodes())
 
   val pipelineType = Output(PipelineType())
+
+  val isCALL   = Output(Bool())
+  val isReturn = Output(Bool())
 }
 
 class Decoder extends Module {
@@ -71,7 +74,9 @@ class Decoder extends Module {
   )
   io.imm := imm
 
-  val is_jirl_bl     = func_type === FuncType.bru && (op_type === BruOptype.jirl || op_type === BruOptype.bl)
+  val is_jirl        = func_type === FuncType.bru && op_type === BruOptype.jirl
+  val is_bl          = func_type === FuncType.bru && op_type === BruOptype.bl
+  val is_jirl_bl     = is_jirl || is_bl
   val is_none        = func_type === FuncType.none
   val is_exc         = func_type === FuncType.exc
   val is_st          = func_type === FuncType.mem && !MemOpType.isread(op_type)
@@ -101,4 +106,12 @@ class Decoder extends Module {
       (func_type === FuncType.mul || func_type === FuncType.div)     -> PipelineType.muldiv,
     ),
   )
+
+  // CALL:   BL 或链接返回地址到 $r1 的 JIRL 指令
+  // Return: JIRL $r0,$r1,0 指令
+  io.isCALL   := is_bl || is_jirl && io.rd === 1.U
+  io.isReturn := io.inst === "b010011_0000000000000000_00000_00001".U
+
+  // TODO: check the pc-relative branch target addr
+
 }

@@ -14,6 +14,7 @@ class PrefetchTopIO extends StageBundle {
   val iCache   = new PreFetchICacheIO
   val tlb      = new PreFetchTLBIO
   val bpuTrain = Input(new BpuTrain) // 跳转结果
+  val bpuRes   = Input(new br)       // 预测结果/异常跳转
 }
 
 class PrefetchTop extends Module {
@@ -25,16 +26,19 @@ class PrefetchTop extends Module {
   val next_pc = WireDefault(0.U(ADDR_WIDTH.W))
   val bpu     = Module(new BPU).io
 
-  io.tlb.va              := pc
+  // send to tlb
+  io.tlb.va := pc
+
+  // VI to iCache
   io.iCache.request.bits := pc
 
-  bpu.pc    := pc
-  bpu.train := io.bpuTrain
+  // just send pc to bpu
+  bpu.preFetchPc := pc
+  bpu.train      := io.bpuTrain
 
-  next_pc := Mux(!io.bpuTrain.succeed, io.bpuTrain.target, Mux(bpu.res.en, bpu.res.addr, nextLine(pc)))
+  next_pc := Mux(!io.bpuTrain.succeed, io.bpuTrain.target, Mux(io.bpuRes.en, io.bpuRes.tar, nextLine(pc)))
   pc      := next_pc
 
-  val toInfo = WireDefault(0.U.asTypeOf(new SingleInfo))
-  toInfo.pc          := pc
-  io.to.bits.bits(0) := toInfo
+  // just send the fetch group's first pc
+  io.to.bits.bits(0).pc := pc
 }

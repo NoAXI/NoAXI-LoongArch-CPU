@@ -56,7 +56,7 @@ class InstBuffer extends Module {
 
   when(canInsert) {
     for (i <- 0 until W_LENGTH) {
-      when(info.pc(3, 2) >= (i << 2).U && info.instV(i).valid) {
+      when(info.pc(3, 2) >= i.U && info.instV(i).valid) {
         push(i)
         info.instV(i).valid := false.B
       }
@@ -68,8 +68,17 @@ class InstBuffer extends Module {
   when(canRead && io.to.ready) {
     for (i <- 0 until R_LENGTH) {
       val popResult = pop()
-      io.to.bits.bits(i).pc   := popResult._1
-      io.to.bits.bits(i).inst := popResult._2
+      io.to.bits.bits(i).pc       := popResult._1
+      io.to.bits.bits(i).inst     := popResult._2
+      io.to.bits.bits(i).exc_type := popResult._3
+      // TODO: badvaddr
+      io.to.bits.bits(i).predict := info.predict
     }
+  }
+
+  when(io.flush) {
+    headPtr  := 0.U
+    tailPtr  := 0.U
+    fifoSize := 0.U
   }
 }

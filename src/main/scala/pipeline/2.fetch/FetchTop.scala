@@ -9,10 +9,11 @@ import func.Functions._
 import const.Parameters._
 
 // 清空前端流水级里的指令，未实现
-// TODO: connect the fetch and IB !!
 class FetchTopIO extends StageBundle {
-  val tlb    = new FetchTLBIO
-  val iCache = new FetchICacheIO
+  val tlb       = new FetchTLBIO
+  val iCache    = new FetchICacheIO
+  val bpuResGet = Input(new br)
+  val bpuResOut = Output(new br)
 }
 
 class FetchTop extends Module {
@@ -22,6 +23,9 @@ class FetchTop extends Module {
 
   val info         = from._1.bits(0)
   val valid_signal = from._2
+
+  // get predict result, send back to prefetch
+  io.bpuResOut := io.bpuResGet
 
   // get paddr from tlb, send to I-Cache
   io.iCache.request.bits  := io.tlb.pa
@@ -34,11 +38,12 @@ class FetchTop extends Module {
   val is_adef = info.pc(1, 0) =/= "b00".U
 
   val to_info = WireDefault(0.U.asTypeOf(new SingleInfo))
-  to_info.pc := info.pc
+  to_info.pc := Mux(io.flush, 0.U, info.pc)
   for (i <- 0 until FETCH_DEPTH) {
     to_info.instV(i).inst  := Mux(is_adef, 0.U, io.iCache.answer.bits(i))
     to_info.instV(i).valid := true.B // TODO: read the jump_index from BTB to decide the valid signal
     to_info.fetchExc(i)    := Mux(is_adef, ECodes.ADEF, ECodes.NONE)
   }
-  io.to.bits.bits(0).instV := to_info
+  io.to.bits.bits(0).predict := Mux(io.flush, false.B, io.bpuResGet)
+  io.to.bits.bits(0)         := Mux(io.flush, 0.U.asTypeOf(new SingleInfo), to_info)
 }
