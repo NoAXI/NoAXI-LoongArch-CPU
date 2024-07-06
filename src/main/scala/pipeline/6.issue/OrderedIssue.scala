@@ -10,6 +10,7 @@ import const.Parameters._
 
 class OrderedIssue[T <: Data](
     entries: Int,
+    isArithmetic: Boolean,
 ) extends Module {
   val io = IO(new IssueQueueIO)
 
@@ -17,7 +18,7 @@ class OrderedIssue[T <: Data](
   val mem     = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(new SingleInfo))))
   val headPtr = Counter(entries)
   val tailPtr = Counter(entries)
-
+  Queue
   // push / pop signal
   val doPush = WireDefault(io.from.fire)
   val doPop  = WireDefault(io.to.fire)
@@ -56,5 +57,11 @@ class OrderedIssue[T <: Data](
   io.from.ready := !full
   io.to.valid   := !empty && realHit.reduce(_ && _)
   io.to.bits    := mem(headPtr.value)
-  io.arithSize  := DontCare
+  if (isArithmetic) {
+    val ptr_diff = tailPtr.value - headPtr.value
+    assert(isPow2(entries))
+    io.arithSize := Mux(maybeFull && ptrMatch, entries.U, 0.U) | ptr_diff
+  } else {
+    io.arithSize := DontCare
+  }
 }

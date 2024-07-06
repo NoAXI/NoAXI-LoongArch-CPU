@@ -10,6 +10,7 @@ import const.Parameters._
 
 class UnorderedIssue[T <: Data](
     entries: Int,
+    isArithmetic: Boolean,
 ) extends Module {
   val io = IO(new IssueQueueIO)
 
@@ -79,5 +80,9 @@ class UnorderedIssue[T <: Data](
   io.to.bits := mem(index)
 
   // get size
-  io.arithSize := Mux(full, ARITH_QUEUE_SIZE.U, topPtr)
+  if (isArithmetic) {
+    io.arithSize := Mux(full, entries.U, topPtr)
+  } else {
+    io.arithSize := DontCare
+  }
 }

@@ -34,10 +34,27 @@ class IssueTop extends Module {
   val io = IO(new IssueTopIO)
 
   // issue queue def
-  val arith  = Seq.fill(ARITH_ISSUE_NUM)(Module(new OrderedIssue(ARITH_QUEUE_SIZE)).io)
-  val muldiv = Module(new UnorderedIssue(MULDIV_QUEUE_SIZE)).io
-  val memory = Module(new UnorderedIssue(MEMORY_QUEUE_SIZE)).io
-  val queue  = arith ++ Seq(muldiv, memory)
+  val arith = Seq.fill(ARITH_ISSUE_NUM)(
+    Module(
+      new UnorderedIssue(
+        entries = ARITH_QUEUE_SIZE,
+        isArithmetic = true,
+      ),
+    ).io,
+  )
+  val muldiv = Module(
+    new OrderedIssue(
+      entries = MULDIV_QUEUE_SIZE,
+      isArithmetic = false,
+    ),
+  ).io
+  val memory = Module(
+    new OrderedIssue(
+      entries = MEMORY_QUEUE_SIZE,
+      isArithmetic = false,
+    ),
+  ).io
+  val queue = arith ++ Seq(muldiv, memory)
 
   // busy reg
   val busyReg = RegInit(VecInit(Seq.fill(PREG_NUM)(false.B)))
