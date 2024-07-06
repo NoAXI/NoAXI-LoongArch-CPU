@@ -31,7 +31,9 @@ object Parameters {
   // issue width
   val ISSUE_WIDTH      = 2
   val BACK_ISSUE_WIDTH = 4
-  val ARITH_ISSUE_NUM  = 2
+  val ARITH_ISSUE_NUM  = 2                   // real id = 0, 1
+  val MULDIV_ISSUE_ID  = ARITH_ISSUE_NUM     // real id = 2
+  val MEMORY_ISSUE_ID  = ARITH_ISSUE_NUM + 1 // real id = 3
 
   // issue queue width
   val ARITH_QUEUE_WIDTH  = 2

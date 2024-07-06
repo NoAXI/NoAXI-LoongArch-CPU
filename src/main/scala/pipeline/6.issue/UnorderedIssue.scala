@@ -77,4 +77,7 @@ class UnorderedIssue[T <: Data](
   io.to.valid   := hitVec.reduce(_ || _) && !empty
   val index = PriorityEncoder(hitVec)
   io.to.bits := mem(index)
+
+  // get size
+  io.arithSize := Mux(full, ARITH_QUEUE_SIZE.U, topPtr)
 }

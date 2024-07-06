@@ -16,15 +16,17 @@ class AwakeInfo extends Bundle {
 // this IO is defined for a single issue queue,
 // which is contained inside of this issue module
 class IssueQueueIO extends SingleStageBundle {
-  val awake = Input(Vec(BACK_ISSUE_WIDTH, new AwakeInfo))
-  val busy  = Input(Vec(PREG_NUM, Bool()))
-  val stall = Input(Bool())
+  val awake     = Input(Vec(BACK_ISSUE_WIDTH, new AwakeInfo))
+  val busy      = Input(Vec(PREG_NUM, Bool()))
+  val stall     = Input(Bool())
+  val arithSize = Output(UInt((ARITH_QUEUE_WIDTH + 1).W))
 }
 
 class IssueTopIO extends Bundle {
   val flush = Input(Bool())
-  val pipe  = Vec(BACK_ISSUE_WIDTH, new SingleStageBundleWithoutFlush)
-  val awake = Vec(BACK_ISSUE_WIDTH, new AwakeInfo)
+  val from  = Vec(BACK_ISSUE_WIDTH, Flipped(DecoupledIO(new SingleInfo)))
+  val to    = Vec(BACK_ISSUE_WIDTH, DecoupledIO(new SingleInfo))
+  val awake = Vec(BACK_ISSUE_WIDTH, Input(new AwakeInfo))
   val stall = Vec(BACK_ISSUE_WIDTH, Input(Bool()))
 }
 
@@ -32,11 +34,10 @@ class IssueTop extends Module {
   val io = IO(new IssueTopIO)
 
   // issue queue def
-  val arith0 = Module(new OrderedIssue(ARITH_QUEUE_SIZE)).io
-  val arith1 = Module(new OrderedIssue(ARITH_QUEUE_SIZE)).io
+  val arith  = Seq.fill(ARITH_ISSUE_NUM)(Module(new OrderedIssue(ARITH_QUEUE_SIZE)).io)
   val muldiv = Module(new UnorderedIssue(MULDIV_QUEUE_SIZE)).io
   val memory = Module(new UnorderedIssue(MEMORY_QUEUE_SIZE)).io
-  val queue  = Seq(arith0, arith1, muldiv, memory)
+  val queue  = arith ++ Seq(muldiv, memory)
 
   // busy reg
   val busyReg = RegInit(VecInit(Seq.fill(PREG_NUM)(false.B)))
@@ -46,18 +47,18 @@ class IssueTop extends Module {
     }
   }
   for (i <- 0 until BACK_ISSUE_WIDTH) {
-    when(io.pipe(i).to.fire) {
-      busyReg(io.pipe(i).to.bits.rdInfo.preg) := true.B
+    when(io.to(i).fire) {
+      busyReg(io.to(i).bits.rdInfo.preg) := true.B
     }
   }
 
   // pipe <> queue
   for (i <- 0 until BACK_ISSUE_WIDTH) {
-    io.pipe(i).from <> queue(i).from
-    io.pipe(i).to   <> queue(i).to
-    queue(i).busy   := busyReg
-    queue(i).awake  := io.awake
-    queue(i).stall  := io.stall(i)
-    queue(i).flush  := io.flush
+    io.from(i)     <> queue(i).from
+    io.to(i)       <> queue(i).to
+    queue(i).busy  := busyReg
+    queue(i).awake := io.awake
+    queue(i).stall := io.stall(i)
+    queue(i).flush := io.flush
   }
 }

@@ -56,4 +56,5 @@ class OrderedIssue[T <: Data](
   io.from.ready := !full
   io.to.valid   := !empty && realHit.reduce(_ && _)
   io.to.bits    := mem(headPtr.value)
+  io.arithSize  := DontCare
 }

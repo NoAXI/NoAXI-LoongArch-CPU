@@ -15,7 +15,7 @@ class DispatchStageBundle extends Bundle {
   val flush = Input(Bool())
 }
 class DispatchTopIO extends DispatchStageBundle {
-  val arithSize = Input(Vec(ARITH_ISSUE_NUM, UInt(ARITH_QUEUE_WIDTH.W)))
+  val arithSize = Input(Vec(ARITH_ISSUE_NUM, UInt((ARITH_QUEUE_WIDTH + 1).W)))
 }
 
 class DispatchTop extends Module {
