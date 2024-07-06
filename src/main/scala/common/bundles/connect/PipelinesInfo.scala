@@ -62,7 +62,9 @@ class SingleInfo extends Bundle {
   val exc_vaddr = UInt(ADDR_WIDTH.W)
 
   // branch predict
-  val predict = new br
+  val predict  = new br
+  val isCALL   = Bool()
+  val isReturn = Bool()
 }
 
 class DualInfo extends Bundle {
