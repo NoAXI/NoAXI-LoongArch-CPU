@@ -7,6 +7,8 @@ import const._
 import bundles._
 import func.Functions._
 import const.Parameters._
+import pipeline.AwakeInfo
+import pipeline.ForwardInfoIO
 
 object Functions {
   // for pipelines---------------------------------------------------------------------------
@@ -57,7 +59,7 @@ object Functions {
     }
   }
   // TODO: has some CONST
-  def nextLine(x: UInt):UInt = {
+  def nextLine(x: UInt): UInt = {
     Cat(x(ADDR_WIDTH - 1, 4) + 1.U, 0.U(4.W))
   }
 
@@ -91,5 +93,31 @@ object Functions {
     val _wstrb = Cat((3 to 0 by -1).map(i => Fill(8, wstrb(i))))
     val _move  = VecInit(0.U, 32.U, 64.U, 96.U)
     writeMask(_wstrb << _move(offset), linedata, wdata << _move(offset))
+  }
+
+  // for issue queue ---------------------------------------------------------------------------
+  def checkIssueHit(rj: UInt, rk: UInt, awake: Vec[AwakeInfo], busy: Vec[Bool]): Vec[Bool] = {
+    val awakeHit = WireDefault(VecInit(Seq.fill(OPERAND_MAX)(false.B)))
+    for (i <- 0 until BACK_ISSUE_WIDTH) {
+      for (j <- 0 until OPERAND_MAX) {
+        val preg = if (j == 0) rj else rk
+        when(awake(i).valid && awake(i).preg === preg) {
+          awakeHit(j) := true.B
+        }
+      }
+    }
+    val realHit = VecInit(Seq.fill(OPERAND_MAX)(false.B))
+    for (j <- 0 until OPERAND_MAX) {
+      val preg = if (j == 0) rj else rk
+      realHit(j) := awakeHit(j) || !busy(preg)
+    }
+    realHit
+  }
+
+  // for forwarder ---------------------------------------------------------------------------
+  def doForward(io: ForwardInfoIO, info: SingleInfo, validInst: Bool): Unit = {
+    io.valid := validInst && info.iswf
+    io.data  := info.rdInfo.data
+    io.preg  := info.rdInfo.preg
   }
 }

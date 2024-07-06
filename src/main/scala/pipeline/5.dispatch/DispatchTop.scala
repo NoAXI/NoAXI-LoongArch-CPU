@@ -15,7 +15,7 @@ class DispatchStageBundle extends Bundle {
   val flush = Input(Bool())
 }
 class DispatchTopIO extends DispatchStageBundle {
-  val arithSize = Input(Vec(ARITH_ISSUE_NUM, UInt(ARITH_QUEUE_WIDTH.W)))
+  val arithSize = Input(Vec(ARITH_ISSUE_NUM, UInt((ARITH_QUEUE_WIDTH + 1).W)))
 }
 
 class DispatchTop extends Module {
@@ -25,15 +25,13 @@ class DispatchTop extends Module {
   val stall    = WireDefault(false.B)
   val info     = RegInit(0.U.asTypeOf(new DualInfo))
   val validReg = RegInit(false.B)
-  val fireVec  = WireDefault(VecInit(Seq.fill(BACK_ISSUE_WIDTH)(true.B)))
-  io.from.ready := !validReg || (fireVec.reduce(_ && _) && !stall)
+  io.from.ready := !validReg || !stall
   when(io.from.ready) {
     validReg := io.from.valid
   }
   when(io.from.fire) {
     info := io.from.bits
   }
-  val defaultValid = validReg && !stall
   flushWhen(info, io.flush)
 
   // select issued pipeline
