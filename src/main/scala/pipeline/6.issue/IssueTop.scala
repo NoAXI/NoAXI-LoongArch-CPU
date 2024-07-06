@@ -9,8 +9,8 @@ import func.Functions._
 import const.Parameters._
 
 class AwakeInfo extends Bundle {
-  val valid = Input(Bool())
-  val preg  = Input(UInt(PREG_WIDTH.W))
+  val valid = Bool()
+  val preg  = UInt(PREG_WIDTH.W)
 }
 
 // this IO is defined for a single issue queue,
@@ -61,14 +61,3 @@ class IssueTop extends Module {
     queue(i).flush  := io.flush
   }
 }
-
-/*
-
-对于推测唤醒：
-当前拍位于exe
-
-当前拍位于writeback的指令，下一拍会正常写入preg
-所以writeback返回的validbits，除了已经提交的指令
-还需要or上当前writeback级正在写的那些位置
-
- */

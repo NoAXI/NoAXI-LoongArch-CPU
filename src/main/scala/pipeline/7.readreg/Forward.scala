@@ -26,18 +26,21 @@ class ForwardInfoIO extends Bundle {
 
 class ForwardIO extends Bundle {
   val req  = Vec(BACK_ISSUE_WIDTH, new ForwardRequestIO)
-  val info = Vec(BACK_ISSUE_WIDTH, new ForwardInfoIO)
+  val info = Vec(2, Vec(BACK_ISSUE_WIDTH, new ForwardInfoIO)) // 0 <> exe, 1 <> wb
 }
 
 class Forward extends Module {
   val io = IO(new ForwardIO)
-  for (i <- 0 until BACK_ISSUE_WIDTH) {
-    for (regNum <- 0 to 1) {
-      val req = if (regNum == 0) io.req(i).rj else io.req(i).rk
-      req.out := req.in
-      for (j <- 0 until BACK_ISSUE_WIDTH) {
-        when(req.preg === io.info(j).preg) {
-          req.out := io.info(j).data
+  for (infoNum <- 1 to 0) {
+    val info = io.info(infoNum)
+    for (i <- 0 until BACK_ISSUE_WIDTH) {
+      for (regNum <- 0 until OPERAND_MAX) {
+        val req = if (regNum == 0) io.req(i).rj else io.req(i).rk
+        req.out := req.in
+        for (j <- 0 until BACK_ISSUE_WIDTH) {
+          when(req.preg === info(j).preg) {
+            req.out := info(j).data
+          }
         }
       }
     }

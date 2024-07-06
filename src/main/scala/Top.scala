@@ -43,7 +43,8 @@ class Top extends Module {
   // backend pipeline
   val dispatch = Module(new DispatchTop).io
   val issue    = Module(new IssueTop).io
-  val readreg  = Seq.fill(BACK_ISSUE_WIDTH)(Module(new ReadRegTop).io)
+  val readreg = Seq.fill(ARITH_ISSUE_NUM)(Module(new ReadRegTop(isArithmetic = true)).io) ++
+    Seq.fill(BACK_ISSUE_WIDTH - ARITH_ISSUE_NUM)(Module(new ReadRegTop(isArithmetic = false)).io)
   // TODO: add execute unit here
   val writeback = Seq.fill(BACK_ISSUE_WIDTH)(Module(new WritebackTop).io)
   val commit    = Module(new CommitTop).io

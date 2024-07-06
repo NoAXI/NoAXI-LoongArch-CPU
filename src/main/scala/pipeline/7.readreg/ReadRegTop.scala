@@ -11,9 +11,12 @@ import const.Parameters._
 class ReadRegTopIO extends SingleStageBundle {
   val forwardReq = Flipped(new ForwardRequestIO)
   val pregRead   = Flipped(new PRegReadIO)
+  val awake      = Output(new AwakeInfo)
 }
 
-class ReadRegTop extends Module {
+class ReadRegTop(
+    isArithmetic: Boolean,
+) extends Module {
   val io = IO(new ReadRegTopIO)
 
   val busy = WireDefault(false.B)
@@ -21,7 +24,7 @@ class ReadRegTop extends Module {
   flushWhen(raw._1, io.flush)
 
   val info  = raw._1
-  val valid = io.to.fire && raw._2
+  val valid = raw._2
   val res   = WireDefault(info)
   io.to.bits := res
 
@@ -38,4 +41,12 @@ class ReadRegTop extends Module {
   // forward -> readreg
   res.rjInfo.data := io.forwardReq.rj.out
   res.rkInfo.data := io.forwardReq.rk.out
+
+  // awake
+  if (isArithmetic) {
+    io.awake.valid := valid && info.iswf
+    io.awake.preg  := info.rdInfo.preg
+  } else {
+    io.awake := DontCare
+  }
 }
