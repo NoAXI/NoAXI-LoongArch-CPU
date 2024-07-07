@@ -39,8 +39,11 @@ class Top extends Module {
   // backend before execute
   val dispatch = Module(new DispatchTop).io
   val issue    = Module(new IssueTop).io
-  val readreg = Seq.fill(ARITH_ISSUE_NUM)(Module(new ReadRegTop(isArithmetic = true)).io) ++
-    Seq.fill(BACK_ISSUE_WIDTH - ARITH_ISSUE_NUM)(Module(new ReadRegTop(isArithmetic = false)).io)
+  val readreg = (
+    Seq.fill(ARITH_ISSUE_NUM)(Module(new ReadRegTop("arith")).io) ++
+      Seq(Module(new ReadRegTop("muldiv")).io) ++
+      Seq(Module(new ReadRegTop("memory")).io)
+  )
 
   // backend execute
   val arith   = Seq.fill(ARITH_ISSUE_NUM)(Module(new ArithmeticTop).io)
@@ -189,12 +192,13 @@ class Top extends Module {
 
   flushCtrl.frontFlush <> prefetch.flush
   flushCtrl.frontFlush <> fetch.flush
+  flushCtrl.frontFlush <> ib.flush
   flushCtrl.frontFlush <> decode.flush
   flushCtrl.frontFlush <> rename.flush
 
   flushCtrl.robFlush      <> rob.flush
   flushCtrl.ratFlush      <> rat.flush
-  flushCtrl.memIssueStall <> issue.memoryStall
+  flushCtrl.issueMemStall <> issue.memoryStall
 
   flushCtrl.backFlush <> dispatch.flush
   flushCtrl.backFlush <> issue.flush

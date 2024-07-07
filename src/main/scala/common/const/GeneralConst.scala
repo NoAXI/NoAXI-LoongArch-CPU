@@ -35,6 +35,11 @@ object Parameters {
   val MULDIV_ISSUE_ID  = ARITH_ISSUE_NUM     // real id = 2
   val MEMORY_ISSUE_ID  = ARITH_ISSUE_NUM + 1 // real id = 3
 
+  // backend stage const
+  val ARITH_STAGE_NUM  = 2 // readreg, arith
+  val MULDIV_STAGE_NUM = 2 // readreg, muldiv
+  val MEMORY_STAGE_NUM = 4 // readreg, mem0, mem1, mem2
+
   // issue queue width
   val ARITH_QUEUE_WIDTH  = 2
   val MULDIV_QUEUE_WIDTH = 2

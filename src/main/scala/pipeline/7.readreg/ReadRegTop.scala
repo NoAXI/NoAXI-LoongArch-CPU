@@ -12,11 +12,14 @@ class ReadRegTopIO extends SingleStageBundle {
   val forwardReq = Flipped(new ForwardRequestIO)
   val pregRead   = Flipped(new PRegReadIO)
   val awake      = Output(new AwakeInfo)
+  val vaddr      = Output(UInt(ADDR_WIDTH.W))
 }
 
 class ReadRegTop(
-    isArithmetic: Boolean,
+    unitType: String,
 ) extends Module {
+  assert(Seq("arith", "muldiv", "memory").contains(unitType))
+
   val io = IO(new ReadRegTopIO)
 
   val busy = WireDefault(false.B)
@@ -42,11 +45,18 @@ class ReadRegTop(
   res.rjInfo.data := io.forwardReq.rj.out
   res.rkInfo.data := io.forwardReq.rk.out
 
-  // awake
-  if (isArithmetic) {
+  // arith: awake
+  if (unitType == "arith") {
     io.awake.valid := valid && info.iswf
     io.awake.preg  := info.rdInfo.preg
   } else {
     io.awake := DontCare
+  }
+
+  // memory: calc and send vaddr to tag sram
+  if (unitType == "memory") {
+    io.vaddr := res.rjInfo.data + res.imm
+  } else {
+    io.vaddr := DontCare
   }
 }

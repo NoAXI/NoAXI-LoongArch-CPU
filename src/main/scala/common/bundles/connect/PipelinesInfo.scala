@@ -60,6 +60,7 @@ class SingleInfo extends Bundle {
   // exception
   val exc_type  = ECodes()
   val exc_vaddr = UInt(ADDR_WIDTH.W)
+  val hasFlush  = Bool() // branch predict fail, exception
 
   // branch predict
   val predict  = new br
