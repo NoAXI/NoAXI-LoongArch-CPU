@@ -56,6 +56,10 @@ class Top extends Module {
   val commit    = Module(new CommitTop).io
 
   // ==================== unit define ====================
+  // ctrl unit
+  val flushCtrl = Module(new FlushCtrl).io
+
+  // backend unit
   val bpu     = Module(new BPU).io
   val rat     = Module(new Rat).io
   val rob     = Module(new Rob).io
@@ -150,6 +154,24 @@ class Top extends Module {
     io.debug := commit.debug(0)
   }.otherwise {
     io.debug := commit.debug(1)
+  }
+
+  // flush ctrl
+  flushCtrl.frontFlush <> prefetch.flush
+  flushCtrl.frontFlush <> fetch.flush
+  flushCtrl.frontFlush <> decode.flush
+  flushCtrl.frontFlush <> rename.flush
+
+  flushCtrl.backFlush <> dispatch.flush
+  flushCtrl.backFlush <> issue.flush
+  for (i <- 0 until BACK_ISSUE_WIDTH) {
+    flushCtrl.backFlush <> readreg(i).flush
+  }
+  for (i <- 0 until ARITH_ISSUE_NUM) {
+    flushCtrl.backFlush <> arith(i).flush
+  }
+  for (i <- 0 until BACK_ISSUE_WIDTH) {
+    flushCtrl.backFlush <> writeback(i).flush
   }
 
   // axi
