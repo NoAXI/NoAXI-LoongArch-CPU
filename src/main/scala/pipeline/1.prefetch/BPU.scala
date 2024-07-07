@@ -65,10 +65,11 @@ class BPU extends Module {
   val BHT = RegInit(VecInit(Seq.fill(INDEX_WIDTH)(0.U(HISTORY_LENGTH.W))))
   val PHT = RegInit(VecInit(Seq.fill(HISTORY_WIDTH)(pF)))
   val BTB = Module(new xilinx_simple_dual_port_1_clock_ram_write_first(BTB_INFO_LENGTH, BTB_INDEX_WIDTH)).io
-  val RAS = RegInit(VecInit(Seq.fill(RAS_DEPTH)(0x1c000000.U(32.W))))
+  val RAS = RegInit(VecInit(Seq.fill(RAS_DEPTH)(0x01c000000.U(33.W))))
 
-  val top       = RegInit(0.U(RAS_WIDTH.W))
-  val top_add_1 = top + 1.U
+  val top         = RegInit(0.U(RAS_WIDTH.W))
+  val top_add_1   = top + 1.U
+  val top_minus_1 = top - 1.U
 
   BTB.clka  := clock
   BTB.addrb := io.preFetch.pc(BTB_INDEX_LENGTH + 3, 4)
@@ -80,7 +81,6 @@ class BPU extends Module {
   val tar      = BTB.doutb(BTB_INFO_LENGTH - BTB_TAG_LENGTH - 1, 2)
   val isCALL   = BTB.doutb(1)
   val isReturn = BTB.doutb(0)
-  val RASRest  = top =/= RAS_DEPTH.U
 
   // train, just work one time
   when(io.preFetch.train.en) {
@@ -113,7 +113,7 @@ class BPU extends Module {
   // when meet CALL, update the RAS
   when(isCALL && !io.fetch.stall) {
     top      := top_add_1
-    RAS(top) := io.fetch.pc_add_4 // the pc is wrong!!
+    RAS(top) := 1.U(1.W) ## io.fetch.pc_add_4 // the pc is wrong!!
   }
 
   // direction prediction
@@ -121,7 +121,16 @@ class BPU extends Module {
   io.fetch.res.en := PHT(index)(1).asBool && tag === io.fetch.pc(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH)
 
   // target prediction
-  io.fetch.res.tar := Mux(isReturn, RAS(top), tar)
+  io.fetch.res.tar := tar
+  when(isReturn) {
+    when(RAS(top)(32)) {
+      top              := top_minus_1
+      io.fetch.res.tar := RAS(top)
+      RAS(top)         := 0.U
+    }.otherwise {
+      io.fetch.res.en := false.B
+    }
+  }
 
   // count
   if (Config.statistic_on) {
