@@ -153,12 +153,13 @@ class ICache extends Module {
   ar.cache := 0.U
   ar.prot  := 0.U
 
-  io.axi.ar.bits         := ar
-  io.axi.ar.valid        := arvalid
-  io.axi.r.ready         := rready
-  io.fetch.answer.valid  := ans_valid || i_ans_valid
-  io.fetch.answer.bits   := Mux(i_ans_valid, i_ans_bits, ans_bits)
-  io.fetch.request.ready := true.B
+  io.axi.ar.bits            := ar
+  io.axi.ar.valid           := arvalid
+  io.axi.r.ready            := rready
+  io.preFetch.request.ready := true.B
+  io.fetch.answer.valid     := ans_valid || i_ans_valid
+  io.fetch.answer.bits      := Mux(i_ans_valid, i_ans_bits, ans_bits)
+  io.fetch.request.ready    := true.B
 
   if (Config.debug_on) {
     dontTouch(hitted)

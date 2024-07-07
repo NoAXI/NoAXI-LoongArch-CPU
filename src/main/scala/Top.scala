@@ -103,7 +103,8 @@ class Top extends Module {
   axilayer.icache <> iCache.axi
 
   // fetch <> icache
-  fetch.iCache <> iCache.fetch
+  prefetch.iCache <> iCache.preFetch
+  fetch.iCache    <> iCache.fetch
 
   // prefetch <> bpu
   bpu.preFetch <> prefetch.bpu
