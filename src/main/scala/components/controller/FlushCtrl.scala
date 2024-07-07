@@ -9,10 +9,13 @@ import func.Functions._
 import const.Parameters._
 
 class FlushCtrlIO extends Bundle {
-  val hasFlush   = Input(Bool())
-  val doFlush    = Input(Bool())
-  val frontFlush = Output(Bool()) // flush (fetch, decode) when br = 1
-  val backFlush  = Output(Bool())
+  val hasFlush      = Input(Bool())
+  val doFlush       = Input(Bool())
+  val frontFlush    = Output(Bool()) // flush (fetch, decode) when br = 1
+  val robFlush      = Output(Bool())
+  val ratFlush      = Output(Bool())
+  val memIssueStall = Output(Bool())
+  val backFlush     = Output(Bool())
 }
 
 trait FlushCtrlStateTable {
@@ -24,9 +27,12 @@ class FlushCtrl extends Module with FlushCtrlStateTable {
   val io    = IO(new FlushCtrlIO)
   val state = RegInit(sIdle)
 
-  val generalFlush = WireDefault(false.B)
-  val frontFlush   = WireDefault(false.B)
-  val backFlush    = WireDefault(false.B)
+  val generalFlush  = WireDefault(false.B)
+  val frontFlush    = WireDefault(false.B)
+  val backFlush     = WireDefault(false.B)
+  val robFlush      = WireDefault(false.B)
+  val ratFlush      = WireDefault(false.B)
+  val memIssueStall = WireDefault(false.B)
   switch(state) {
     is(sIdle) {
       when(io.hasFlush && !io.doFlush) {
@@ -44,6 +50,9 @@ class FlushCtrl extends Module with FlushCtrlStateTable {
     frontFlush := true.B
     backFlush  := true.B
   }
-  io.frontFlush := frontFlush
-  io.backFlush  := backFlush
+  io.frontFlush    := frontFlush
+  io.backFlush     := backFlush
+  io.robFlush      := robFlush
+  io.ratFlush      := ratFlush
+  io.memIssueStall := memIssueStall
 }

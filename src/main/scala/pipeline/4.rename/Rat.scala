@@ -55,6 +55,7 @@ class Rat extends Module {
   // output read info
   for (i <- 0 until ISSUE_WIDTH) {
     io.read(i).preg.rj := sRat(io.read(i).areg.rj)
+    io.read(i).preg.rk := sRat(io.read(i).areg.rk)
   }
 
   // rename: sRat update
