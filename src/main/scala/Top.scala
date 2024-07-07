@@ -28,16 +28,16 @@ class TopIO extends Bundle {
   // val debug_wb_rf_wnum  = Output(UInt(5.W))
   // val debug_wb_rf_wdata = Output(UInt(32.W))
 }
-
 class Top extends Module {
   val io = IO(new TopIO)
 
   // ==================== pipline define ====================
   // frontend
-  // val prefetch = Module(new PrefetchTop).io
-  // val fetch    = Module(new FetchTop).io
-  // val decode   = Module(new DecodeTop).io
-  val rename = Module(new RenameTop).io
+  val prefetch = Module(new PrefetchTop).io
+  val fetch    = Module(new FetchTop).io
+  val ib       = Module(new InstBuffer).io
+  val decode   = Module(new DecodeTop).io
+  val rename   = Module(new RenameTop).io
 
   // backend before execute
   val dispatch = Module(new DispatchTop).io
@@ -55,6 +55,7 @@ class Top extends Module {
   val commit    = Module(new CommitTop).io
 
   // ==================== unit define ====================
+  val bpu     = Module(new BPU).io
   val rat     = Module(new Rat).io
   val rob     = Module(new Rob).io
   val preg    = Module(new PReg).io
@@ -62,14 +63,20 @@ class Top extends Module {
 
   // memory access
   val axilayer = Module(new AXILayer).io
-  // val icache   = Module(new ICache).io
+  val iCache   = Module(new ICache).io
   // val dcache   = Module(new dCache_with_cached_writebuffer).io
 
-  // ==================== wire links ====================
-  // stage connect
-  // TODO: 添加前端流水线连线
-  // rename -> dispatch -> issue -> readreg
-  rename.to <> dispatch.from
+  // ==================== stage connect ====================
+  // prefetch -> fetch -> ib -> decode -> rename -> dispatch -> issue -> readreg
+  prefetch.from.bits  := 0.U.asTypeOf(prefetch.from.bits)
+  prefetch.from.valid := RegNext(!reset.asBool) & !reset.asBool
+  prefetch.to         <> fetch.from
+  prefetch.bpuTrain   := 0.U.asTypeOf(new BpuTrain)
+  prefetch.bpuRes     := fetch.bpuRes
+  fetch.to            <> ib.from
+  ib.to               <> decode.from
+  decode.to           <> rename.from
+  rename.to           <> dispatch.from
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     dispatch.to(i) <> issue.from(i)
   }
@@ -89,6 +96,19 @@ class Top extends Module {
   arith(1).to <> writeback(1).from
   muldiv0.to  <> writeback(2).from
   memory0.to  <> writeback(3).from
+
+  // ==================== components connect ====================
+  // axi <> cache
+  axilayer.icache <> iCache.axi
+
+  // fetch <> icache
+  fetch.iCache <> iCache.fetch
+
+  // prefetch <> bpu
+  bpu.preFetch <> prefetch.bpu
+
+  // fetch <> bpu
+  bpu.fetch <> fetch.bpu
 
   // rename <> rat
   rename.ratRename <> rat.rename

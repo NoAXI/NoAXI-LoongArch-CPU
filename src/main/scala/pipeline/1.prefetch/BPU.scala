@@ -40,8 +40,8 @@ import predictConst._
 
 class BpuTrain extends Bundle {
   val en       = Bool()
-  val succeed  = Bool()
-  val real     = Bool()
+  val succeed  = Bool() // predict succeed
+  val real     = Bool() // branch succeed
   val target   = UInt(ADDR_WIDTH.W)
   val pc       = UInt(ADDR_WIDTH.W)
   val isCALL   = Bool() // is call or PC-relative branch
@@ -52,21 +52,13 @@ class BpuTrain extends Bundle {
   def BTBTag   = pc(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH)
 }
 
-class fetchBPU extends Bundle {
-  val pc       = UInt(ADDR_WIDTH.W)
-  val pc_add_4 = UInt(ADDR_WIDTH.W)
-}
-
 class BPUIO extends Bundle {
-  val preFetchPc = Input(UInt(ADDR_WIDTH.W))
-  val fetch      = Input(new fetchBPU)
-  val res        = Output(new br)
-  val train      = Input(new BpuTrain)
-  val stall      = Input(Bool())
+  val preFetch = Flipped(new PreFetchBPUIO)
+  val fetch    = Flipped(new FetchBPUIO)
 }
 
 class BPU extends Module {
-  val io = new BPUIO
+  val io = IO(new BPUIO)
 
   val pFF :: pF :: pTT :: pT :: Nil = Enum(COUNTER_WIDTH)
 
@@ -79,7 +71,7 @@ class BPU extends Module {
   val top_add_1 = top + 1.U
 
   BTB.clka  := clock
-  BTB.addrb := io.preFetchPc(BTB_INDEX_LENGTH - 1, 0)
+  BTB.addrb := io.preFetch.pc(BTB_INDEX_LENGTH + 3, 4)
   BTB.wea   := false.B
   BTB.addra := 0.U
   BTB.dina  := 0.U
@@ -91,48 +83,53 @@ class BPU extends Module {
   val RASRest  = top =/= RAS_DEPTH.U
 
   // train, just work one time
-  when(io.train.en) {
-    val index = (BHT(io.train.index) << 1)(HISTORY_LENGTH - 1, 0) | io.train.real
-    BHT(io.train.index) := index
+  when(io.preFetch.train.en) {
+    val index = (BHT(io.preFetch.train.index) << 1)(HISTORY_LENGTH - 1, 0) | io.preFetch.train.real
+    BHT(io.preFetch.train.index) := index
     switch(PHT(index)) {
       is(pFF) {
-        PHT(index) := Mux(io.train.real, pF, pFF)
+        PHT(index) := Mux(io.preFetch.train.real, pF, pFF)
       }
       is(pF) {
-        PHT(index) := Mux(io.train.real, pT, pFF)
+        PHT(index) := Mux(io.preFetch.train.real, pT, pFF)
       }
       is(pT) {
-        PHT(index) := Mux(io.train.real, pTT, pF)
+        PHT(index) := Mux(io.preFetch.train.real, pTT, pF)
       }
       is(pTT) {
-        PHT(index) := Mux(io.train.real, pTT, pT)
+        PHT(index) := Mux(io.preFetch.train.real, pTT, pT)
       }
     }
     BTB.wea   := true.B
-    BTB.addra := io.train.BTBIndex
-    BTB.dina  := Cat(io.train.BTBTag, io.train.target, io.train.isCALL, io.train.isReturn)
+    BTB.addra := io.preFetch.train.BTBIndex
+    BTB.dina := Cat(
+      io.preFetch.train.BTBTag,
+      io.preFetch.train.target,
+      io.preFetch.train.isCALL,
+      io.preFetch.train.isReturn,
+    )
   }
 
   // when meet CALL, update the RAS
-  when(isCALL && !io.stall) {
+  when(isCALL && !io.fetch.stall) {
     top      := top_add_1
-    RAS(top) := io.fetch.pc_add_4
+    RAS(top) := io.fetch.pc_add_4 // the pc is wrong!!
   }
 
   // direction prediction
-  val index = ShiftRegister(BHT(io.preFetchPc(INDEX_LENGTH + 1, 2)), 1)
-  io.res.en := PHT(index)(1).asBool && tag === io.fetch.pc(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH)
+  val index = ShiftRegister(BHT(io.preFetch.pc(INDEX_LENGTH + 1, 2)), 1)
+  io.fetch.res.en := PHT(index)(1).asBool && tag === io.fetch.pc(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH)
 
   // target prediction
-  io.res.tar := Mux(isReturn, RAS(top), tar)
+  io.fetch.res.tar := Mux(isReturn, RAS(top), tar)
 
   // count
   if (Config.statistic_on) {
     val tot_time     = RegInit(0.U(20.W))
     val succeed_time = RegInit(0.U(20.W))
-    when(io.train.en) {
+    when(io.preFetch.train.en) {
       tot_time := tot_time + 1.U
-      when(io.train.succeed) {
+      when(io.preFetch.train.succeed) {
         succeed_time := succeed_time + 1.U
       }
     }

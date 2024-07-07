@@ -10,11 +10,17 @@ import const.Parameters._
 
 // Predict Failed：需要清空前端流水级里的指令，未实现
 
+class PreFetchBPUIO extends Bundle {
+  val pc    = Output(UInt(ADDR_WIDTH.W))
+  val train = Output(new BpuTrain)
+}
+
 class PrefetchTopIO extends StageBundle {
   val iCache   = new PreFetchICacheIO
   val tlb      = new PreFetchTLBIO
-  val bpuTrain = Input(new BpuTrain) // 跳转结果
+  val bpu      = new PreFetchBPUIO
   val bpuRes   = Input(new br)       // 预测结果/异常跳转
+  val bpuTrain = Input(new BpuTrain) // 跳转结果
 }
 
 class PrefetchTop extends Module {
@@ -24,21 +30,23 @@ class PrefetchTop extends Module {
 
   val pc      = RegInit(START_ADDR.U(ADDR_WIDTH.W))
   val next_pc = WireDefault(0.U(ADDR_WIDTH.W))
-  val bpu     = Module(new BPU).io
 
   // send to tlb
   io.tlb.va := pc
 
   // VI to iCache
-  io.iCache.request.bits := pc
+  io.iCache.request.valid     := io.from.fire
+  io.iCache.request.bits.addr := pc
 
   // just send pc to bpu
-  bpu.preFetchPc := pc
-  bpu.train      := io.bpuTrain
+  io.bpu.pc    := pc
+  io.bpu.train := io.bpuTrain
 
   next_pc := Mux(!io.bpuTrain.succeed, io.bpuTrain.target, Mux(io.bpuRes.en, io.bpuRes.tar, nextLine(pc)))
   pc      := next_pc
 
   // just send the fetch group's first pc
-  io.to.bits.bits(0).pc := pc
+  io.to.bits                  := 0.U.asTypeOf(new DualInfo)
+  io.to.bits.bits(0).pc       := pc
+  io.to.bits.bits(0).pc_add_4 := pc + 4.U
 }

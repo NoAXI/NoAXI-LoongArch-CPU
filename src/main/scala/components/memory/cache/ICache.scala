@@ -29,10 +29,10 @@ class ICache extends Module {
   val arvalid        = RegInit(false.B)
   val rready         = RegInit(false.B)
   val ans_valid      = RegInit(false.B)
-  val ans_bits       = RegInit(Vec(4, 0.U(INST_WIDTH.W)))
+  val ans_bits       = RegInit(VecInit.fill(FETCH_DEPTH)(0.U(INST_WIDTH.W)))
   val i_ans_valid    = WireDefault(false.B)
-  val i_ans_bits     = WireDefault(Vec(4, 0.U(INST_WIDTH.W)))
-  val saved_ans_bits = RegInit(Vec(4, 0.U(INST_WIDTH.W)))
+  val i_ans_bits     = WireDefault(VecInit.fill(FETCH_DEPTH)(0.U(INST_WIDTH.W)))
+  val saved_ans_bits = RegInit(VecInit.fill(FETCH_DEPTH)(0.U(INST_WIDTH.W)))
   val total_requests = RegInit(0.U(32.W))
   val hitted_times   = RegInit(0.U(32.W))
   val hit            = Wire(Vec(2, Bool()))
@@ -115,7 +115,7 @@ class ICache extends Module {
       }
 
       val final_linedata = linedata | (io.axi.r.bits.data << wmove)
-      val _ans_bits = VecInit.tabulate(4)(i => final_linedata((i + 1) * 32 - 1, i * 32))
+      val _ans_bits      = VecInit.tabulate(4)(i => final_linedata((i + 1) * 32 - 1, i * 32))
 
       // write sram
       val lru_way = lru(saved_info.index)

@@ -28,12 +28,12 @@ class InstBuffer extends Module {
 
   val instBuffer = RegInit(VecInit(Seq.fill(IB_LENGTH)(0.U(INST_WIDTH.W))))
   val pcBuffer   = RegInit(VecInit(Seq.fill(IB_LENGTH)(0.U(ADDR_WIDTH.W))))
-  val excBuffer  = RegInit(VecInit(Seq.fill(IB_LENGTH)(ECodes())))
+  val excBuffer  = RegInit(VecInit(Seq.fill(IB_LENGTH)(0.U(7.W))))
 
   // [head, tail)
   val headPtr  = RegInit(0.U(IB_WIDTH.W))
   val tailPtr  = RegInit(0.U(IB_WIDTH.W))
-  val fifoSize = RegInit(0.U(IB_WIDTH.W))
+  val fifoSize = RegInit(0.U((IB_WIDTH + 1).W))
   val freeSize = IB_LENGTH.U - fifoSize
 
   def push(i: Int): Unit = {
@@ -65,6 +65,7 @@ class InstBuffer extends Module {
     busy.info(0) := true.B
   }
 
+  io.to.bits := 0.U.asTypeOf(new DualInfo)
   when(canRead && io.to.ready) {
     for (i <- 0 until R_LENGTH) {
       val popResult = pop()

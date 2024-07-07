@@ -81,7 +81,7 @@ class Decoder extends Module {
   val is_exc         = func_type === FuncType.exc
   val is_st          = func_type === FuncType.mem && !MemOpType.isread(op_type)
   val br_not_jirl_bl = func_type === FuncType.bru && !is_jirl_bl
-  io.iswf := !(is_exc || is_st || is_none || br_not_jirl_bl)
+  io.iswf := !(is_exc || is_st || is_none || br_not_jirl_bl) && io.rd =/= 0.U
 
   val is_csr  = func_type === FuncType.csr
   val is_wr   = op_type === CsrOpType.wr
