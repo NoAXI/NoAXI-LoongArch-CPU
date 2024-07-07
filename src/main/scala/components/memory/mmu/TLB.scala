@@ -22,7 +22,7 @@ class TLBIO extends Bundle {
   // val exe = Flipped(new exe_TLB_IO)
 
   // act with mem
-  val mem = Flipped(new MemTLBIO)
+  val mem = Flipped(new Mem0TLBIO)
 }
 
 class TLB extends Module {

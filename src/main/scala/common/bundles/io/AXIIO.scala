@@ -79,7 +79,7 @@ class FetchICacheIO extends Bundle {
   val cango   = Output(Bool())
 }
 
-class MemDCacheIO extends Bundle {
+class Mem1DCacheIO extends Bundle {
   val request = DecoupledIO(new Bundle {
     val cached = Bool()
     val re     = Bool()
@@ -93,7 +93,7 @@ class MemDCacheIO extends Bundle {
   // val cango  = Output(Bool())
 }
 
-class ExeDCacheIO extends Bundle {
+class Mem0DCacheIO extends Bundle {
   val request = DecoupledIO(new Bundle {
     val addr = UInt(ADDR_WIDTH.W)
   })

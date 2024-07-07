@@ -1,14 +1,26 @@
 <mxfile host="65bd71144e">
     <diagram id="_aD04N4xmqhP_ezU_jEi" name="第 1 页">
-        <mxGraphModel dx="1791" dy="1238" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="5000" pageHeight="2000" math="0" shadow="0">
+        <mxGraphModel dx="736" dy="504" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="5000" pageHeight="2000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
+                <mxCell id="27" value="" style="shape=ext;double=1;rounded=1;whiteSpace=wrap;html=1;strokeColor=default;fontFamily=Helvetica;fontSize=30;fontColor=default;fillColor=default;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="80" width="1370" height="660" as="geometry"/>
+                </mxCell>
                 <mxCell id="21" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=default;fontFamily=Helvetica;fontSize=30;fontColor=default;fillColor=default;" vertex="1" parent="1">
                     <mxGeometry x="915" y="130" width="450" height="560" as="geometry"/>
                 </mxCell>
                 <mxCell id="12" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=default;fontFamily=Helvetica;fontSize=30;fontColor=default;fillColor=default;" vertex="1" parent="1">
                     <mxGeometry x="80" y="130" width="450" height="560" as="geometry"/>
+                </mxCell>
+                <mxCell id="65" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontFamily=Helvetica;fontSize=30;fontColor=default;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="2" target="9">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="100" y="253"/>
+                            <mxPoint x="100" y="320"/>
+                            <mxPoint x="100" y="390"/>
+                        </Array>
+                    </mxGeometry>
                 </mxCell>
                 <mxCell id="2" value="&lt;font style=&quot;font-size: 30px;&quot;&gt;PreFetch&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
                     <mxGeometry x="120" y="193" width="160" height="120" as="geometry"/>
@@ -57,6 +69,15 @@
                 </mxCell>
                 <mxCell id="26" value="译码" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=30;" vertex="1" parent="1">
                     <mxGeometry x="1105" y="631" width="80" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="" style="shape=flexArrow;endArrow=classic;html=1;fontFamily=Helvetica;fontSize=30;fontColor=default;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" target="27">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="720" y="990" as="sourcePoint"/>
+                        <mxPoint x="800" y="640" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="58" value="&lt;ul&gt;&lt;li&gt;bpuTrain：分支预测失败导致的跳转 / 异常例外导致的跳转&lt;/li&gt;&lt;li&gt;flush：清刷信号&lt;/li&gt;&lt;/ul&gt;" style="text;strokeColor=none;fillColor=none;html=1;whiteSpace=wrap;verticalAlign=middle;overflow=hidden;rounded=0;fontFamily=Helvetica;fontSize=30;fontColor=default;" vertex="1" parent="1">
+                    <mxGeometry x="740" y="780" width="910" height="200" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>

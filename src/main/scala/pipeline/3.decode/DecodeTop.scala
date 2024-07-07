@@ -31,6 +31,9 @@ class DecodeTop extends Module {
     to_info.bits(i).func_type    := dec(i).func_type
     to_info.bits(i).op_type      := dec(i).op_type
     to_info.bits(i).imm          := dec(i).imm
+    to_info.bits(i).rjInfo.areg  := dec(i).rj
+    to_info.bits(i).rkInfo.areg  := dec(i).rk
+    to_info.bits(i).rdInfo.areg  := dec(i).rd
     to_info.bits(i).iswf         := dec(i).iswf && !info(i).bubble
     to_info.bits(i).csr_iswf     := dec(i).csr_iswf
     to_info.bits(i).csr_addr     := dec(i).csr_wfreg

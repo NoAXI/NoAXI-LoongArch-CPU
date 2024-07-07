@@ -55,6 +55,7 @@ class FetchTop extends Module {
     to_info.instV(i).inst  := Mux(is_adef, 0.U, io.iCache.answer.bits(i))
     to_info.instV(i).valid := true.B // TODO: read the jump_index from BTB to decide the valid signal
     to_info.fetchExc(i)    := Mux(is_adef, ECodes.ADEF, ECodes.NONE)
+    // TODO: excbadvaddr!!
   }
   io.to.bits.bits(0).predict := Mux(io.flush, 0.U.asTypeOf(new br), io.bpu.res)
   io.to.bits.bits(0)         := Mux(io.flush, 0.U.asTypeOf(new SingleInfo), to_info)

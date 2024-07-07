@@ -16,8 +16,7 @@ class CSRTLBIO extends Bundle {
   // val tlbehi    = Output(new TLBEHI_info)
 }
 
-// 异步
-class MemTLBIO extends Bundle {
+class Mem0TLBIO extends Bundle {
   val va        = Output(UInt(ADDR_WIDTH.W))
   // these are used to judge the exception
   val mem_type  = Output(memType()) 
@@ -26,12 +25,6 @@ class MemTLBIO extends Bundle {
   
   val pa        = Input(UInt(ADDR_WIDTH.W))
   val cached    = Input(Bool())
-}
-
-class ExeTLBIO extends Bundle {
-  val op_type = Output(TlbOpType())
-  val tlb_en  = Output(Bool())
-  val result  = Input(UInt(DATA_WIDTH.W))
 }
 
 // VIPT形式

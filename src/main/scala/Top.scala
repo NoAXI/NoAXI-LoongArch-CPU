@@ -45,7 +45,8 @@ class Top extends Module {
   // backend execute
   val arith   = Seq.fill(ARITH_ISSUE_NUM)(Module(new ArithmeticTop).io)
   val muldiv  = Module(new MuldivTop).io
-  val memory0 = Module(new MemoryTop).io
+  val memory0 = Module(new Memory0Top).io
+  val memory1 = Module(new Memory1Top).io
 
   // backend after execute
   val writeback = Seq.fill(BACK_ISSUE_WIDTH)(Module(new WritebackTop).io)
@@ -55,8 +56,13 @@ class Top extends Module {
   // ctrl unit
   val flushCtrl = Module(new FlushCtrl).io
 
+  // frontend unit
+  val bpu = Module(new BPU).io
+
+  // csr unit
+  val csr = Module(new CSR).io
+
   // backend unit
-  val bpu     = Module(new BPU).io
   val rat     = Module(new Rat).io
   val rob     = Module(new Rob).io
   val preg    = Module(new PReg).io
@@ -65,7 +71,8 @@ class Top extends Module {
   // memory access
   val axilayer = Module(new AXILayer).io
   val iCache   = Module(new ICache).io
-  // val dcache   = Module(new dCache_with_cached_writebuffer).io
+  val dcache   = Module(new dCache_with_cached_writebuffer).io
+  val tlb      = Module(new TLB).io
 
   // ==================== stage connect ====================
   // set initial stage info for prefetch
@@ -100,7 +107,8 @@ class Top extends Module {
   arith(0).to <> writeback(0).from
   arith(1).to <> writeback(1).from
   muldiv.to   <> writeback(2).from
-  memory0.to  <> writeback(3).from
+  memory0.to  <> memory1.from
+  memory1.to  <> writeback(3).from
 
   // always set write-ready high for wb stage
   for (i <- 0 until BACK_ISSUE_WIDTH) {
@@ -110,11 +118,22 @@ class Top extends Module {
   // ==================== components connect ====================
   // axi connect
   axilayer.icache <> iCache.axi
+  axilayer.dcache <> dcache.axi
   axilayer.to     <> io.axi
+
+  // tlb <> prefetch, fetch, memory0, memory1, csr
+  tlb.preFetch <> prefetch.tlb
+  tlb.fetch    <> fetch.tlb
+  tlb.mem      <> memory0.tlb // TODO：break to two
+  tlb.csr      <> csr.tlb
 
   // icache <> fetch, prefetch
   prefetch.iCache <> iCache.preFetch
   fetch.iCache    <> iCache.fetch
+
+  // dcache <> memory0, memory1
+  memory0.dCache <> dcache.mem0
+  memory1.dCache <> dcache.mem1
 
   // bpu <> prefetch, fetch
   bpu.preFetch <> prefetch.bpu

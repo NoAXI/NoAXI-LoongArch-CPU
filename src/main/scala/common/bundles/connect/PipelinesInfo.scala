@@ -65,6 +65,10 @@ class SingleInfo extends Bundle {
   val predict  = new br
   val isCALL   = Bool()
   val isReturn = Bool()
+
+  // tlb
+  val pa     = UInt(ADDR_WIDTH.W)
+  val cached = Bool()
 }
 
 class DualInfo extends Bundle {
