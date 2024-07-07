@@ -33,6 +33,11 @@ class DispatchTop extends Module {
     info := io.from.bits
   }
   flushWhen(info, io.flush)
+  for (i <- 0 until BACK_ISSUE_WIDTH) {
+    val to = io.to(i)
+    to.bits  := 0.U.asTypeOf(to.bits)
+    to.valid := false.B
+  }
 
   // select issued pipeline
   val bits  = info.bits
@@ -78,6 +83,7 @@ class DispatchTop extends Module {
     for (j <- 0 until BACK_ISSUE_WIDTH) {
       when(port(i) === j.U) {
         io.to(j).valid := cango(i)
+        io.to(j).bits  := info.bits(i)
       }
     }
   }

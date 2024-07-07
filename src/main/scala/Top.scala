@@ -6,6 +6,7 @@ import chisel3.util._
 import const._
 import bundles._
 import const.Parameters._
+import const.ForwardConst._
 
 import csr._
 import controller._
@@ -59,7 +60,7 @@ class Top extends Module {
   val rat     = Module(new Rat).io
   val rob     = Module(new Rob).io
   val preg    = Module(new PReg).io
-  val forward = Module(new Forward).io // exe = 0, wb = 1
+  val forward = Module(new Forward).io
 
   // memory access
   val axilayer = Module(new AXILayer).io
@@ -130,14 +131,15 @@ class Top extends Module {
 
   // forward <> the last stage of execute
   // TODO: 需要添加muldiv和memory的前递信号
-  arith(0).forward <> forward.info(0)(0)
-  arith(1).forward <> forward.info(0)(1)
+  for (i <- 0 until ARITH_ISSUE_NUM) {
+    arith(i).forward <> forward.info(FORWARD_EXE_INDEX)(i)
+  }
 
   // writeback <> preg, rob, forward
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     writeback(i).preg    <> preg.write(i)
     writeback(i).rob     <> rob.write(i)
-    writeback(i).forward <> forward.info(1)(i)
+    writeback(i).forward <> forward.info(FORWARD_WB_INDEX)(i)
   }
 
   // commit <> rat, rob, debug

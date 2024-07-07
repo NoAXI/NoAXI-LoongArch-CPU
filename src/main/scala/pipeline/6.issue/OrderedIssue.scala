@@ -18,7 +18,6 @@ class OrderedIssue[T <: Data](
   val mem     = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(new SingleInfo))))
   val headPtr = Counter(entries)
   val tailPtr = Counter(entries)
-  Queue
   // push / pop signal
   val doPush = WireDefault(io.from.fire)
   val doPop  = WireDefault(io.to.fire)

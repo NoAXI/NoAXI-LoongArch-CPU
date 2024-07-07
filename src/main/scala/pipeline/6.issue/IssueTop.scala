@@ -23,11 +23,12 @@ class IssueQueueIO extends SingleStageBundle {
 }
 
 class IssueTopIO extends Bundle {
-  val flush = Input(Bool())
-  val from  = Vec(BACK_ISSUE_WIDTH, Flipped(DecoupledIO(new SingleInfo)))
-  val to    = Vec(BACK_ISSUE_WIDTH, DecoupledIO(new SingleInfo))
-  val awake = Vec(BACK_ISSUE_WIDTH, Input(new AwakeInfo))
-  val stall = Vec(BACK_ISSUE_WIDTH, Input(Bool()))
+  val flush     = Input(Bool())
+  val from      = Vec(BACK_ISSUE_WIDTH, Flipped(DecoupledIO(new SingleInfo)))
+  val to        = Vec(BACK_ISSUE_WIDTH, DecoupledIO(new SingleInfo))
+  val awake     = Vec(BACK_ISSUE_WIDTH, Input(new AwakeInfo))
+  val stall     = Vec(BACK_ISSUE_WIDTH, Input(Bool()))
+  val arithSize = Vec(ARITH_ISSUE_NUM, Output(UInt((ARITH_QUEUE_WIDTH + 1).W)))
 }
 
 class IssueTop extends Module {
@@ -77,5 +78,10 @@ class IssueTop extends Module {
     queue(i).awake := io.awake
     queue(i).stall := io.stall(i)
     queue(i).flush := io.flush
+  }
+
+  // arith size
+  for (i <- 0 until ARITH_ISSUE_NUM) {
+    io.arithSize(i) := arith(i).arithSize
   }
 }

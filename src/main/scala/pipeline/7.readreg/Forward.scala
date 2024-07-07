@@ -7,6 +7,7 @@ import const._
 import bundles._
 import func.Functions._
 import const.Parameters._
+import const.ForwardConst._
 
 class ForwardAtomicRequestIO extends Bundle {
   val preg = Input(UInt(PREG_WIDTH.W))
@@ -27,12 +28,12 @@ class ForwardInfoIO extends Bundle {
 
 class ForwardIO extends Bundle {
   val req  = Vec(BACK_ISSUE_WIDTH, new ForwardRequestIO)
-  val info = Vec(2, Vec(BACK_ISSUE_WIDTH, new ForwardInfoIO)) // 0 <> exe, 1 <> wb
+  val info = Vec(2, Vec(BACK_ISSUE_WIDTH, new ForwardInfoIO))
 }
 
 class Forward extends Module {
   val io = IO(new ForwardIO)
-  for (infoNum <- 1 to 0) {
+  for (infoNum <- 0 until FORWARD_STAGE_NUM) {
     val info = io.info(infoNum)
     for (i <- 0 until BACK_ISSUE_WIDTH) {
       for (regNum <- 0 until OPERAND_MAX) {

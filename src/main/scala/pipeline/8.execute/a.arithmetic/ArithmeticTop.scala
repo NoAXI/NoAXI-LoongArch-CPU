@@ -24,6 +24,10 @@ class ArithmeticTop extends Module {
   val res   = WireDefault(info)
   io.to.bits := res
 
-  // arith -> forward -> readreg
+  val alu = Module(new ALU).io
+
+  alu.info        := info
+  res.rdInfo.data := alu.result
+
   doForward(io.forward, res, valid)
 }
