@@ -39,20 +39,22 @@ class RenameTop extends Module {
     val from = info.bits(i)
     val to   = res.bits(i)
 
+    val writeZero = from.rdInfo.areg === 0.U
+
     // rename -> rat
-    io.ratRename(i).valid := valid
+    io.ratRename(i).valid := valid && from.iswf && !writeZero
     io.ratRename(i).areg  := from.rdInfo.areg
     io.ratRead(i).areg.rj := to.rjInfo.areg
     io.ratRead(i).areg.rk := to.rkInfo.areg
 
     // rat -> rename
-    to.opreg       := io.ratRename(i).opreg
-    to.rdInfo.preg := io.ratRename(i).preg
+    to.opreg       := Mux(writeZero, 0.U, io.ratRename(i).opreg)
+    to.rdInfo.preg := Mux(writeZero, 0.U, io.ratRename(i).preg)
     to.rjInfo.preg := io.ratRead(i).preg.rj
     to.rkInfo.preg := io.ratRead(i).preg.rk
 
     // rob
-    io.rob(i).valid := valid
+    io.rob(i).valid := valid && from.pipelineType =/= 0.U
     to.robId        := io.rob(i).index
   }
 }

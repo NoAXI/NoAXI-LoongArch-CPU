@@ -185,33 +185,53 @@ class Top extends Module {
     io.debug := commit.debug(1)
   }
 
+  // muldiv awake (tmp)
+  // TODO: add the last stage to forward
+  muldiv.awake   <> issue.awake(MULDIV_ISSUE_ID)
+  muldiv.forward <> forward.info(FORWARD_EXE_INDEX)(MULDIV_ISSUE_ID)
+
   // flush ctrl
   // TODO: connect flushCtrl with (memory, rob)
-  flushCtrl.doFlush  := false.B
-  flushCtrl.hasFlush := false.B
+  flushCtrl.doFlush  <> rob.doFlush
+  // flushCtrl.hasFlush <> memory1.hasFlush
 
+  // front flush
   flushCtrl.frontFlush <> prefetch.flush
   flushCtrl.frontFlush <> fetch.flush
   flushCtrl.frontFlush <> ib.flush
   flushCtrl.frontFlush <> decode.flush
   flushCtrl.frontFlush <> rename.flush
 
-  flushCtrl.robFlush      <> rob.flush
-  flushCtrl.ratFlush      <> rat.flush
-  flushCtrl.issueMemStall <> issue.memoryStall
+  // set (ib, memIssue) stall when has flush
+  // set (readreg, mem0) flush when has flush
+  // flushCtrl.ibStall  <> ib.stall
+  flushCtrl.memStall <> issue.memoryStall
 
+  // recover
+  flushCtrl.recover <> rob.flush
+  flushCtrl.recover <> rat.flush
+
+  // back flush
+  // mem.readreg & mem.mem0 use memStall to flush
   flushCtrl.backFlush <> dispatch.flush
   flushCtrl.backFlush <> issue.flush
 
   for (i <- 0 until BACK_ISSUE_WIDTH) {
-    flushCtrl.backFlush <> readreg(i).flush
+    if (i != MEMORY_ISSUE_ID) {
+      flushCtrl.backFlush <> readreg(i).flush
+    } else {
+      flushCtrl.memStall <> readreg(i).flush
+    }
   }
 
   for (i <- 0 until ARITH_ISSUE_NUM) {
     flushCtrl.backFlush <> arith(i).flush
   }
+
   flushCtrl.backFlush <> muldiv.flush
-  flushCtrl.backFlush <> memory0.flush
+
+  flushCtrl.memStall  <> memory0.flush // flush when memStall = 1
+  flushCtrl.backFlush <> memory1.flush
 
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     flushCtrl.backFlush <> writeback(i).flush

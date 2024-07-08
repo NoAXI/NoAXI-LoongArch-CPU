@@ -46,6 +46,7 @@ class WritebackTop extends Module {
   io.rob.bits.debug_pc  := res.pc
   io.rob.bits.exc_type  := res.exc_type
   io.rob.bits.exc_vaddr := res.exc_vaddr
+  io.rob.bits.hasFlush  := res.hasFlush
 
   // writeback -> forward -> readreg
   doForward(io.forward, res, valid)

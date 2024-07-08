@@ -9,57 +9,52 @@ import func.Functions._
 import const.Parameters._
 
 class FlushCtrlIO extends Bundle {
-  val hasFlush   = Input(Bool())
-  val doFlush    = Input(Bool())
-  val frontFlush = Output(Bool()) // flush (fetch, decode) when br = 1
-  val backFlush  = Output(Bool())
+  val hasFlush = Input(Bool()) // from mem1: there's a should-do-flush inst in pipeline
+  val doFlush  = Input(Bool()) // from rob: the should-do-flush inst has been committed
 
-  // flush ctrl when exception appears in memory pipeline
-  val robFlush      = Output(Bool())
-  val ratFlush      = Output(Bool())
-  val issueMemStall = Output(Bool())
-  val memFlush      = Vec(MEMORY_STAGE_NUM, Output(Bool()))
+  val frontFlush = Output(Bool()) // flush all frontend info
+  val backFlush  = Output(Bool()) // only flush back when recover
+  val recover    = Output(Bool()) // let rob, rat flushed
+  val memStall   = Output(Bool()) // set (readreg -> mem0) stall, let mem0 flushed
+  val ibStall    = Output(Bool()) // set (ib -> decode) stall
 }
 
-trait FlushCtrlStateTable {
-  val sIdle :: sFlushWait :: Nil = Enum(2)
-}
+trait FlushCtrlStateTable  { val sIdle :: sFlushWait :: Nil = Enum(2)                   }
+trait FlushCtrlMemoryConst { val mStageRR :: mStageM0 :: mStageM1 :: mStageM2 = Enum(4) }
+object FlushCtrlConst extends FlushCtrlStateTable with FlushCtrlMemoryConst
+import FlushCtrlConst._
 
-// TODO: add flush logic here
-class FlushCtrl extends Module with FlushCtrlStateTable {
+class FlushCtrl extends Module {
   val io    = IO(new FlushCtrlIO)
   val state = RegInit(sIdle)
 
-  val generalFlush  = WireDefault(false.B)
-  val frontFlush    = WireDefault(false.B)
-  val backFlush     = WireDefault(false.B)
-  val robFlush      = WireDefault(false.B)
-  val ratFlush      = WireDefault(false.B)
-  val issueMemStall = WireDefault(false.B)
-  val memFlush      = WireDefault(VecInit(Seq.fill(MEMORY_STAGE_NUM)(false.B)))
+  val frontFlush = WireDefault(false.B)
+  val recover    = WireDefault(false.B)
+  val memStall   = WireDefault(false.B)
+  val ibStall    = WireDefault(false.B)
+
+  // FSM
   switch(state) {
     is(sIdle) {
       when(io.hasFlush && !io.doFlush) {
-        state := sFlushWait
+        memStall   := true.B
+        frontFlush := true.B
+        state      := sFlushWait
       }
     }
     is(sFlushWait) {
-      generalFlush := true.B
+      memStall := true.B
+      ibStall  := true.B
       when(io.doFlush) {
-        state := sIdle
+        state   := sIdle
+        recover := true.B
       }
     }
   }
-  when(generalFlush) {
-    frontFlush := true.B
-    backFlush  := true.B
-  }
-  io.frontFlush    := frontFlush
-  io.backFlush     := backFlush
-  io.robFlush      := robFlush
-  io.ratFlush      := ratFlush
-  io.issueMemStall := issueMemStall
-  for (i <- 0 until MEMORY_STAGE_NUM) {
-    io.memFlush(i) := memFlush(i)
-  }
+
+  io.frontFlush := frontFlush
+  io.backFlush  := recover
+  io.recover    := recover
+  io.memStall   := memStall
+  io.ibStall    := ibStall
 }

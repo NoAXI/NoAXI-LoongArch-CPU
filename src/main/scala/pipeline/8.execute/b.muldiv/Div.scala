@@ -10,7 +10,8 @@ import func.Functions._
 import const.Parameters._
 
 class Interface extends Bundle {
-  val aclk = Input(Clock())
+  val aclk    = Input(Clock())
+  val aresetn = Input(Reset())
   // 被除数
   val s_axis_dividend_tvalid = Input(Bool())
   val s_axis_dividend_tready = Output(Bool())
@@ -40,11 +41,13 @@ class DivIO extends Bundle {
   val result   = Output(UInt(DATA_WIDTH.W))
   val running  = Input(Bool())
   val complete = Output(Bool())
+  val flush    = Input(Bool())
 }
 
 object Connect {
-  def apply(div: Interface, top: DivIO, clock: Clock): Unit = {
+  def apply(div: Interface, top: DivIO, clock: Clock, reset: Reset): Unit = {
     div.aclk                  := clock
+    div.aresetn               := (reset.asBool || top.flush).asTypeOf(reset)
     div.s_axis_dividend_tdata := top.src1
     div.s_axis_divisor_tdata  := top.src2
     val sent = Seq.fill(2)(RegInit(false.B))
@@ -77,8 +80,8 @@ class Div extends Module {
     val signed_div   = Module(new SignedDiv())
     val unsigned_div = Module(new UnsignedDiv())
 
-    Connect(signed_div.io, this.io, clock)
-    Connect(unsigned_div.io, this.io, clock)
+    Connect(signed_div.io, this.io, clock, reset)
+    Connect(unsigned_div.io, this.io, clock, reset)
 
     io.complete := Mux(
       DivOpType.signed(io.op_type),

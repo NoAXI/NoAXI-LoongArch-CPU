@@ -45,7 +45,7 @@ class PReg extends Module {
   // write
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     val rd = io.write(i)
-    when(rd.en) {
+    when(rd.en && rd.index =/= 0.U) {
       preg(rd.index) := rd.data
     }
   }

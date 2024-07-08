@@ -17,9 +17,11 @@ class ROBInfo extends Bundle {
   val opreg = UInt(PREG_WIDTH.W)
   val wdata = UInt(DATA_WIDTH.W)
 
-  val debug_pc  = UInt(ADDR_WIDTH.W)
   val exc_type  = ECodes()
   val exc_vaddr = UInt(ADDR_WIDTH.W)
+  val hasFlush  = Bool()
+
+  val debug_pc = UInt(ADDR_WIDTH.W)
 }
 
 class RobRenameIO extends Bundle {
@@ -39,11 +41,12 @@ class RobCommitIO extends Bundle {
 }
 
 class RobIO extends Bundle {
-  val flush  = Input(Bool())
-  val full   = Output(Bool()) // <> rename
-  val rename = Vec(ISSUE_WIDTH, new RobRenameIO)
-  val write  = Vec(BACK_ISSUE_WIDTH, new RobWriteIO)
-  val commit = Vec(ISSUE_WIDTH, new RobCommitIO)
+  val flush   = Input(Bool())
+  val full    = Output(Bool()) // <> rename
+  val rename  = Vec(ISSUE_WIDTH, new RobRenameIO)
+  val write   = Vec(BACK_ISSUE_WIDTH, new RobWriteIO)
+  val commit  = Vec(ISSUE_WIDTH, new RobCommitIO)
+  val doFlush = Output(Bool())
 }
 class Rob extends Module {
   val io = IO(new RobIO)
@@ -121,6 +124,13 @@ class Rob extends Module {
       when(i.U < tailOffset) {
         rob(tailPtr + i.U).done := false.B
       }
+    }
+  }
+
+  // doFlush
+  for (i <- 0 until ISSUE_WIDTH) {
+    when(io.commit(i).valid && io.commit(i).info.hasFlush) {
+      io.doFlush := true.B
     }
   }
 }

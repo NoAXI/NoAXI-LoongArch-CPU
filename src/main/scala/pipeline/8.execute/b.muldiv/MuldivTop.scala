@@ -11,6 +11,7 @@ import const.Parameters._
 
 class MuldivTopIO extends SingleStageBundle {
   val forward = Flipped(new ForwardInfoIO)
+  val awake   = Output(new AwakeInfo)
 }
 
 class MuldivTop extends Module {
@@ -37,6 +38,7 @@ class MuldivTop extends Module {
   mul.src2    := src2
 
   val div = Module(new Div).io
+  div.flush   := io.flush
   div.running := is_div
   div.op_type := info.op_type
   div.src1    := src1
@@ -80,4 +82,7 @@ class MuldivTop extends Module {
 
   res.result := result
   doForward(io.forward, res, valid)
+
+  io.awake.valid := valid && info.iswf && io.to.fire
+  io.awake.preg  := info.rdInfo.preg
 }

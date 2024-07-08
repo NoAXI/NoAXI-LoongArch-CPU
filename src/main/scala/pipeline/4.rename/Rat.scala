@@ -59,19 +59,19 @@ class Rat extends Module {
   }
 
   // rename: sRat update
-  // commit: aRat update
   when(!stall) {
     for (i <- 0 until ISSUE_WIDTH) {
       val info = io.rename(i)
-      when(info.valid) {
+      when(info.valid && info.areg =/= 0.U) {
         sRat(info.areg) := info.preg
       }
     }
   }
+  // commit: aRat update
   when(!io.flush) {
     for (i <- 0 until ISSUE_WIDTH) {
       val info = io.commit(i)
-      when(info.valid) {
+      when(info.valid && info.areg =/= 0.U) {
         aRat(info.areg) := info.preg
       }
     }
