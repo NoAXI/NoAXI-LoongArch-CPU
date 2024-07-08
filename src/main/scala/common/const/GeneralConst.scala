@@ -11,7 +11,7 @@ object Parameters {
   val CSR_WIDTH  = 14
 
   // fetch width
-  val FETCH_DEPTH = 4
+  val FETCH_DEPTH = 2 // maybe 4
 
   // decoded info width
   val OP_TYPE_WIDTH       = 5

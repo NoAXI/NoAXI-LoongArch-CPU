@@ -5,56 +5,13 @@ import chisel3.util._
 
 import bundles._
 import const.Parameters._
+import const.Predict._
 import const._
 import func.Functions._
 import memory.cache._
 
-// BTB
-// ===================================================
-// |53       34|33           2|1        1|0        0|
-// |    tag    | branchTarget |  isCALL  | isReturn |
-// ===================================================
-
-object predictConst {
-  val INDEX_LENGTH   = 6
-  val INDEX_WIDTH    = 1 << INDEX_LENGTH
-  val HISTORY_LENGTH = 3
-  val HISTORY_WIDTH  = 1 << HISTORY_LENGTH
-  val COUNTER_LENGTH = 2
-  val COUNTER_WIDTH  = 1 << COUNTER_LENGTH
-
-  // BTB
-  val BTB_INDEX_LENGTH = 10
-  val BTB_INDEX_WIDTH  = 1 << BTB_INDEX_LENGTH
-
-  val BTB_TAG_LENGTH  = ADDR_WIDTH - BTB_INDEX_LENGTH - 2
-  val BTB_FLAG_LENGTH = 2
-  val BTB_INFO_LENGTH = BTB_TAG_LENGTH + 32 + BTB_FLAG_LENGTH
-
-  // RAS
-  val RAS_DEPTH = 8
-  val RAS_WIDTH = log2Ceil(RAS_DEPTH)
-}
-
-import predictConst._
-
-class BpuTrain extends Bundle {
-  val en       = Bool()
-  val succeed  = Bool() // predict succeed
-  val real     = Bool() // branch succeed
-  val target   = UInt(ADDR_WIDTH.W)
-  val pc       = UInt(ADDR_WIDTH.W)
-  val isCALL   = Bool() // is call or PC-relative branch
-  val isReturn = Bool()
-
-  def index    = pc(INDEX_LENGTH + 3, 4)
-  def BTBIndex = pc(BTB_INDEX_LENGTH + 3, 4)
-  def BTBTag   = pc(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH)
-}
-
 class BPUIO extends Bundle {
   val preFetch = Flipped(new PreFetchBPUIO)
-  val fetch    = Flipped(new FetchBPUIO)
 }
 
 class BPU extends Module {
@@ -62,86 +19,112 @@ class BPU extends Module {
 
   val pFF :: pF :: pTT :: pT :: Nil = Enum(COUNTER_WIDTH)
 
-  val BHT = RegInit(VecInit(Seq.fill(INDEX_WIDTH)(0.U(HISTORY_LENGTH.W))))
-  val PHT = RegInit(VecInit(Seq.fill(HISTORY_WIDTH)(pF)))
-  val BTB = Module(new xilinx_simple_dual_port_1_clock_ram_write_first(BTB_INFO_LENGTH, BTB_INDEX_WIDTH)).io
-  val RAS = RegInit(VecInit(Seq.fill(RAS_DEPTH)(0x01c000000.U(33.W))))
+  // the two table are same COMPLETELY, just apply two read portals
+  val BHT = RegInit(VecInit.fill(FETCH_DEPTH)(VecInit(Seq.fill(INDEX_WIDTH)(0.U(HISTORY_LENGTH.W)))))
+  val PHT = RegInit(VecInit.fill(FETCH_DEPTH)(VecInit(Seq.fill(HISTORY_WIDTH)(pF))))
+  val BTB = VecInit.fill(FETCH_DEPTH)(
+    Module(new xilinx_simple_dual_port_1_clock_ram_read_first(BTB_INFO_LENGTH, BTB_INDEX_WIDTH)).io,
+  )
+  val RAS = RegInit(VecInit(Seq.fill(RAS_DEPTH)(0x1c000000.U(ADDR_WIDTH.W))))
 
+  // BHT and PHT train
+  when(io.preFetch.train.isbr) {
+    for (i <- 0 until FETCH_DEPTH) {
+      val dirction = io.preFetch.train.realDirection
+      val index    = Cat(BHT(i)(io.preFetch.train.index)(HISTORY_LENGTH - 2, 0), dirction)
+      BHT(io.preFetch.train.index) := index
+      switch(PHT(i)(index)) {
+        is(pFF) {
+          PHT(i)(index) := Mux(dirction, pF, pFF)
+        }
+        is(pF) {
+          PHT(i)(index) := Mux(dirction, pT, pFF)
+        }
+        is(pT) {
+          PHT(i)(index) := Mux(dirction, pTT, pF)
+        }
+        is(pTT) {
+          PHT(i)(index) := Mux(dirction, pTT, pT)
+        }
+      }
+    }
+  }
+  val index            = VecInit.tabulate(FETCH_DEPTH)(i => BHT(i)(io.preFetch.pcGroup(i)(INDEX_LENGTH + 1, 2)))
+  val predictDirection = VecInit.tabulate(FETCH_DEPTH)(i => PHT(i)(index(i))(1) && io.preFetch.pcValid(i))
+
+  // BTB: pc-relative or call
+  for (i <- 0 until FETCH_DEPTH) {
+    BTB(i).clka  := clock
+    BTB(i).addrb := io.preFetch.pcGroup(i)(BTB_INDEX_LENGTH + 3, 4)
+    BTB(i).wea   := false.B
+    BTB(i).addra := 0.U
+    BTB(i).dina  := 0.U
+  }
+  when(io.preFetch.train.isbr && io.preFetch.train.br.en) { // only when predict failed
+    for (i <- 0 until FETCH_DEPTH) {
+      BTB(i).wea   := true.B
+      BTB(i).addra := io.preFetch.train.pc(BTB_INDEX_LENGTH + 3, 4)
+      BTB(i).dina := Cat(
+        true.B,
+        io.preFetch.train.pc(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH),
+        io.preFetch.train.br.tar,
+      )
+    }
+  }
+  val tagVec   = VecInit.tabulate(FETCH_DEPTH)(i => BTB(i).doutb(BTB_INFO_LENGTH - 2, BTB_INFO_LENGTH - BTB_TAG_LENGTH))
+  val validVec = VecInit.tabulate(FETCH_DEPTH)(i => BTB(i).doutb(BTB_INFO_LENGTH - 1))
+  val BTBTarVec =
+    VecInit.tabulate(FETCH_DEPTH)(i => BTB(i).doutb(BTB_INFO_LENGTH - BTB_TAG_LENGTH - 2, BTB_FLAG_LENGTH))
+  val isCALLVec   = VecInit.tabulate(FETCH_DEPTH)(i => BTB(i).doutb(1))
+  val isReturnVec = VecInit.tabulate(FETCH_DEPTH)(i => BTB(i).doutb(0))
+  val BTBHitVec = VecInit.tabulate(FETCH_DEPTH)(i =>
+    validVec(i) && tagVec(i) === io.preFetch.pcGroup(i)(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH),
+  )
+
+  // RAS: return
   val top         = RegInit(0.U(RAS_WIDTH.W))
   val top_add_1   = top + 1.U
   val top_minus_1 = top - 1.U
-
-  BTB.clka  := clock
-  BTB.addrb := io.preFetch.pc(BTB_INDEX_LENGTH + 3, 4)
-  BTB.wea   := false.B
-  BTB.addra := 0.U
-  BTB.dina  := 0.U
-
-  val tag      = BTB.doutb(BTB_INFO_LENGTH - 1, BTB_INFO_LENGTH - BTB_TAG_LENGTH)
-  val tar      = BTB.doutb(BTB_INFO_LENGTH - BTB_TAG_LENGTH - 1, 2)
-  val isCALL   = BTB.doutb(1)
-  val isReturn = BTB.doutb(0)
-
-  // train, just work one time
-  when(io.preFetch.train.en) {
-    val index = (BHT(io.preFetch.train.index) << 1)(HISTORY_LENGTH - 1, 0) | io.preFetch.train.real
-    BHT(io.preFetch.train.index) := index
-    switch(PHT(index)) {
-      is(pFF) {
-        PHT(index) := Mux(io.preFetch.train.real, pF, pFF)
-      }
-      is(pF) {
-        PHT(index) := Mux(io.preFetch.train.real, pT, pFF)
-      }
-      is(pT) {
-        PHT(index) := Mux(io.preFetch.train.real, pTT, pF)
-      }
-      is(pTT) {
-        PHT(index) := Mux(io.preFetch.train.real, pTT, pT)
-      }
-    }
-    BTB.wea   := true.B
-    BTB.addra := io.preFetch.train.BTBIndex
-    BTB.dina := Cat(
-      io.preFetch.train.BTBTag,
-      io.preFetch.train.target,
-      io.preFetch.train.isCALL,
-      io.preFetch.train.isReturn,
-    )
-  }
-
-  // when meet CALL, update the RAS
-  when(isCALL && !io.fetch.stall) {
+  val meetCALLVec = VecInit.tabulate(FETCH_DEPTH)(i => isCALLVec(i) && io.preFetch.pcValid(i))
+  when(meetCALLVec(0)) {
     top      := top_add_1
-    RAS(top) := 1.U(1.W) ## io.fetch.pc_add_4 // the pc is wrong!!
+    RAS(top) := io.preFetch.npcGroup(0)
+  }.elsewhen(meetCALLVec(1)) {
+    top      := top_add_1
+    RAS(top) := io.preFetch.npcGroup(1)
   }
+  val RASTarVec = VecInit.tabulate(FETCH_DEPTH)(i => RAS(top))
+  val RASHitVec = VecInit.tabulate(FETCH_DEPTH)(i => isReturnVec(i))
 
-  // direction prediction
-  val index = ShiftRegister(BHT(io.preFetch.pc(INDEX_LENGTH + 1, 2)), 1)
-  io.fetch.res.en := PHT(index)(1).asBool && tag === io.fetch.pc(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH)
-
-  // target prediction
-  io.fetch.res.tar := tar
-  when(isReturn) {
-    when(RAS(top)(32)) {
-      top              := top_minus_1
-      io.fetch.res.tar := RAS(top)
-      RAS(top)         := 0.U
+  // predict
+  io.preFetch.nextPC.en := true.B
+  when(predictDirection(0)) {
+    when(RASHitVec(0)) {
+      io.preFetch.nextPC.tar := RASTarVec(0)
+      top                    := top_minus_1
+    }.elsewhen(BTBHitVec(0)) {
+      io.preFetch.nextPC.tar := BTBTarVec(0)
     }.otherwise {
-      io.fetch.res.en := false.B
+      io.preFetch.nextPC.en := false.B
     }
+  }.elsewhen(predictDirection(1)) {
+    when(RASHitVec(1)) {
+      io.preFetch.nextPC.tar := RASTarVec(1)
+      top                    := top_minus_1
+    }.elsewhen(BTBHitVec(1)) {
+      io.preFetch.nextPC.tar := BTBTarVec(1)
+    }.otherwise {
+      io.preFetch.nextPC.en := false.B
+    }
+  }.otherwise {
+    io.preFetch.nextPC.en := false.B
   }
 
   // count
   if (Config.statistic_on) {
+    // not sure
     val tot_time     = RegInit(0.U(20.W))
     val succeed_time = RegInit(0.U(20.W))
-    when(io.preFetch.train.en) {
-      tot_time := tot_time + 1.U
-      when(io.preFetch.train.succeed) {
-        succeed_time := succeed_time + 1.U
-      }
-    }
     dontTouch(tot_time)
     dontTouch(succeed_time)
   }

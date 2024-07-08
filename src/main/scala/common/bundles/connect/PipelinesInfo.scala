@@ -6,6 +6,7 @@ import chisel3.util._
 import isa._
 import const._
 import const.Parameters._
+import const.tlbConst._
 import func.Functions._
 
 class InstV extends Bundle {
@@ -68,8 +69,11 @@ class SingleInfo extends Bundle {
   val isReturn = Bool()
 
   // tlb
-  val pa     = UInt(ADDR_WIDTH.W)
-  val cached = Bool()
+  val va       = UInt(ADDR_WIDTH.W)
+  val pa       = UInt(ADDR_WIDTH.W)
+  val cached   = Bool()
+  val isDirect = Bool()
+  val hitVec   = Vec(TLB_ENTRIES, Bool())
 }
 
 class DualInfo extends Bundle {

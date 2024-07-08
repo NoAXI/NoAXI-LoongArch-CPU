@@ -44,6 +44,7 @@ class ReadRegTop(
   // forward -> readreg
   res.rjInfo.data := io.forwardReq.rj.out
   res.rkInfo.data := io.forwardReq.rk.out
+  res.va          := io.vaddr
 
   // arith: awake
   if (unitType == "arith") {
@@ -53,7 +54,7 @@ class ReadRegTop(
     io.awake := DontCare
   }
 
-  // memory: calc and send vaddr to tag sram
+  // memory: calc and send vaddr to tag sram and memory0
   if (unitType == "memory") {
     io.vaddr := res.rjInfo.data + res.imm
   } else {

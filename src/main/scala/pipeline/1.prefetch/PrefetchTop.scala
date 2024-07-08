@@ -8,45 +8,56 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 
-// Predict Failed：需要清空前端流水级里的指令，未实现
-
-class PreFetchBPUIO extends Bundle {
-  val pc    = Output(UInt(ADDR_WIDTH.W))
-  val train = Output(new BpuTrain)
-}
-
 class PrefetchTopIO extends StageBundle {
-  val iCache   = new PreFetchICacheIO
-  val tlb      = new PreFetchTLBIO
-  val bpu      = new PreFetchBPUIO
-  val bpuRes   = Input(new br)       // 预测结果/异常跳转
-  val bpuTrain = Input(new BpuTrain) // 跳转结果
+  val iCache        = new PreFetchICacheIO
+  val tlb           = new Stage0TLBIO
+  val bpu           = new PreFetchBPUIO
+  val predictRes    = Input(new PredictRes) // 预测结果
+  val exceptionJump = Input(new br)         // 异常跳转
 }
 
 class PrefetchTop extends Module {
   val io   = IO(new PrefetchTopIO)
   val busy = WireDefault(0.U.asTypeOf(new BusyInfo))
-  stageConnect(io.from, io.to, busy)
+  val from = stageConnect(io.from, io.to, busy)
 
-  val pc      = RegInit(START_ADDR.U(ADDR_WIDTH.W))
-  val next_pc = WireDefault(0.U(ADDR_WIDTH.W))
+  val res = WireDefault(0.U.asTypeOf(new SingleInfo))
 
-  // send to tlb
-  io.tlb.va := pc
+  val pc       = RegInit(START_ADDR.U(ADDR_WIDTH.W))
+  val pc_add_4 = pc + 4.U
+  val pc_add_8 = pc + 8.U
 
-  // VI to iCache
-  io.iCache.request.valid     := io.from.fire
-  io.iCache.request.bits.addr := pc
+  // bpu
+  io.bpu.stall    := !io.from.fire
+  io.bpu.pcValid  := VecInit(Seq(true.B, pc_add_4(2)))
+  io.bpu.pcGroup  := VecInit(Seq(pc, pc_add_4))
+  io.bpu.npcGroup := VecInit(Seq(pc_add_4, pc_add_8))
+  io.bpu.train    := io.predictRes
 
-  // just send pc to bpu
-  io.bpu.pc    := pc
-  io.bpu.train := io.bpuTrain
+  // pc
+  val (predictFailed, exactPC) = (io.predictRes.br.en, io.predictRes.br.tar)
+  val (excHappen, excPC)       = (io.exceptionJump.en, io.exceptionJump.tar)
+  val (predictEn, predictPC)   = (io.bpu.nextPC.en, io.bpu.nextPC.tar)
+  when(io.from.fire) {
+    pc := MuxCase(
+      nextPC(pc),
+      Seq(
+        excHappen     -> excPC,
+        predictFailed -> exactPC,
+        predictEn     -> predictPC,
+      ),
+    )
+  }
 
-  next_pc := Mux(!io.bpuTrain.succeed, io.bpuTrain.target, Mux(io.bpuRes.en, io.bpuRes.tar, nextLine(pc)))
-  pc      := next_pc
+  // tlb
+  io.tlb.va      := pc
+  io.tlb.memType := memType.fetch
+  val hitVec   = io.tlb.hitVec
+  val isDirect = io.tlb.isDirect
+  val directpa = io.tlb.directpa
 
-  // just send the fetch group's first pc
-  io.to.bits                  := 0.U.asTypeOf(new DualInfo)
-  io.to.bits.bits(0).pc       := pc
-  io.to.bits.bits(0).pc_add_4 := pc + 4.U
+  res.hitVec         := hitVec
+  res.isDirect       := isDirect
+  res.pa             := directpa
+  io.to.bits.bits(0) := res
 }

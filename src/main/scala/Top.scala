@@ -60,7 +60,7 @@ class Top extends Module {
   val flushCtrl = Module(new FlushCtrl).io
 
   // frontend unit
-  val bpu = Module(new BPU).io
+  // val bpu = Module(new BPU).io
 
   // csr unit
   val csr = Module(new CSR).io
@@ -75,14 +75,14 @@ class Top extends Module {
   val axilayer = Module(new AXILayer).io
   val iCache   = Module(new ICache).io
   val dcache   = Module(new dCache_with_cached_writebuffer).io
-  val tlb      = Module(new TLB).io
+  // val tlb      = Module(new TLB).io
 
   // ==================== stage connect ====================
   // set initial stage info for prefetch
   prefetch.from.bits  := 0.U.asTypeOf(prefetch.from.bits)
   prefetch.from.valid := RegNext(!reset.asBool) & !reset.asBool
-  prefetch.bpuTrain   := 0.U.asTypeOf(new BpuTrain)
-  prefetch.bpuRes     := fetch.bpuRes
+  // prefetch.bpuTrain   := 0.U.asTypeOf(new BpuTrain)
+  // prefetch.bpuRes     := fetch.bpuRes
 
   // prefetch -> ... -> dispatch
   prefetch.to <> fetch.from
@@ -125,10 +125,10 @@ class Top extends Module {
   axilayer.to     <> io.axi
 
   // tlb <> prefetch, fetch, memory0, memory1, csr
-  tlb.preFetch <> prefetch.tlb
-  tlb.fetch    <> fetch.tlb
-  tlb.mem      <> memory0.tlb // TODO：break to two
-  tlb.csr      <> csr.tlb
+  // tlb.preFetch <> prefetch.tlb
+  // tlb.fetch    <> fetch.tlb
+  // tlb.mem      <> memory0.tlb // TODO：break to two
+  // tlb.csr      <> csr.tlb
 
   // icache <> fetch, prefetch
   prefetch.iCache <> iCache.preFetch
@@ -139,8 +139,8 @@ class Top extends Module {
   memory1.dCache <> dcache.mem1
 
   // bpu <> prefetch, fetch
-  bpu.preFetch <> prefetch.bpu
-  bpu.fetch    <> fetch.bpu
+  // bpu.preFetch <> prefetch.bpu
+  // bpu.fetch    <> fetch.bpu
 
   // rename <> rat
   rename.ratRename <> rat.rename

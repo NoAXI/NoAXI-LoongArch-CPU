@@ -7,6 +7,8 @@ import const.Parameters._
 import const.memType
 import const.ECodes
 import isa.TlbOpType
+import const.tlbConst._
+import bundles._
 
 class CSRTLBIO extends Bundle {
   val is_direct = Output(Bool())
@@ -16,27 +18,21 @@ class CSRTLBIO extends Bundle {
   // val tlbehi    = Output(new TLBEHI_info)
 }
 
-class Mem0TLBIO extends Bundle {
-  val va        = Output(UInt(ADDR_WIDTH.W))
-  // these are used to judge the exception
-  val mem_type  = Output(memType()) 
-  val exc_type  = Input(ECodes()) 
-  val exc_vaddr = Input(UInt(ADDR_WIDTH.W))
-  
+// VIPT形式
+class Stage0TLBIO extends Bundle {
+  val va      = Output(UInt(ADDR_WIDTH.W))
+  val memType = Output(const.memType())
+
+  val hitVec   = Input(Vec(TLB_ENTRIES, Bool()))
+  val isDirect = Input(Bool())
+  val directpa = Input(UInt(ADDR_WIDTH.W))
+}
+
+class Stage1TLBIO extends Bundle {
+  val va     = Output(UInt(ADDR_WIDTH.W))
+  val hitVec = Output(Vec(TLB_ENTRIES, Bool()))
+
   val pa        = Input(UInt(ADDR_WIDTH.W))
   val cached    = Input(Bool())
-}
-
-// VIPT形式
-class PreFetchTLBIO extends Bundle {
-  val va = Output(UInt(ADDR_WIDTH.W))
-}
-
-class FetchTLBIO extends Bundle {
-  val pa     = Input(UInt(ADDR_WIDTH.W))
-  // these are used to judge the exception
-  // val mem_type  = Output(memType()) 
-  // val exc_type  = Input(ECodes()) 
-  // val exc_vaddr = Input(UInt(ADDR_WIDTH.W))
-  val cached = Input(Bool())
+  val exception = Input(new Exception)
 }

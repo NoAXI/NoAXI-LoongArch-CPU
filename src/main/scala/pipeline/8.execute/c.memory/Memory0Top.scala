@@ -14,7 +14,7 @@ import isa.MemOpType
 // branch check inst
 class Memory0TopIO extends SingleStageBundle {
   val dCache = new Mem0DCacheIO
-  val tlb    = new Mem0TLBIO
+  // val tlb    = new Mem0TLBIO
 }
 
 class Memory0Top extends Module {
@@ -29,17 +29,17 @@ class Memory0Top extends Module {
 
   val hasExc = info.exc_type =/= ECodes.NONE
 
-  val vaddr = info.rjInfo.data + info.imm
-
   io.dCache.request.valid     := io.from.fire
-  io.dCache.request.bits.addr := vaddr // VI
+  io.dCache.request.bits.addr := info.va // VI
 
-  io.tlb.va       := vaddr
-  io.tlb.mem_type := Mux(MemOpType.isread(info.op_type), memType.load, memType.store)
+//   io.tlb.va       := info.va
+//   io.tlb.mem_type := Mux(MemOpType.isread(info.op_type), memType.load, memType.store)
 
-  io.to.bits           := info
-  io.to.bits.pa        := io.tlb.pa
-  io.to.bits.cached    := io.tlb.cached
-  io.to.bits.exc_type  := Mux(hasExc, info.exc_type, io.tlb.exc_type)
-  io.to.bits.exc_vaddr := Mux(hasExc, info.exc_vaddr, io.tlb.exc_vaddr)
+//   io.to.bits           := info
+//   // io.to.bits.tlbHit    := io.tlb.hitHit
+//   io.to.bits.isDirect  := io.tlb.isDirect
+//   io.to.bits.pa        := io.tlb.pa
+//   io.to.bits.cached    := io.tlb.cached
+//   io.to.bits.exc_type  := Mux(hasExc, info.exc_type, io.tlb.exc_type)
+//   io.to.bits.exc_vaddr := Mux(hasExc, info.exc_vaddr, io.tlb.exc_vaddr)
 }

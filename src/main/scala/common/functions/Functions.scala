@@ -58,9 +58,9 @@ object Functions {
       infoReg.bubble := true.B
     }
   }
-  // TODO: has some CONST
-  def nextLine(x: UInt): UInt = {
-    Cat(x(ADDR_WIDTH - 1, 4) + 1.U, 0.U(4.W))
+  // preFetch pc
+  def nextPC(pc: UInt): UInt = {
+    Mux(~pc(2), pc(ADDR_WIDTH - 1, 2) + 2.U, pc(ADDR_WIDTH - 1, 2) + 1.U) ## 0.U(2.W)
   }
 
   // for decoder--------------------------------------------------------------------------------
