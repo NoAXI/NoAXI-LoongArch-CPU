@@ -18,7 +18,7 @@ class CSR_IO extends Bundle {
   val csr_write    = Input(new CSRWrite)
 
   // to fs
-  val br_exc = Output(new br)
+  val exceptionJump = Output(new br)
 
   // to tlb
   val tlb = new CSRTLBIO
@@ -154,8 +154,8 @@ class CSR extends Module {
   val start = io.exc_happen.start || (any_exc.orR && CRMD.info.ie)
 
   // 例外跳转
-  io.br_exc       := WireDefault(0.U.asTypeOf(new br))
-  io.flush_by_csr := false.B
+  io.exceptionJump := WireDefault(0.U.asTypeOf(new br))
+  io.flush_by_csr  := false.B
   when(start) {
     io.flush_by_csr := true.B
     PRMD.info.pplv  := CRMD.info.plv
@@ -185,14 +185,14 @@ class CSR extends Module {
       ),
     )
 
-    io.br_exc.en  := true.B
-    io.br_exc.tar := EENTRY.info.asUInt
+    io.exceptionJump.en  := true.B
+    io.exceptionJump.tar := EENTRY.info.asUInt
 
     when(is_tlb_exc) {
       when(is_tlb_refill) {
-        CRMD.info.da  := true.B
-        CRMD.info.pg  := false.B
-        io.br_exc.tar := TLBRENTRY.info.asUInt
+        CRMD.info.da         := true.B
+        CRMD.info.pg         := false.B
+        io.exceptionJump.tar := TLBRENTRY.info.asUInt
       }
       TLBEHI.info.vppn := info.exc_vaddr(31, 13)
     }
@@ -203,8 +203,8 @@ class CSR extends Module {
     CRMD.info.plv   := PRMD.info.pplv
     CRMD.info.ie    := PRMD.info.pie
 
-    io.br_exc.en  := true.B
-    io.br_exc.tar := ERA.info.pc
+    io.exceptionJump.en  := true.B
+    io.exceptionJump.tar := ERA.info.pc
   }
 
   io.tlb.is_direct := CRMD.info.da && !CRMD.info.pg

@@ -53,6 +53,8 @@ class Top extends Module {
   val memory1 = Module(new Memory1Top).io
   val memory2 = Module(new Memory2Top).io
 
+  memory2.flush := false.B // TODO: fix
+
   // backend after execute
   val writeback = Seq.fill(BACK_ISSUE_WIDTH)(Module(new WritebackTop).io)
   val commit    = Module(new CommitTop).io
@@ -84,7 +86,7 @@ class Top extends Module {
   prefetch.from.bits     := 0.U.asTypeOf(prefetch.from.bits)
   prefetch.from.valid    := RegNext(!reset.asBool) & !reset.asBool
   prefetch.predictRes    := predecode.predictRes                         // TODO：优先级
-  prefetch.exceptionJump := 0.U.asTypeOf(new br)                         // TODO: connect
+  prefetch.exceptionJump := csr.exceptionJump
   prefetch.flush         := flushCtrl.frontFlush || predecode.flushapply // TODO: 优先级
   prefetch.to            <> fetch.from
   fetch.to               <> predecode.from
@@ -143,6 +145,12 @@ class Top extends Module {
 
   // bpu <> prefetch, fetch
   bpu.preFetch <> prefetch.bpu
+
+  // csr
+  csr.csr_reg_read.re    := false.B
+  csr.csr_reg_read.raddr := 0.U
+  csr.exc_happen         := 0.U.asTypeOf(new excHappen) // TODO: fix
+  csr.csr_write          := 0.U.asTypeOf(new CSRWrite)  // TODO: fix
 
   // rename <> rat
   rename.ratRename <> rat.rename

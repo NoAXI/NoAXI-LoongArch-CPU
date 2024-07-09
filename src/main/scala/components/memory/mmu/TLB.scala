@@ -97,7 +97,10 @@ class TLB(
   val direct_hittedway = PriorityEncoder(direct_hit)
 
   // if direct, pa=va, no other things to worry
+  io.stage0.isDirect := false.B
+  io.stage0.directpa := 0.U
   when(io.csr.is_direct) {
+    io.stage0.isDirect := true.B
     io.stage0.directpa := io.stage0.va & 0x1fffffff.U
     if (unitType == "fetch") {
       io.stage1.cached := ShiftRegister(io.csr.crmd.datf(0), 1) // send cached info when at stage1
@@ -107,6 +110,7 @@ class TLB(
     io.stage1.exception := ShiftRegister(0.U.asTypeOf(new Exception), 1)
   }.elsewhen(direct_hitted) {
     // check if Direct mapping mode
+    io.stage0.isDirect  := true.B
     io.stage0.directpa  := Cat(io.csr.dmw(direct_hittedway).pseg, io.stage0.va(28, 0))
     io.stage1.cached    := ShiftRegister(io.csr.dmw(direct_hittedway).mat(0), 1)
     io.stage1.exception := ShiftRegister(0.U.asTypeOf(new Exception), 1)

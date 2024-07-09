@@ -31,7 +31,7 @@ class FetchTop extends Module {
   // I-Cache
   io.iCache.cached        := cached
   io.iCache.request.bits  := pa
-  io.iCache.request.valid := io.from.fire && !exception.en
+  io.iCache.request.valid := ShiftRegister(io.from.fire, 1) && !exception.en
   io.iCache.answer.ready  := true.B
   io.iCache.cango         := io.to.ready
   val wholeInstVec = io.iCache.answer.bits

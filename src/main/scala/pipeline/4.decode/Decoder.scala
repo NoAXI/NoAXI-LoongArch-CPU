@@ -47,6 +47,10 @@ class Decoder extends Module {
   io.func_type := func_type
   io.op_type   := op_type
 
+  when(func_type === FuncType.bru) {
+    io.rk := io.inst(4, 0)
+  }
+
   val imm05   = io.inst(14, 10)
   val imm12   = SignedExtend(io.inst(21, 10), DATA_WIDTH)
   val imm12u  = UnSignedExtend(io.inst(21, 10), DATA_WIDTH)
