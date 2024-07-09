@@ -32,7 +32,7 @@ class BPU extends Module {
     for (i <- 0 until FETCH_DEPTH) {
       val dirction = io.preFetch.train.realDirection
       val index    = Cat(BHT(i)(io.preFetch.train.index)(HISTORY_LENGTH - 2, 0), dirction)
-      BHT(io.preFetch.train.index) := index
+      BHT(i)(io.preFetch.train.index) := index
       switch(PHT(i)(index)) {
         is(pFF) {
           PHT(i)(index) := Mux(dirction, pF, pFF)
@@ -97,7 +97,8 @@ class BPU extends Module {
   val RASHitVec = VecInit.tabulate(FETCH_DEPTH)(i => isReturnVec(i))
 
   // predict
-  io.preFetch.nextPC.en := true.B
+  io.preFetch.nextPC.en  := true.B
+  io.preFetch.nextPC.tar := 0.U
   when(predictDirection(0) && !io.preFetch.stall) {
     when(RASHitVec(0)) {
       io.preFetch.nextPC.tar := RASTarVec(0)

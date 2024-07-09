@@ -57,6 +57,11 @@ class PrefetchTop extends Module {
   val isDirect = io.tlb.isDirect
   val directpa = io.tlb.directpa
 
+  // I-Cache
+  io.iCache.request.valid     := io.from.fire
+  io.iCache.request.bits.addr := pc
+
+  io.to.bits         := 0.U.asTypeOf(new DualInfo)
   res.pc             := pc
   res.pc_add_4       := pc_add_4
   res.hitVec         := hitVec

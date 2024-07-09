@@ -81,5 +81,6 @@ class PreDecodeTop extends Module {
 
   // not br, but predict jump, will never happen?
 
+  io.to.bits         := 0.U.asTypeOf(new DualInfo)
   io.to.bits.bits(0) := res
 }

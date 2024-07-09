@@ -47,5 +47,6 @@ class FetchTop extends Module {
   res.instGroup := instVec
   res.fetchExc  := VecInit(excType, excType)
 
+  io.to.bits         := 0.U.asTypeOf(new DualInfo)
   io.to.bits.bits(0) := res
 }

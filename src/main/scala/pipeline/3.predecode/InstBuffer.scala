@@ -114,5 +114,4 @@ class InstBuffer extends Module {
   }
 
   io.to.bits := res
-
 }
