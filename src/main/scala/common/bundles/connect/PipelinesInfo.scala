@@ -29,9 +29,10 @@ class SingleInfo extends Bundle {
   val pc_add_4 = UInt(ADDR_WIDTH.W)
   val inst     = UInt(INST_WIDTH.W)
 
-  // only used between fetch and ib
-  val instV    = Vec(FETCH_DEPTH, new InstV)
-  val fetchExc = Vec(FETCH_DEPTH, ECodes())
+  // only used in fetch stage
+  val instGroup      = Vec(FETCH_DEPTH, UInt(INST_WIDTH.W))
+  val instGroupValid = Vec(FETCH_DEPTH, Bool())
+  val fetchExc       = Vec(FETCH_DEPTH, ECodes())
 
   // decoded inst
   val func_type    = FuncType()

@@ -77,6 +77,7 @@ class FetchICacheIO extends Bundle {
   val answer  = Flipped(DecoupledIO(Vec(4, UInt(INST_WIDTH.W))))
   val request = DecoupledIO(UInt(ADDR_WIDTH.W))
   val cango   = Output(Bool())
+  val cached  = Output(Bool())
 }
 
 class Mem1DCacheIO extends Bundle {

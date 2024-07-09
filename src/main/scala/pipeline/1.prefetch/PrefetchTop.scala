@@ -21,7 +21,8 @@ class PrefetchTop extends Module {
   val busy = WireDefault(0.U.asTypeOf(new BusyInfo))
   val from = stageConnect(io.from, io.to, busy)
 
-  val res = WireDefault(0.U.asTypeOf(new SingleInfo))
+  val info = WireDefault(from._1.bits(0))
+  val res  = WireDefault(0.U.asTypeOf(new SingleInfo))
 
   val pc       = RegInit(START_ADDR.U(ADDR_WIDTH.W))
   val pc_add_4 = pc + 4.U
@@ -56,8 +57,12 @@ class PrefetchTop extends Module {
   val isDirect = io.tlb.isDirect
   val directpa = io.tlb.directpa
 
+  res.pc             := pc
+  res.pc_add_4       := pc_add_4
   res.hitVec         := hitVec
   res.isDirect       := isDirect
   res.pa             := directpa
+  res.predict        := io.bpu.nextPC
+  res.instGroupValid := io.bpu.pcValid
   io.to.bits.bits(0) := res
 }

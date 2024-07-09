@@ -7,9 +7,9 @@ import const.Predict._
 
 class PreFetchBPUIO extends Bundle {
   val stall    = Output(Bool())
-  val pcValid  = Output(Vec(2, Bool()))
-  val pcGroup  = Output(Vec(2, UInt(ADDR_WIDTH.W)))
-  val npcGroup = Output(Vec(2, UInt(ADDR_WIDTH.W)))
+  val pcValid  = Output(Vec(FETCH_DEPTH, Bool()))
+  val pcGroup  = Output(Vec(FETCH_DEPTH, UInt(ADDR_WIDTH.W)))
+  val npcGroup = Output(Vec(FETCH_DEPTH, UInt(ADDR_WIDTH.W)))
   val train    = Output(new PredictRes)
   val nextPC   = Input(new br)
 }

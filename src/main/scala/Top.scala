@@ -30,11 +30,12 @@ class Top extends Module {
 
   // ==================== pipline define ====================
   // frontend
-  val prefetch = Module(new PrefetchTop).io
-  val fetch    = Module(new FetchTop).io
-  val ib       = Module(new InstBuffer).io
-  val decode   = Module(new DecodeTop).io
-  val rename   = Module(new RenameTop).io
+  val prefetch  = Module(new PrefetchTop).io
+  val fetch     = Module(new FetchTop).io
+  val predecode = Module(new PreDecodeTop).io
+  val ib        = Module(new InstBuffer).io
+  val decode    = Module(new DecodeTop).io
+  val rename    = Module(new RenameTop).io
 
   // backend before execute
   val dispatch = Module(new DispatchTop).io
@@ -60,7 +61,7 @@ class Top extends Module {
   val flushCtrl = Module(new FlushCtrl).io
 
   // frontend unit
-  // val bpu = Module(new BPU).io
+  val bpu = Module(new BPU).io
 
   // csr unit
   val csr = Module(new CSR).io
@@ -75,21 +76,23 @@ class Top extends Module {
   val axilayer = Module(new AXILayer).io
   val iCache   = Module(new ICache).io
   val dcache   = Module(new dCache_with_cached_writebuffer).io
-  // val tlb      = Module(new TLB).io
+  val itlb     = Module(new TLB("fetch")).io
 
   // ==================== stage connect ====================
-  // set initial stage info for prefetch
-  prefetch.from.bits  := 0.U.asTypeOf(prefetch.from.bits)
-  prefetch.from.valid := RegNext(!reset.asBool) & !reset.asBool
-  // prefetch.bpuTrain   := 0.U.asTypeOf(new BpuTrain)
-  // prefetch.bpuRes     := fetch.bpuRes
-
   // prefetch -> ... -> dispatch
-  prefetch.to <> fetch.from
-  fetch.to    <> ib.from
-  ib.to       <> decode.from
-  decode.to   <> rename.from
-  rename.to   <> dispatch.from
+  prefetch.from.bits     := 0.U.asTypeOf(prefetch.from.bits)
+  prefetch.from.valid    := RegNext(!reset.asBool) & !reset.asBool
+  prefetch.predictRes    := predecode.predictRes                         // TODO：优先级
+  prefetch.exceptionJump := 0.U.asTypeOf(new br)                         // TODO: connect
+  prefetch.flush         := flushCtrl.frontFlush || predecode.flushapply // TODO: 优先级
+  prefetch.to            <> fetch.from
+  fetch.to               <> predecode.from
+  fetch.flush            := flushCtrl.backFlush || predecode.flushapply
+  predecode.to           <> ib.from
+  ib.to                  <> decode.from
+  ib.stall               := false.B                                      // TODO
+  decode.to              <> rename.from
+  rename.to              <> dispatch.from
 
   // dispatch -> issue -> readreg
   for (i <- 0 until BACK_ISSUE_WIDTH) {
@@ -124,11 +127,10 @@ class Top extends Module {
   axilayer.dcache <> dcache.axi
   axilayer.to     <> io.axi
 
-  // tlb <> prefetch, fetch, memory0, memory1, csr
-  // tlb.preFetch <> prefetch.tlb
-  // tlb.fetch    <> fetch.tlb
-  // tlb.mem      <> memory0.tlb // TODO：break to two
-  // tlb.csr      <> csr.tlb
+  // itlb <> prefetch, fetch, memory0, memory1, csr
+  itlb.stage0 <> prefetch.tlb
+  itlb.stage1 <> fetch.tlb
+  itlb.csr    <> csr.tlb
 
   // icache <> fetch, prefetch
   prefetch.iCache <> iCache.preFetch
@@ -139,8 +141,7 @@ class Top extends Module {
   memory1.dCache <> dcache.mem1
 
   // bpu <> prefetch, fetch
-  // bpu.preFetch <> prefetch.bpu
-  // bpu.fetch    <> fetch.bpu
+  bpu.preFetch <> prefetch.bpu
 
   // rename <> rat
   rename.ratRename <> rat.rename
@@ -192,7 +193,7 @@ class Top extends Module {
 
   // flush ctrl
   // TODO: connect flushCtrl with (memory, rob)
-  flushCtrl.doFlush  <> rob.doFlush
+  flushCtrl.doFlush <> rob.doFlush
   // flushCtrl.hasFlush <> memory1.hasFlush
 
   // front flush

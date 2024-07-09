@@ -86,10 +86,10 @@ class BPU extends Module {
   val top_add_1   = top + 1.U
   val top_minus_1 = top - 1.U
   val meetCALLVec = VecInit.tabulate(FETCH_DEPTH)(i => isCALLVec(i) && io.preFetch.pcValid(i))
-  when(meetCALLVec(0)) {
+  when(meetCALLVec(0) && !io.preFetch.stall) {
     top      := top_add_1
     RAS(top) := io.preFetch.npcGroup(0)
-  }.elsewhen(meetCALLVec(1)) {
+  }.elsewhen(meetCALLVec(1) && !io.preFetch.stall) {
     top      := top_add_1
     RAS(top) := io.preFetch.npcGroup(1)
   }
@@ -98,7 +98,7 @@ class BPU extends Module {
 
   // predict
   io.preFetch.nextPC.en := true.B
-  when(predictDirection(0)) {
+  when(predictDirection(0) && !io.preFetch.stall) {
     when(RASHitVec(0)) {
       io.preFetch.nextPC.tar := RASTarVec(0)
       top                    := top_minus_1
@@ -107,7 +107,7 @@ class BPU extends Module {
     }.otherwise {
       io.preFetch.nextPC.en := false.B
     }
-  }.elsewhen(predictDirection(1)) {
+  }.elsewhen(predictDirection(1) && !io.preFetch.stall) {
     when(RASHitVec(1)) {
       io.preFetch.nextPC.tar := RASTarVec(1)
       top                    := top_minus_1
