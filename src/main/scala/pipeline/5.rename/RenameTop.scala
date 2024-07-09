@@ -27,7 +27,7 @@ class RenameTop extends Module {
   flushWhen(raw._1, io.flush)
 
   val info  = raw._1
-  val valid = io.to.fire && raw._2
+  val valid = raw._2
   val res   = WireDefault(info)
   io.to.bits := res
 
@@ -42,7 +42,7 @@ class RenameTop extends Module {
     val writeZero = from.rdInfo.areg === 0.U
 
     // rename -> rat
-    io.ratRename(i).valid := valid && from.iswf && !writeZero
+    io.ratRename(i).valid := valid && io.to.ready && from.iswf && !writeZero && !io.robFull
     io.ratRename(i).areg  := from.rdInfo.areg
     io.ratRead(i).areg.rj := to.rjInfo.areg
     io.ratRead(i).areg.rk := to.rkInfo.areg
