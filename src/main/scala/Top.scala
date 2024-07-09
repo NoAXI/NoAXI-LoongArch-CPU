@@ -51,6 +51,7 @@ class Top extends Module {
   val muldiv  = Module(new MuldivTop).io
   val memory0 = Module(new Memory0Top).io
   val memory1 = Module(new Memory1Top).io
+  val memory2 = Module(new Memory2Top).io
 
   // backend after execute
   val writeback = Seq.fill(BACK_ISSUE_WIDTH)(Module(new WritebackTop).io)
@@ -90,7 +91,6 @@ class Top extends Module {
   fetch.flush            := flushCtrl.backFlush || predecode.flushapply
   predecode.to           <> ib.from
   ib.to                  <> decode.from
-  ib.stall               := false.B                                      // TODO
   decode.to              <> rename.from
   rename.to              <> dispatch.from
 
@@ -114,7 +114,8 @@ class Top extends Module {
   arith(1).to <> writeback(1).from
   muldiv.to   <> writeback(2).from
   memory0.to  <> memory1.from
-  memory1.to  <> writeback(3).from
+  memory1.to  <> memory2.from
+  memory2.to  <> writeback(3).from
 
   // always set write-ready high for wb stage
   for (i <- 0 until BACK_ISSUE_WIDTH) {
@@ -156,6 +157,7 @@ class Top extends Module {
   rename.robFull <> rob.full
 
   // readreg <> forward, preg, issue
+  // TODO: 修改唤醒接口
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     readreg(i).forwardReq <> forward.req(i)
     readreg(i).pregRead   <> preg.read(i)
@@ -163,12 +165,16 @@ class Top extends Module {
       readreg(i).awake <> issue.awake(i)
     }
   }
+  muldiv.awake  <> issue.awake(MULDIV_ISSUE_ID)
+  memory1.awake <> issue.awake(MEMORY_ISSUE_ID)
 
   // forward <> the last stage of execute
   // TODO: 需要添加muldiv和memory的前递信号
   for (i <- 0 until ARITH_ISSUE_NUM) {
     arith(i).forward <> forward.info(FORWARD_EXE_INDEX)(i)
   }
+  muldiv.forward  <> forward.info(FORWARD_EXE_INDEX)(MULDIV_ISSUE_ID)
+  memory2.forward <> forward.info(FORWARD_EXE_INDEX)(MEMORY_ISSUE_ID)
 
   // writeback <> preg, rob, forward
   for (i <- 0 until BACK_ISSUE_WIDTH) {
@@ -186,26 +192,22 @@ class Top extends Module {
     io.debug := commit.debug(1)
   }
 
-  // muldiv awake (tmp)
-  // TODO: add the last stage to forward
-  muldiv.awake   <> issue.awake(MULDIV_ISSUE_ID)
-  muldiv.forward <> forward.info(FORWARD_EXE_INDEX)(MULDIV_ISSUE_ID)
-
   // flush ctrl
   // TODO: connect flushCtrl with (memory, rob)
-  flushCtrl.doFlush <> rob.doFlush
-  // flushCtrl.hasFlush <> memory1.hasFlush
+  flushCtrl.doFlush  <> rob.doFlush
+  flushCtrl.hasFlush <> memory1.hasFlush
 
   // front flush
   flushCtrl.frontFlush <> prefetch.flush
   flushCtrl.frontFlush <> fetch.flush
+  flushCtrl.frontFlush <> predecode.flush
   flushCtrl.frontFlush <> ib.flush
   flushCtrl.frontFlush <> decode.flush
   flushCtrl.frontFlush <> rename.flush
 
   // set (ib, memIssue) stall when has flush
   // set (readreg, mem0) flush when has flush
-  // flushCtrl.ibStall  <> ib.stall
+  flushCtrl.ibStall  <> ib.stall
   flushCtrl.memStall <> issue.memoryStall
 
   // recover

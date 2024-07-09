@@ -35,8 +35,8 @@ class Memory0Top extends Module {
 //   io.tlb.va       := info.va
 //   io.tlb.mem_type := Mux(MemOpType.isread(info.op_type), memType.load, memType.store)
 
-//   io.to.bits           := info
-//   // io.to.bits.tlbHit    := io.tlb.hitHit
+  io.to.bits := info
+//   io.to.bits.tlbHit    := io.tlb.hitHit
 //   io.to.bits.isDirect  := io.tlb.isDirect
 //   io.to.bits.pa        := io.tlb.pa
 //   io.to.bits.cached    := io.tlb.cached

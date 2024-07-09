@@ -9,10 +9,13 @@ import const.cacheConst._
 import const.Parameters._
 import const.Config
 
+import pipeline._
+
 class dCache_with_cached_writebufferIO extends Bundle {
   val axi  = new DCacheAXI
   val mem0 = Flipped(new Mem0DCacheIO)
   val mem1 = Flipped(new Mem1DCacheIO)
+  // val mem2 = Flipped(new Mem2DCacheIO)
 }
 
 class dCache_with_cached_writebuffer extends Module {

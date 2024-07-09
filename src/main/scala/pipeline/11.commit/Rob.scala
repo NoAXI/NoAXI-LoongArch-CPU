@@ -128,6 +128,7 @@ class Rob extends Module {
   }
 
   // doFlush
+  io.doFlush := WireDefault(false.B)
   for (i <- 0 until ISSUE_WIDTH) {
     when(io.commit(i).valid && io.commit(i).info.hasFlush) {
       io.doFlush := true.B

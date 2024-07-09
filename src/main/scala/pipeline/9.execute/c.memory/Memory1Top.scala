@@ -9,7 +9,9 @@ import func.Functions._
 import const.Parameters._
 
 class Memory1TopIO extends SingleStageBundle {
-  val dCache = new Mem1DCacheIO
+  val dCache   = new Mem1DCacheIO
+  val awake    = Output(new AwakeInfo)
+  val hasFlush = Output(Bool())
 }
 
 class Memory1Top extends Module {
@@ -60,4 +62,10 @@ class Memory1Top extends Module {
   res.result := mem.data
   flushWhen(res, io.flush)
   io.to.bits := res
+
+  io.awake.preg  := res.rdInfo.preg
+  io.awake.valid := valid && io.to.fire
+
+  // TODO: add flush here
+  io.hasFlush := false.B
 }
