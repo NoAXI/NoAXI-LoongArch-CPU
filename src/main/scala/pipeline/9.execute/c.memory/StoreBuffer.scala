@@ -30,9 +30,8 @@ class StoreBuffer(
   val io = IO(new StoreBufferIO)
 
   // use compressive queue
-  val buffer = Seq.fill(entries)(new BufferInfo)
+  val buffer = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(new BufferInfo))))
   val hit    = WireDefault(false.B)
-  val data   = WireDefault(UInt(DATA_WIDTH.W))
   for (i <- 0 until entries) {
     when(io.mem.pa === buffer(i).addr && buffer(i).valid) {
       hit         := true.B
@@ -40,7 +39,7 @@ class StoreBuffer(
     }
   }
 
-  val mem       = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(new SingleInfo))))
+  val mem       = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(new BufferInfo))))
   val topPtr    = RegInit(0.U(log2Ceil(entries).W))
   val maybeFull = RegInit(false.B)
   val full      = maybeFull && topPtr === 0.U
