@@ -12,6 +12,7 @@ class PreFetchBPUIO extends Bundle {
   val npcGroup = Output(Vec(FETCH_DEPTH, UInt(ADDR_WIDTH.W)))
   val train    = Output(new PredictRes)
   val nextPC   = Input(new br)
+  // val predict  = Input(Vec(FETCH_DEPTH, new br))
 }
 
 // 不是跳转指令br.en = false.B
