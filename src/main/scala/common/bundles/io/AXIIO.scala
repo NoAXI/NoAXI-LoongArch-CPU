@@ -81,27 +81,24 @@ class FetchICacheIO extends Bundle {
 }
 
 class Mem0DCacheIO extends Bundle {
-  val request = DecoupledIO(new Bundle {
-    val addr = UInt(ADDR_WIDTH.W)
-  })
+  val addr = UInt(ADDR_WIDTH.W)
 }
 
 class Mem1DCacheRequestInfo extends Bundle {
   val cached = Bool()
-  val re     = Bool()
-  val we     = Bool()
+  val rw     = Bool()
   val addr   = UInt(ADDR_WIDTH.W)
-  val data   = UInt(DATA_WIDTH.W)
-  val strb   = UInt(8.W)
+  // val data   = UInt(DATA_WIDTH.W)
+  // val strb   = UInt(8.W)
 }
 
 class Mem1DCacheIO extends Bundle {
-  val request    = DecoupledIO(new Mem1DCacheRequestInfo)
-  val answer     = Flipped(DecoupledIO(UInt(DATA_WIDTH.W)))
-  val answer_imm = Input(Bool())
-  val cango      = Output(Bool())
+  val request = DecoupledIO(new Mem1DCacheRequestInfo)
+  val answer  = Flipped(DecoupledIO())
+  val cango   = Output(Bool())
 }
 
 class Mem2DCacheIO extends Bundle {
+  val rw   = Output(Bool())
   val data = Input(UInt(DATA_WIDTH.W))
 }

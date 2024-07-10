@@ -52,17 +52,17 @@ class Memory1Top extends Module {
     io.dCache.request.valid := false.B
   }
 
-  io.dCache.request.bits.cached := info.cached
-  io.dCache.request.bits.re     := mem.data_sram.en
-  io.dCache.request.bits.we     := mem.data_sram.we.orR
-  io.dCache.request.bits.addr   := info.pa
-  io.dCache.request.bits.data   := mem.data_sram.wdata
-  io.dCache.request.bits.strb   := mem.data_sram.we
+  // io.dCache.request.bits.cached := info.cached
+  // io.dCache.request.bits.re     := mem.data_sram.en
+  // io.dCache.request.bits.we     := mem.data_sram.we.orR
+  // io.dCache.request.bits.addr   := info.pa
+  // io.dCache.request.bits.data   := mem.data_sram.wdata
+  // io.dCache.request.bits.strb   := mem.data_sram.we
 
-  mem.data_sram.rdata    := Mux(io.dCache.answer.fire, io.dCache.answer.bits, dcache_saved_ans)
-  io.dCache.answer.ready := true.B
-  busy                   := !finish && !mem_has_exc
-  when(io.dCache.answer_imm) { busy := false.B }
+  // mem.data_sram.rdata    := Mux(io.dCache.answer.fire, io.dCache.answer.bits, dcache_saved_ans)
+  // io.dCache.answer.ready := true.B
+  // busy                   := !finish && !mem_has_exc
+  // when(io.dCache.answer_imm) { busy := false.B }
 
   // res.result := mem.data
   res.rdInfo.data := mem.data

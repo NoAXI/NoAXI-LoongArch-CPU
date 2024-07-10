@@ -27,8 +27,8 @@ class Memory0Top extends Module {
   io.to.bits := res
 
   // mem0.va -> dcache.tagSram
-  io.dCache.request.valid     := io.from.fire
-  io.dCache.request.bits.addr := info.va
+  // io.dCache.request.valid     := io.from.fire
+  // io.dCache.request.bits.addr := info.va
 
   // mem0.va -> tlb
   io.tlb.va      := info.va

@@ -19,6 +19,8 @@ object cacheConst {
 
   val WAY_WIDTH = 2
   val TAG_WIDTH = 32 - LINE_WIDTH_LOG - BANK_WIDTH_LOG // 32 - 8 - 4 = 20 bits
+
+  val BUFFER_WIDTH = 4
 }
 
 // way0

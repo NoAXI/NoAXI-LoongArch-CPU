@@ -22,6 +22,7 @@ class MultiPortFifo[T <: Data](
     gen: T,
     hasWritePort: Boolean = false,
     writePortNum: Int = 0,
+    forIB: Boolean = false,
 ) extends Module {
   require(isPow2(entries))
   require((!hasWritePort && writePortNum == 0) || (hasWritePort && writePortNum != 0))
@@ -54,7 +55,11 @@ class MultiPortFifo[T <: Data](
   when(io.pop(0).ready && io.pop(1).ready) {
     popOffset := 2.U
   }.otherwise {
-    popOffset := 0.U
+    if (forIB) {
+      popOffset := 0.U
+    } else {
+      popOffset := io.pop(0).ready
+    }
   }
 
   when(!empty && pushOffset > maxPush) {

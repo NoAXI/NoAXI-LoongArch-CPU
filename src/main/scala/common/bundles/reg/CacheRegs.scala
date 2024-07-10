@@ -6,10 +6,10 @@ import chisel3.util._
 import const.cacheConst._
 import const.Parameters._
 
-class Line extends Bundle {
-  val valid = Bool()
-  val addr  = UInt(ADDR_WIDTH.W)
-  val data  = UInt(128.W)
+class StoreInfo extends Bundle {
+  val addr = UInt(ADDR_WIDTH.W)
+  val data = UInt(DATA_WIDTH.W)
+  val mask = UInt((DATA_WIDTH / 8).W)
 }
 
 class savedInfo extends Bundle {

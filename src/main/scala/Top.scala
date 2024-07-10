@@ -76,7 +76,7 @@ class Top extends Module {
   // memory access
   val axilayer = Module(new AXILayer).io
   val iCache   = Module(new ICache).io
-  val dcache   = Module(new dCache_with_cached_writebuffer).io
+  val dcache   = Module(new DCache).io
   val itlb     = Module(new TLB("fetch")).io
   val stBuffer = Module(new StoreBuffer(STORE_BUFFER_LENGTH, "st"))
   val wbBuffer = Module(new StoreBuffer(WRITE_BACK_BUFFER_LENGTH, "wb"))

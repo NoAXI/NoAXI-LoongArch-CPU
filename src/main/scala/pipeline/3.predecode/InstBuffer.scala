@@ -35,7 +35,7 @@ class InstBuffer extends Module {
 
   io.to.bits := 0.U.asTypeOf(new DualInfo)
 
-  val fifo = Module(new MultiPortFifo(IB_LENGTH, new InstBufferInfo)).io
+  val fifo = Module(new MultiPortFifo(IB_LENGTH, new InstBufferInfo, forIB = true)).io
   fifo.flush := io.flush
 
   val pcGroup      = VecInit(io.from.bits.bits(0).pc, io.from.bits.bits(0).pc_add_4)

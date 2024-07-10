@@ -114,6 +114,7 @@ class ICache extends Module {
         }
       }
 
+      // TODO: break it to two cycles
       val final_linedata = linedata | (io.axi.r.bits.data << wmove)
       val _ans_bits      = VecInit.tabulate(4)(i => final_linedata((i + 1) * 32 - 1, i * 32))
 
