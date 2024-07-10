@@ -3,18 +3,15 @@ package pipeline
 import chisel3._
 import chisel3.util._
 
+import isa._
 import const._
 import bundles._
 import func.Functions._
 import const.Parameters._
-import isa.MemOpType
 
-// this pipeline contains of following inst
-// memory access inst
-// branch check inst
 class Memory0TopIO extends SingleStageBundle {
+  val tlb    = new Stage0TLBIO
   val dCache = new Mem0DCacheIO
-  // val tlb    = new Mem0TLBIO
 }
 
 class Memory0Top extends Module {
@@ -26,20 +23,18 @@ class Memory0Top extends Module {
 
   val info  = raw._1
   val valid = raw._2
+  val res   = WireDefault(info)
+  io.to.bits := res
 
-  val hasExc = info.exc_type =/= ECodes.NONE
-
+  // mem0.va -> dcache.tagSram
   io.dCache.request.valid     := io.from.fire
-  io.dCache.request.bits.addr := info.va // VI
+  io.dCache.request.bits.addr := info.va
 
-//   io.tlb.va       := info.va
-//   io.tlb.mem_type := Mux(MemOpType.isread(info.op_type), memType.load, memType.store)
+  // mem0.va -> tlb
+  io.tlb.va      := info.va
+  io.tlb.memType := Mux(MemOpType.isread(info.op_type), memType.load, memType.store)
 
-  io.to.bits := info
-//   io.to.bits.tlbHit    := io.tlb.hitHit
-//   io.to.bits.isDirect  := io.tlb.isDirect
-//   io.to.bits.pa        := io.tlb.pa
-//   io.to.bits.cached    := io.tlb.cached
-//   io.to.bits.exc_type  := Mux(hasExc, info.exc_type, io.tlb.exc_type)
-//   io.to.bits.exc_vaddr := Mux(hasExc, info.exc_vaddr, io.tlb.exc_vaddr)
+  // tlb.hitVec -> mem0
+  res.hitVec   := io.tlb.hitVec
+  res.isDirect := io.tlb.isDirect
 }

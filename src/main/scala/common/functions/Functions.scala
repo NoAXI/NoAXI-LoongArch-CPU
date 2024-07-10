@@ -120,4 +120,46 @@ object Functions {
     io.data  := info.rdInfo.data
     io.preg  := info.rdInfo.preg
   }
+
+  // for compressing queue ---------------------------------------------------------------------------
+  def doCompress[T <: Data](hitVec: Vec[Bool], entries: Int, mem: Vec[T]): Unit = {
+    val shiftVec = WireDefault(VecInit(Seq.fill(entries)(false.B)))
+    for (i <- 0 until entries) {
+      if (i > 0) {
+        shiftVec(i) := shiftVec(i - 1) | hitVec(i)
+      } else {
+        shiftVec(i) := hitVec(i)
+      }
+    }
+    for (i <- 0 until entries) {
+      when(shiftVec(i)) {
+        if (i < (entries - 1)) {
+          mem(i) := mem(i + 1)
+        } else {
+          mem(i) := 0.U.asTypeOf(mem(i))
+        }
+      }
+    }
+  }
+  def doCompressPtrMove[memType <: Data](
+      from: DecoupledIO[Data],
+      topPtr: UInt,
+      incSignal: Bool,
+      decSignal: Bool,
+      maybeFull: Bool,
+      mem: Vec[memType],
+  ) = {
+    when(from.fire) {
+      mem(topPtr) := from.bits
+    }
+    when(incSignal =/= decSignal) {
+      when(incSignal) {
+        topPtr    := topPtr + 1.U
+        maybeFull := true.B
+      }.otherwise {
+        topPtr    := topPtr - 1.U
+        maybeFull := false.B
+      }
+    }
+  }
 }

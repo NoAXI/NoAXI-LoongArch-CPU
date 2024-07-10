@@ -80,7 +80,7 @@ class MuldivTop extends Module {
     ),
   )
 
-  res.result := result
+  res.rdInfo.data := result
   doForward(io.forward, res, valid)
 
   io.awake.valid := valid && info.iswf && io.to.fire

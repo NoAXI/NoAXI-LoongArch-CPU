@@ -40,13 +40,19 @@ class RobCommitIO extends Bundle {
   val info  = Output(new ROBInfo)
 }
 
+class RobStoreBufferIO extends Bundle {
+  val from = Flipped(DecoupledIO(new BufferInfo))
+  val to   = DecoupledIO(new BufferInfo)
+}
+
 class RobIO extends Bundle {
-  val flush   = Input(Bool())
-  val full    = Output(Bool()) // <> rename
-  val rename  = Vec(ISSUE_WIDTH, new RobRenameIO)
-  val write   = Vec(BACK_ISSUE_WIDTH, new RobWriteIO)
-  val commit  = Vec(ISSUE_WIDTH, new RobCommitIO)
-  val doFlush = Output(Bool())
+  val flush    = Input(Bool())
+  val full     = Output(Bool()) // <> rename
+  val rename   = Vec(ISSUE_WIDTH, new RobRenameIO)
+  val write    = Vec(BACK_ISSUE_WIDTH, new RobWriteIO)
+  val commit   = Vec(ISSUE_WIDTH, new RobCommitIO)
+  val stBuffer = new RobStoreBufferIO
+  val doFlush  = Output(Bool())
 }
 class Rob extends Module {
   val io = IO(new RobIO)

@@ -47,7 +47,10 @@ class Top extends Module {
   )
 
   // backend execute
-  val arith   = Seq.fill(ARITH_ISSUE_NUM)(Module(new ArithmeticTop).io)
+  val arith = Seq(
+    Module(new ArithmeticTop(hasBru = true)).io,
+    Module(new ArithmeticTop(hasBru = false)).io,
+  )
   val muldiv  = Module(new MuldivTop).io
   val memory0 = Module(new Memory0Top).io
   val memory1 = Module(new Memory1Top).io
@@ -60,14 +63,9 @@ class Top extends Module {
   val commit    = Module(new CommitTop).io
 
   // ==================== unit define ====================
-  // ctrl unit
   val flushCtrl = Module(new FlushCtrl).io
-
-  // frontend unit
-  val bpu = Module(new BPU).io
-
-  // csr unit
-  val csr = Module(new CSR).io
+  val bpu       = Module(new BPU).io
+  val csr       = Module(new CSR).io
 
   // backend unit
   val rat     = Module(new Rat).io
@@ -80,6 +78,8 @@ class Top extends Module {
   val iCache   = Module(new ICache).io
   val dcache   = Module(new dCache_with_cached_writebuffer).io
   val itlb     = Module(new TLB("fetch")).io
+  val stBuffer = Module(new StoreBuffer(STORE_BUFFER_LENGTH, "st"))
+  val wbBuffer = Module(new StoreBuffer(WRITE_BACK_BUFFER_LENGTH, "wb"))
 
   // ==================== stage connect ====================
   // prefetch -> ... -> dispatch
@@ -140,8 +140,8 @@ class Top extends Module {
   fetch.iCache    <> iCache.fetch
 
   // dcache <> memory0, memory1
-  memory0.dCache <> dcache.mem0
-  memory1.dCache <> dcache.mem1
+  // memory0.dCache <> dcache.mem0
+  // memory1.dCache <> dcache.mem1
 
   // bpu <> prefetch, fetch
   bpu.preFetch <> prefetch.bpu
@@ -202,8 +202,8 @@ class Top extends Module {
 
   // flush ctrl
   // TODO: connect flushCtrl with (memory, rob)
-  flushCtrl.doFlush  <> rob.doFlush
-  flushCtrl.hasFlush <> memory1.hasFlush
+  flushCtrl.doFlush <> rob.doFlush
+  // flushCtrl.hasFlush <> memory1.hasFlush
 
   // front flush
   flushCtrl.frontFlush <> prefetch.flush

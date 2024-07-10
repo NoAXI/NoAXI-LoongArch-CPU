@@ -3,6 +3,7 @@ package pipeline
 import chisel3._
 import chisel3.util._
 
+import isa._
 import const._
 import bundles._
 import func.Functions._
@@ -12,7 +13,9 @@ class ArithmeticTopIO extends SingleStageBundle {
   val forward = Flipped(new ForwardInfoIO)
 }
 
-class ArithmeticTop extends Module {
+class ArithmeticTop(
+    hasBru: Boolean,
+) extends Module {
   val io = IO(new ArithmeticTopIO)
 
   val busy = WireDefault(false.B)
@@ -24,10 +27,28 @@ class ArithmeticTop extends Module {
   val res   = WireDefault(info)
   io.to.bits := res
 
+  // alu
   val alu = Module(new ALU).io
-
   alu.info        := info
   res.rdInfo.data := alu.result
+
+  // bru
+  if (hasBru) {
+    val bru = Module(new BRU).io
+    bru.rj        := info.rjInfo.data
+    bru.rd        := info.rkInfo.data // decode will set rk.data = rd.data
+    bru.func_type := info.func_type
+    bru.op_type   := info.op_type
+
+    val is_br         = info.func_type === FuncType.bru
+    val is_jirl       = info.inst === LA32R.JIRL
+    val br_tar        = Mux(is_jirl, info.rjInfo.data, info.pc) + info.imm
+    val succeed       = bru.br_en === info.predict.en && br_tar === info.predict.tar && is_br
+    val br_tar_failed = Mux(bru.br_en, br_tar, info.pc + 4.U)
+
+    res.realBr.en  := (is_br && !succeed)
+    res.realBr.tar := br_tar_failed
+  }
 
   doForward(io.forward, res, valid)
 }

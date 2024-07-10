@@ -9,7 +9,7 @@ import const.ECodes
 import const.Parameters._
 import func.Functions._
 
-class MmuIO extends Bundle {
+class MemoryAccessIO extends Bundle {
   val op_type = Input(UInt(5.W))
 
   val data_sram = new Bundle {
@@ -29,8 +29,8 @@ class MmuIO extends Bundle {
   val exc_vaddr = Output(UInt(ADDR_WIDTH.W))
 }
 
-class Mmu extends Module {
-  val io = IO(new MmuIO)
+class MemoryAccess extends Module {
+  val io = IO(new MemoryAccessIO)
 
   val re    = MemOpType.isread(io.op_type)
   val we    = !re

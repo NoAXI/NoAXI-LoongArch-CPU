@@ -11,7 +11,6 @@ import const.Parameters._
 class Memory1TopIO extends SingleStageBundle {
   val dCache   = new Mem1DCacheIO
   val awake    = Output(new AwakeInfo)
-  val hasFlush = Output(Bool())
 }
 
 class Memory1Top extends Module {
@@ -25,8 +24,8 @@ class Memory1Top extends Module {
   val valid = raw._2
   val res   = WireDefault(info)
 
-  val has_exc = info.exc_type =/= ECodes.NONE
-
+  // save dcache answer
+  // TODO: seems not important?
   val dcache_saved_ans = RegInit(0.U(DATA_WIDTH.W))
   val complete         = RegInit(false.B)
   when(io.dCache.answer.fire) {
@@ -38,34 +37,38 @@ class Memory1Top extends Module {
     dcache_saved_ans := 0.U
   }
   val finish = io.dCache.answer.fire || complete
-  val mem    = Module(new Mmu).io
+
+  // memory info
+  val mem = Module(new MemoryAccess).io
   mem.op_type  := info.op_type
   mem.result   := info.pa
   mem.rd_value := info.rdInfo.data
+
+  val has_exc     = info.exc_type =/= ECodes.NONE
   val mem_has_exc = mem.exc_type =/= ECodes.NONE
   io.dCache.request.valid := (mem.data_sram.en || mem.data_sram.we.orR) && !has_exc && !mem_has_exc
   when(ShiftRegister(info.pc, 1) === info.pc && ShiftRegister(finish, 1)) {
     // when getans and this stage is stall
     io.dCache.request.valid := false.B
   }
+
   io.dCache.request.bits.cached := info.cached
   io.dCache.request.bits.re     := mem.data_sram.en
   io.dCache.request.bits.we     := mem.data_sram.we.orR
   io.dCache.request.bits.addr   := info.pa
   io.dCache.request.bits.data   := mem.data_sram.wdata
   io.dCache.request.bits.strb   := mem.data_sram.we
-  mem.data_sram.rdata           := Mux(io.dCache.answer.fire, io.dCache.answer.bits, dcache_saved_ans)
-  io.dCache.answer.ready        := true.B
-  busy                          := !finish && !mem_has_exc
+
+  mem.data_sram.rdata    := Mux(io.dCache.answer.fire, io.dCache.answer.bits, dcache_saved_ans)
+  io.dCache.answer.ready := true.B
+  busy                   := !finish && !mem_has_exc
   when(io.dCache.answer_imm) { busy := false.B }
 
-  res.result := mem.data
+  // res.result := mem.data
+  res.rdInfo.data := mem.data
   flushWhen(res, io.flush)
   io.to.bits := res
 
   io.awake.preg  := res.rdInfo.preg
   io.awake.valid := valid && io.to.fire
-
-  // TODO: add flush here
-  io.hasFlush := false.B
 }

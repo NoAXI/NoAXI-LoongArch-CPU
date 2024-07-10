@@ -8,11 +8,37 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 
-class UnorderedIssue[T <: Data](
+class BufferInfo extends Bundle {
+  val valid = Bool()
+  val addr  = UInt(ADDR_WIDTH.W) // paddr
+  val data  = UInt(DATA_WIDTH.W)
+}
+
+class StoreBufferIO extends Bundle {
+  val mem   = Flipped(new MemBufferIO)
+  val from  = Flipped(DecoupledIO(new BufferInfo))
+  val to    = DecoupledIO(new BufferInfo)
+  val flush = Input(Bool())
+}
+
+class StoreBuffer(
     entries: Int,
-    isArithmetic: Boolean,
+    bufferType: String,
 ) extends Module {
-  val io = IO(new IssueQueueIO)
+  assert(Seq("st", "wb").contains(bufferType))
+
+  val io = IO(new StoreBufferIO)
+
+  // use compressive queue
+  val buffer = Seq.fill(entries)(new BufferInfo)
+  val hit    = WireDefault(false.B)
+  val data   = WireDefault(UInt(DATA_WIDTH.W))
+  for (i <- 0 until entries) {
+    when(io.mem.pa === buffer(i).addr && buffer(i).valid) {
+      hit         := true.B
+      io.mem.data := buffer(i).data
+    }
+  }
 
   val mem       = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(new SingleInfo))))
   val topPtr    = RegInit(0.U(log2Ceil(entries).W))
@@ -20,31 +46,9 @@ class UnorderedIssue[T <: Data](
   val full      = maybeFull && topPtr === 0.U
   val empty     = !maybeFull && topPtr === 0.U
 
-  // hit check
-  val hitVec = WireDefault(VecInit(Seq.fill(entries)(false.B)))
-  for (i <- 0 until entries) {
-    for (j <- 0 until OPERAND_MAX) {
-      val regHit = checkIssueHit(
-        mem(i).rjInfo.preg,
-        mem(i).rkInfo.preg,
-        io.awake,
-        io.busy,
-      )
-      hitVec(i) := regHit.reduce(_ && _)
-    }
-  }
-
   // info shifting
-  val shiftVec = WireDefault(VecInit(Seq.fill(entries)(false.B)))
   for (i <- 0 until entries) {
-    if (i > 0) {
-      shiftVec(i) := shiftVec(i - 1) | hitVec(i)
-    } else {
-      shiftVec(i) := hitVec(i)
-    }
-  }
-  for (i <- 0 until entries) {
-    when(shiftVec(i)) {
+    when(io.to.fire) {
       if (i < (entries - 1)) {
         mem(i) := mem(i + 1)
       } else {
@@ -73,14 +77,6 @@ class UnorderedIssue[T <: Data](
 
   // handshake
   io.from.ready := !full
-  io.to.valid   := hitVec.reduce(_ || _) && !empty
-  val index = PriorityEncoder(hitVec)
-  io.to.bits := mem(index)
-
-  // get size
-  if (isArithmetic) {
-    io.arithSize := Mux(full, entries.U, topPtr)
-  } else {
-    io.arithSize := DontCare
-  }
+  io.to.valid   := !empty
+  io.to.bits    := mem(0)
 }

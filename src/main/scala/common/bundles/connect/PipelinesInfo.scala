@@ -44,7 +44,7 @@ class SingleInfo extends Bundle {
 
   // write reg
   val iswf   = Bool()
-  val result = UInt(DATA_WIDTH.W)
+  // val result = UInt(DATA_WIDTH.W)
 
   // rename info
   val opreg  = UInt(PREG_WIDTH.W) // the old preg id of rd
@@ -66,6 +66,7 @@ class SingleInfo extends Bundle {
 
   // branch predict
   val predict  = new br
+  val realBr   = new br
   val isCALL   = Bool()
   val isReturn = Bool()
 
