@@ -3,6 +3,7 @@ package pipeline
 import chisel3._
 import chisel3.util._
 
+import isa._
 import const._
 import bundles._
 import func.Functions._
@@ -43,10 +44,12 @@ class WritebackTop extends Module {
   io.rob.bits.opreg := res.opreg
   io.rob.bits.wdata := res.rdInfo.data
 
-  io.rob.bits.debug_pc  := res.pc
-  io.rob.bits.exc_type  := res.exc_type
-  io.rob.bits.exc_vaddr := res.exc_vaddr
-  io.rob.bits.hasFlush  := res.hasFlush
+  io.rob.bits.debug_pc    := res.pc
+  io.rob.bits.exc_type    := res.exc_type
+  io.rob.bits.exc_vaddr   := res.exc_vaddr
+  io.rob.bits.isWrite     := res.func_type === FuncType.mem && !MemOpType.isread(res.op_type)
+  io.rob.bits.isPrivilege := res.func_type === FuncType.csr
+  io.rob.bits.br          := res.realBr
 
   // writeback -> forward -> readreg
   doForward(io.forward, res, valid)

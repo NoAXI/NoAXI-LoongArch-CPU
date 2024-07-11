@@ -15,31 +15,30 @@ class BufferInfo extends Bundle {
 }
 
 class StoreBufferIO extends Bundle {
-  val mem   = Flipped(new MemBufferIO)
-  val from  = Flipped(DecoupledIO(new BufferInfo))
-  val to    = DecoupledIO(new BufferInfo)
-  val flush = Input(Bool())
+  val memory = Flipped(new MemBufferIO)
+  val from   = Flipped(DecoupledIO(new BufferInfo))
+  val to     = DecoupledIO(new BufferInfo)
+  val flush  = Input(Bool())
 }
 
 class StoreBuffer(
     entries: Int,
-    bufferType: String,
+    // bufferType: String,
 ) extends Module {
-  assert(Seq("st", "wb").contains(bufferType))
+  // require(Seq("st", "wb").contains(bufferType))
 
   val io = IO(new StoreBufferIO)
 
   // use compressive queue
-  val buffer = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(new BufferInfo))))
-  val hit    = WireDefault(false.B)
+  val mem = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(new BufferInfo))))
+  val hit = WireDefault(false.B)
   for (i <- 0 until entries) {
-    when(io.mem.pa === buffer(i).addr && buffer(i).valid) {
-      hit         := true.B
-      io.mem.data := buffer(i).data
+    when(io.memory.pa === mem(i).addr && mem(i).valid) {
+      hit            := true.B
+      io.memory.data := mem(i).data
     }
   }
 
-  val mem       = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(new BufferInfo))))
   val topPtr    = RegInit(0.U(log2Ceil(entries).W))
   val maybeFull = RegInit(false.B)
   val full      = maybeFull && topPtr === 0.U

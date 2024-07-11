@@ -81,7 +81,7 @@ class MuldivTop extends Module {
   )
 
   res.rdInfo.data := result
-  doForward(io.forward, res, valid)
+  doForward(io.forward, res, false.B) // TODO: 在实现流水线乘除之后要把false改成valid
 
   io.awake.valid := valid && info.iswf && io.to.fire
   io.awake.preg  := info.rdInfo.preg

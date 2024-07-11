@@ -15,8 +15,8 @@ class RenameTopIO extends StageBundle {
   val ratFull   = Input(Bool())
 
   // rob
-  val rob     = Flipped(Vec(ISSUE_WIDTH, new RobRenameIO))
-  val robFull = Input(Bool())
+  val rob      = Flipped(Vec(ISSUE_WIDTH, new RobRenameIO))
+  val robStall = Input(Bool())
 }
 
 class RenameTop extends Module {
@@ -31,7 +31,7 @@ class RenameTop extends Module {
   val res   = WireDefault(info)
   io.to.bits := res
 
-  when(io.ratFull || io.robFull) {
+  when(io.ratFull || io.robStall) {
     busy.info(0) := true.B
   }
 
@@ -42,7 +42,7 @@ class RenameTop extends Module {
     val writeZero = from.rdInfo.areg === 0.U
 
     // rename -> rat
-    io.ratRename(i).valid := valid && io.to.ready && from.iswf && !writeZero && !io.robFull
+    io.ratRename(i).valid := valid && io.to.ready && from.iswf && !writeZero && !io.robStall
     io.ratRename(i).areg  := from.rdInfo.areg
     io.ratRead(i).areg.rj := to.rjInfo.areg
     io.ratRead(i).areg.rk := to.rkInfo.areg

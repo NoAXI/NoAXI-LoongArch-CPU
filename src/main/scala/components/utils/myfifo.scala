@@ -31,6 +31,7 @@ class MultiPortFifo[T <: Data](
     val push  = Vec(ISSUE_WIDTH, Flipped(Decoupled(gen)))
     val pop   = Vec(ISSUE_WIDTH, Decoupled(gen))
     val write = Vec(writePortNum, new MultiPortFifoWriteInfo(entries, gen))
+    val index = Output(UInt(log2Ceil(entries).W))
     val flush = Input(Bool())
   })
   val mem       = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(gen))))
@@ -77,9 +78,6 @@ class MultiPortFifo[T <: Data](
   }
 
   for (i <- 0 until ISSUE_WIDTH) {
-    // when(i.U < popOffset && !popStall) {
-    //   mem(popPtr + i.U) := 0.U.asTypeOf(mem(popPtr + i.U))
-    // }
     io.pop(i).bits  := mem(popPtr + i.U)
     io.pop(i).valid := (i.U < maxPop || full) && !popStall
   }
@@ -100,8 +98,10 @@ class MultiPortFifo[T <: Data](
         mem(io.write(i).index) := io.write(i).bits
       }
     }
+    io.index := pushPtr
   } else {
     io.write := DontCare
+    io.index := DontCare
   }
 
   if (Config.debug_on) {

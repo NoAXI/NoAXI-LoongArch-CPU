@@ -36,7 +36,10 @@ class FlushCtrl extends Module {
   // FSM
   switch(state) {
     is(sIdle) {
-      when(io.hasFlush && !io.doFlush) {
+      when(io.doFlush) {
+        frontFlush := true.B
+        recover    := true.B
+      }.elsewhen(io.hasFlush) {
         memStall   := true.B
         frontFlush := true.B
         state      := sFlushWait

@@ -78,8 +78,8 @@ class Top extends Module {
   val iCache   = Module(new ICache).io
   val dcache   = Module(new DCache).io
   val itlb     = Module(new TLB("fetch")).io
-  val stBuffer = Module(new StoreBuffer(STORE_BUFFER_LENGTH, "st"))
-  val wbBuffer = Module(new StoreBuffer(WRITE_BACK_BUFFER_LENGTH, "wb"))
+  val stBuffer = Module(new StoreBuffer(STORE_BUFFER_LENGTH)).io
+  // val wbBuffer = Module(new StoreBuffer(WRITE_BACK_BUFFER_LENGTH, "wb"))
 
   // ==================== stage connect ====================
   // prefetch -> ... -> dispatch
@@ -161,8 +161,8 @@ class Top extends Module {
   dispatch.arithSize <> issue.arithSize
 
   // rename <> rob
-  rename.rob     <> rob.rename
-  rename.robFull <> rob.full
+  rename.rob      <> rob.rename
+  rename.robStall <> rob.renameStall
 
   // readreg <> forward, preg, issue
   // TODO: 修改唤醒接口
@@ -177,11 +177,10 @@ class Top extends Module {
   memory1.awake <> issue.awake(MEMORY_ISSUE_ID)
 
   // forward <> the last stage of execute
-  // TODO: 需要添加muldiv和memory的前递信号
   for (i <- 0 until ARITH_ISSUE_NUM) {
     arith(i).forward <> forward.info(FORWARD_EXE_INDEX)(i)
   }
-  muldiv.forward  <> forward.info(FORWARD_EXE_INDEX)(MULDIV_ISSUE_ID)
+  muldiv.forward  <> forward.info(FORWARD_EXE_INDEX)(MULDIV_ISSUE_ID) // TODO: 需要改为muldiv的最后一级
   memory2.forward <> forward.info(FORWARD_EXE_INDEX)(MEMORY_ISSUE_ID)
 
   // writeback <> preg, rob, forward
@@ -200,10 +199,14 @@ class Top extends Module {
     io.debug := commit.debug(1)
   }
 
+  // commit send buffer info
+  stBuffer.to <> commit.buffer.from
+  // commit.buffer.to <> dcache.wbBuffer
+
   // flush ctrl
   // TODO: connect flushCtrl with (memory, rob)
-  flushCtrl.doFlush <> rob.doFlush
-  // flushCtrl.hasFlush <> memory1.hasFlush
+  flushCtrl.doFlush  <> commit.flush.doFlush
+  flushCtrl.hasFlush := false.B
 
   // front flush
   flushCtrl.frontFlush <> prefetch.flush
@@ -221,6 +224,7 @@ class Top extends Module {
   // recover
   flushCtrl.recover <> rob.flush
   flushCtrl.recover <> rat.flush
+  flushCtrl.recover <> stBuffer.flush
 
   // back flush
   // mem.readreg & mem.mem0 use memStall to flush
