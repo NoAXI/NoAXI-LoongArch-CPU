@@ -54,7 +54,7 @@ class RenameTop extends Module {
     to.rkInfo.preg := io.ratRead(i).preg.rk
 
     // rob
-    io.rob(i).valid := valid && from.pipelineType =/= 0.U
+    io.rob(i).valid := io.to.ready && valid && from.pipelineType =/= 0.U
     to.robId        := io.rob(i).index
   }
 }

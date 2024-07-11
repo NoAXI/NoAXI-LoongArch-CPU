@@ -41,14 +41,29 @@ class ReadRegTop(
   io.forwardReq.rk.preg := info.rkInfo.preg
   io.forwardReq.rk.in   := io.pregRead.rk.data
 
+  val src1 = MuxCase(
+    io.forwardReq.rj.out,
+    Seq(
+      info.src1Ispc   -> info.pc,
+      info.src1IsZero -> 0.U,
+    ),
+  )
+  val src2 = MuxCase(
+    io.forwardReq.rk.out,
+    Seq(
+      info.src2IsFour -> 4.U,
+      info.src2IsImm  -> info.imm,
+    ),
+  )
+
   // forward -> readreg
-  res.rjInfo.data := io.forwardReq.rj.out
-  res.rkInfo.data := io.forwardReq.rk.out
+  res.rjInfo.data := src1
+  res.rkInfo.data := src2
   res.va          := io.vaddr
 
   // arith: awake
   if (unitType == "arith") {
-    io.awake.valid := valid && info.iswf
+    io.awake.valid := valid && info.iswf && io.to.fire
     io.awake.preg  := info.rdInfo.preg
   } else {
     io.awake := DontCare

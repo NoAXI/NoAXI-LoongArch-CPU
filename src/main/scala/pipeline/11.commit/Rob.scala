@@ -25,6 +25,7 @@ class Rob extends Module {
       new RobInfo,
       hasWritePort = true,
       writePortNum = BACK_ISSUE_WIDTH,
+      clearWhenPop = true,
     ),
   ).io
   rob.flush := io.flush
@@ -32,7 +33,12 @@ class Rob extends Module {
   // rename
   io.renameStall := WireDefault(false.B)
   for (i <- 0 until ISSUE_WIDTH) {
-    rob.push(i).valid  := io.rename(i).valid
+    rob.push(i).valid := io.rename(i).valid
+    val info = WireDefault(0.U.asTypeOf(new RobInfo))
+    if (Config.debug_on) {
+      info.debug_using := true.B
+    }
+    rob.push(i).bits   := info
     io.rename(i).index := rob.index + i.U
     when(rob.push(i).valid && !rob.push(i).ready) {
       io.renameStall := true.B

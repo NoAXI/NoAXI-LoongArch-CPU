@@ -58,14 +58,22 @@ class IssueTop extends Module {
   val queue = arith ++ Seq(muldiv, memory)
 
   // busy reg
+  // TODO: when add additional awake info,
+  // should modify the BACK_ISSUE_WIDTH here
+  val awakeInfo = WireDefault(io.awake)
+  for(i <- 0 until BACK_ISSUE_WIDTH) {
+    when(io.awake(i).valid && io.awake(i).preg === 0.U) {
+      awakeInfo(i).valid := false.B
+    }
+  }
   val busyReg = RegInit(VecInit(Seq.fill(PREG_NUM)(false.B)))
   for (i <- 0 until BACK_ISSUE_WIDTH) {
-    when(io.awake(i).valid) {
-      busyReg(io.awake(i).preg) := false.B
+    when(awakeInfo(i).valid) {
+      busyReg(awakeInfo(i).preg) := false.B
     }
   }
   for (i <- 0 until BACK_ISSUE_WIDTH) {
-    when(io.to(i).fire) {
+    when(io.to(i).fire && io.to(i).bits.rdInfo.preg =/= 0.U) {
       busyReg(io.to(i).bits.rdInfo.preg) := true.B
     }
   }
@@ -75,7 +83,7 @@ class IssueTop extends Module {
     io.from(i)     <> queue(i).from
     io.to(i)       <> queue(i).to
     queue(i).busy  := busyReg
-    queue(i).awake := io.awake
+    queue(i).awake := awakeInfo
     queue(i).flush := io.flush
     if (i == MEMORY_ISSUE_ID) {
       queue(i).stall := io.memoryStall

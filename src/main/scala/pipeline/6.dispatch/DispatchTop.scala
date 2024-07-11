@@ -71,6 +71,11 @@ class DispatchTop extends Module {
       stall    := false.B
     }
   }
+  when(!validReg) {
+    for (i <- 0 until ISSUE_WIDTH) {
+      cango(i) := false.B
+    }
+  }
 
   // check if issue succeeded
   // when issue failed, set stall
@@ -87,9 +92,8 @@ class DispatchTop extends Module {
       }
     }
   }
-  when(issueFailed.reduce(_ || _)) {
-    stall := true.B
-  }
+  when(issueFailed.reduce(_ || _)) { stall := true.B }
+  when(!validReg) { stall := false.B }
 
   // when stall, flush issued inst
   when(stall && !io.flush) {

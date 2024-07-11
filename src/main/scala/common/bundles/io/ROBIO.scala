@@ -26,7 +26,8 @@ class RobInfo extends Bundle {
   val isPrivilege = Bool()
   // val hasFlush  = Bool()
 
-  val debug_pc = UInt(ADDR_WIDTH.W)
+  val debug_pc    = UInt(ADDR_WIDTH.W)
+  val debug_using = Bool()
 }
 
 class RobRenameIO extends Bundle {

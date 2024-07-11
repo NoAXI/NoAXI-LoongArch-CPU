@@ -23,6 +23,7 @@ class MultiPortFifo[T <: Data](
     hasWritePort: Boolean = false,
     writePortNum: Int = 0,
     forIB: Boolean = false,
+    clearWhenPop: Boolean = false,
 ) extends Module {
   require(isPow2(entries))
   require((!hasWritePort && writePortNum == 0) || (hasWritePort && writePortNum != 0))
@@ -70,16 +71,23 @@ class MultiPortFifo[T <: Data](
     popStall := true.B
   }
 
+  // when push & pop happens in the same position
+  // we don't want mem(i) to be zero
+  // so do pop first
+  for (i <- 0 until ISSUE_WIDTH) {
+    io.pop(i).bits  := mem(popPtr + i.U)
+    io.pop(i).valid := (i.U < maxPop || full) && !popStall
+    if (clearWhenPop) {
+      when(io.pop(i).fire) {
+        mem(popPtr + i.U) := 0.U.asTypeOf(gen)
+      }
+    }
+  }
   for (i <- 0 until ISSUE_WIDTH) {
     when(i.U < pushOffset && !pushStall) {
       mem(pushPtr + i.U) := io.push(i).bits
     }
     io.push(i).ready := (i.U < maxPush || empty) && !pushStall
-  }
-
-  for (i <- 0 until ISSUE_WIDTH) {
-    io.pop(i).bits  := mem(popPtr + i.U)
-    io.pop(i).valid := (i.U < maxPop || full) && !popStall
   }
 
   when(!pushStall) { pushPtr := pushPtr + pushOffset }

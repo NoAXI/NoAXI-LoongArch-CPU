@@ -86,14 +86,14 @@ class CommitTop extends Module {
     io.rat(i).opreg := rob.bits.opreg
 
     // commit -> store buffer <> wb buffer
-    doWrite(i) := rob.valid && readyBit(i) && rob.bits.isWrite
+    doWrite(i) := readyBit(i) && rob.bits.isWrite
   }
 
   val writeHappen = doWrite.reduce(_ || _)
   io.buffer.to.bits    := io.buffer.from.bits
   io.buffer.to.valid   := io.buffer.from.valid && writeHappen
   io.buffer.from.ready := io.buffer.to.ready && writeHappen
-  when(writeHappen && !io.buffer.to.fire) {
+  when(writeHappen && !io.buffer.to.ready) {
     writeStall := true.B
   }
 

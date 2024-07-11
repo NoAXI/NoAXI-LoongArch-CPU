@@ -31,6 +31,7 @@ class StoreBuffer(
   // use compressive queue
   val mem = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(new BufferInfo))))
   val hit = WireDefault(false.B)
+  io.memory1.forwardData := WireDefault(0.U.asTypeOf(io.memory1.forwardData))
   for (i <- 0 until entries) {
     when(io.memory1.forwardpa === mem(i).requestInfo.addr && mem(i).valid) {
       hit                    := true.B

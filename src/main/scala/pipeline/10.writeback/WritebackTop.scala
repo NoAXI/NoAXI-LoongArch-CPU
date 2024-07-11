@@ -44,6 +44,7 @@ class WritebackTop extends Module {
   io.rob.bits.opreg := res.opreg
   io.rob.bits.wdata := res.rdInfo.data
 
+  io.rob.bits.debug_using := true.B
   io.rob.bits.debug_pc    := res.pc
   io.rob.bits.exc_type    := res.exc_type
   io.rob.bits.exc_vaddr   := res.exc_vaddr
