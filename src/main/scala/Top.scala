@@ -148,8 +148,9 @@ class Top extends Module {
   memory2.dCache <> dcache.mem2
 
   // storeBuffer <> memory1, memory2
-  storeBuffer.memory1 <> memory1.storeBuffer
-  storeBuffer.from    <> memory2.storeBuffer
+  storeBuffer.memory1  <> memory1.storeBuffer
+  storeBuffer.from     <> memory2.storeBuffer
+  storeBuffer.to.ready := true.B // temp
   // storeBuffer.to
 
   // bpu <> prefetch, fetch
@@ -252,6 +253,7 @@ class Top extends Module {
 
   flushCtrl.memStall  <> memory0.flush // flush when memStall = 1
   flushCtrl.backFlush <> memory1.flush
+  flushCtrl.backFlush <> memory2.flush
 
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     flushCtrl.backFlush <> writeback(i).flush

@@ -12,11 +12,10 @@ import const.Config
 import pipeline._
 
 class DCacheIO extends Bundle {
-  val axi         = new DCacheAXI
-  val mem0        = Flipped(new Mem0DCacheIO)
-  val mem1        = Flipped(new Mem1DCacheIO)
-  val mem2        = Flipped(new Mem2DCacheIO)
-  val storeBuffer = Flipped(DecoupledIO(new BufferInfo))
+  val axi  = new DCacheAXI
+  val mem0 = Flipped(new Mem0DCacheIO)
+  val mem1 = Flipped(new Mem1DCacheIO)
+  val mem2 = Flipped(new Mem2DCacheIO)
 }
 
 class DCache extends Module {
@@ -43,11 +42,11 @@ class DCache extends Module {
   // mem 0: send va
   val vaddr = io.mem0.addr
   for (i <- 0 until WAY_WIDTH) {
-    // data(i).clka  := clock
-    // data(i).addra := 0.U
-    // data(i).addrb := vaddr(11, 4)
-    // data(i).wea   := false.B
-    // data(i).dina  := 0.U
+    data(i).clka  := clock
+    data(i).addra := 0.U
+    data(i).addrb := vaddr(11, 4)
+    data(i).wea   := false.B
+    data(i).dina  := 0.U
     tagV(i).clka  := clock
     tagV(i).addra := 0.U
     tagV(i).addrb := vaddr(11, 4)
@@ -309,12 +308,16 @@ class DCache extends Module {
   w.id := 1.U
   // w.last := true.B
 
-  io.axi.ar.bits  := ar
-  io.axi.ar.valid := arvalid
-  io.axi.aw.bits  := aw
-  io.axi.aw.valid := awvalid
-  io.axi.w.bits   := w
-  io.axi.w.valid  := wvalid
-  io.axi.r.ready  := rready
-  io.axi.b.ready  := bready
+  io.axi.ar.bits        := ar
+  io.axi.ar.valid       := arvalid
+  io.axi.aw.bits        := aw
+  io.axi.aw.valid       := awvalid
+  io.axi.w.bits         := w
+  io.axi.w.valid        := wvalid
+  io.axi.r.ready        := rready
+  io.axi.b.ready        := bready
+  io.mem2.answer.valid  := ansvalid || imm_ansvalid
+  io.mem2.answer.bits   := Mux(imm_ansvalid, imm_cached_ans, uncachedAns)
+  io.mem2.request.ready := true.B
+
 }
