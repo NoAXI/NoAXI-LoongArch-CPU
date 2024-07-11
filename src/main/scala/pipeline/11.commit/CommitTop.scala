@@ -58,6 +58,7 @@ class CommitTop extends Module {
   io.flush.info    := 0.U.asTypeOf(new RobInfo)
   when(flushSignal) {
     for (i <- 0 until ISSUE_WIDTH) {
+      // use real ready here to avoid unexpected flush
       when(io.rob(i).info.ready && hasFlush(i)) {
         io.flush.doFlush := true.B
         io.flush.info    := io.rob(i).info.bits
@@ -67,6 +68,7 @@ class CommitTop extends Module {
 
   // send info
   val writeStall = WireDefault(false.B)
+  val doWrite    = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(false.B)))
   for (i <- 0 until ISSUE_WIDTH) {
     val rob        = io.rob(i).info
     val writeValid = rob.fire && rob.bits.wen
@@ -84,11 +86,15 @@ class CommitTop extends Module {
     io.rat(i).opreg := rob.bits.opreg
 
     // commit -> store buffer <> wb buffer
-    val doWrite = rob.valid && readyBit(i) && rob.bits.isWrite
-    io.buffer.to.bits    := io.buffer.from.bits
-    io.buffer.to.valid   := io.buffer.from.valid && doWrite
-    io.buffer.from.ready := io.buffer.to.ready && doWrite
-    writeStall           := doWrite && !io.buffer.to.fire
+    doWrite(i) := rob.valid && readyBit(i) && rob.bits.isWrite
+  }
+
+  val writeHappen = doWrite.reduce(_ || _)
+  io.buffer.to.bits    := io.buffer.from.bits
+  io.buffer.to.valid   := io.buffer.from.valid && writeHappen
+  io.buffer.from.ready := io.buffer.to.ready && writeHappen
+  when(writeHappen && !io.buffer.to.fire) {
+    writeStall := true.B
   }
 
   for (i <- 0 until ISSUE_WIDTH) {

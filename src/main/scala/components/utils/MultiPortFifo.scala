@@ -81,10 +81,14 @@ class MultiPortFifo[T <: Data](
     io.pop(i).bits  := mem(popPtr + i.U)
     io.pop(i).valid := (i.U < maxPop || full) && !popStall
   }
+
   when(!pushStall) { pushPtr := pushPtr + pushOffset }
   when(!popStall) { popPtr := popPtr + popOffset }
-  when(pushOffset =/= popOffset) {
-    maybeFull := pushOffset > popOffset
+
+  val realPushOffset = Mux(pushStall, 0.U, pushOffset)
+  val realPopOffset  = Mux(popStall, 0.U, popOffset)
+  when(realPushOffset =/= realPopOffset) {
+    maybeFull := realPushOffset > realPopOffset
   }
 
   when(io.flush) {
@@ -107,6 +111,8 @@ class MultiPortFifo[T <: Data](
   if (Config.debug_on) {
     dontTouch(pushOffset)
     dontTouch(popOffset)
+    dontTouch(realPushOffset)
+    dontTouch(realPopOffset)
     dontTouch(full)
     dontTouch(empty)
     dontTouch(maxPush)
