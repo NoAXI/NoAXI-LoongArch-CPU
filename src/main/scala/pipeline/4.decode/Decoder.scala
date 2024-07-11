@@ -32,6 +32,11 @@ class DecoderIO extends Bundle {
 
   val isCALL   = Output(Bool())
   val isReturn = Output(Bool())
+
+  val src1Ispc   = Output(Bool())
+  val src1IsZero = Output(Bool())
+  val src2IsFour = Output(Bool())
+  val src2IsImm  = Output(Bool())
 }
 
 class Decoder extends Module {
@@ -86,6 +91,11 @@ class Decoder extends Module {
   val is_st          = func_type === FuncType.mem && !MemOpType.isread(op_type)
   val br_not_jirl_bl = func_type === FuncType.bru && !is_jirl_bl
   io.iswf := !(is_exc || is_st || is_none || br_not_jirl_bl) && io.rd =/= 0.U
+
+  io.src1Ispc   := is_jirl_bl || io.inst === LA32R.PCADDU12I
+  io.src1IsZero := io.inst === LA32R.LU12I_W
+  io.src2IsImm  := use_imm
+  io.src2IsFour := is_jirl_bl
 
   val is_csr  = func_type === FuncType.csr
   val is_wr   = op_type === CsrOpType.wr

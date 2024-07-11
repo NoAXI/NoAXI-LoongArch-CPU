@@ -25,7 +25,7 @@ class FetchTop extends Module {
   // tlb
   io.tlb.va     := info.pc
   io.tlb.hitVec := info.hitVec
-  val pa        = io.tlb.pa
+  val pa        = Mux(info.isDirect, info.pa, io.tlb.pa)
   val cached    = io.tlb.cached
   val exception = io.tlb.exception // TODO: two inst exception judge
 

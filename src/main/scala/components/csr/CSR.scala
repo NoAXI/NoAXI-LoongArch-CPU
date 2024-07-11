@@ -21,7 +21,7 @@ class CSR_IO extends Bundle {
   val exceptionJump = Output(new br)
 
   // to tlb
-  val tlb = new CSRTLBIO
+  val tlb = Vec(2, new CSRTLBIO)
 }
 
 class CSR extends Module {
@@ -207,9 +207,11 @@ class CSR extends Module {
     io.exceptionJump.tar := ERA.info.pc
   }
 
-  io.tlb.is_direct := CRMD.info.da && !CRMD.info.pg
-  io.tlb.asid      := ASID.info
-  io.tlb.crmd      := CRMD.info
-  io.tlb.dmw(0)    := DMW0.info
-  io.tlb.dmw(1)    := DMW1.info
+  for (i <- 0 until 2) {
+    io.tlb(i).is_direct := CRMD.info.da && !CRMD.info.pg
+    io.tlb(i).asid      := ASID.info
+    io.tlb(i).crmd      := CRMD.info
+    io.tlb(i).dmw(0)    := DMW0.info
+    io.tlb(i).dmw(1)    := DMW1.info
+  }
 }

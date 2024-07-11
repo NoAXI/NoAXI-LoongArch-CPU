@@ -56,8 +56,6 @@ class Top extends Module {
   val memory1 = Module(new Memory1Top).io
   val memory2 = Module(new Memory2Top).io
 
-  memory2.flush := false.B // TODO: fix
-
   // backend after execute
   val writeback = Seq.fill(BACK_ISSUE_WIDTH)(Module(new WritebackTop).io)
   val commit    = Module(new CommitTop).io
@@ -74,12 +72,12 @@ class Top extends Module {
   val forward = Module(new Forward).io
 
   // memory access
-  val axilayer = Module(new AXILayer).io
-  val iCache   = Module(new ICache).io
-  val dcache   = Module(new DCache).io
-  val itlb     = Module(new TLB("fetch")).io
-  val stBuffer = Module(new StoreBuffer(STORE_BUFFER_LENGTH)).io
-  // val wbBuffer = Module(new StoreBuffer(WRITE_BACK_BUFFER_LENGTH, "wb"))
+  val axilayer    = Module(new AXILayer).io
+  val iCache      = Module(new ICache).io
+  val dcache      = Module(new DCache).io
+  val itlb        = Module(new TLB("fetch")).io
+  val dtlb        = Module(new TLB("memory")).io
+  val storeBuffer = Module(new StoreBuffer(STORE_BUFFER_LENGTH)).io
 
   // ==================== stage connect ====================
   // prefetch -> ... -> dispatch
@@ -133,15 +131,26 @@ class Top extends Module {
   // itlb <> prefetch, fetch, memory0, memory1, csr
   itlb.stage0 <> prefetch.tlb
   itlb.stage1 <> fetch.tlb
-  itlb.csr    <> csr.tlb
+  itlb.csr    <> csr.tlb(0)
+
+  // dtlb <> memory0, memory1, memory2, csr
+  dtlb.stage0 <> memory0.tlb
+  dtlb.stage1 <> memory1.tlb
+  dtlb.csr    <> csr.tlb(1)
 
   // icache <> fetch, prefetch
   prefetch.iCache <> iCache.preFetch
   fetch.iCache    <> iCache.fetch
 
-  // dcache <> memory0, memory1
-  // memory0.dCache <> dcache.mem0
-  // memory1.dCache <> dcache.mem1
+  // dcache <> memory0, memory1, memory2
+  memory0.dCache <> dcache.mem0
+  memory1.dCache <> dcache.mem1
+  memory2.dCache <> dcache.mem2
+
+  // storeBuffer <> memory1, memory2
+  storeBuffer.memory1 <> memory1.storeBuffer
+  storeBuffer.from    <> memory2.storeBuffer
+  // storeBuffer.to
 
   // bpu <> prefetch, fetch
   bpu.preFetch <> prefetch.bpu
@@ -199,10 +208,6 @@ class Top extends Module {
     io.debug := commit.debug(1)
   }
 
-  // commit send buffer info
-  stBuffer.to <> commit.buffer.from
-  // commit.buffer.to <> dcache.wbBuffer
-
   // flush ctrl
   // TODO: connect flushCtrl with (memory, rob)
   flushCtrl.doFlush  <> commit.flush.doFlush
@@ -224,7 +229,7 @@ class Top extends Module {
   // recover
   flushCtrl.recover <> rob.flush
   flushCtrl.recover <> rat.flush
-  flushCtrl.recover <> stBuffer.flush
+  flushCtrl.recover <> storeBuffer.flush
 
   // back flush
   // mem.readreg & mem.mem0 use memStall to flush

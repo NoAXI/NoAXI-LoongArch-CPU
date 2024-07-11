@@ -8,14 +8,21 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 
+class Mem1BufferIO extends Bundle {
+  val forwardpa   = Output(UInt(ADDR_WIDTH.W))
+  val forwardHit  = Input(Bool())
+  val forwardData = Input(UInt(DATA_WIDTH.W))
+}
+
 class Memory1TopIO extends SingleStageBundle {
-  val dCache   = new Mem1DCacheIO
-  val awake    = Output(new AwakeInfo)
+  val tlb         = new Stage1TLBIO
+  val dCache      = new Mem1DCacheIO
+  val storeBuffer = new Mem1BufferIO
+  val awake       = Output(new AwakeInfo)
 }
 
 class Memory1Top extends Module {
-  val io = IO(new Memory1TopIO)
-
+  val io   = IO(new Memory1TopIO)
   val busy = WireDefault(false.B)
   val raw  = stageConnect(io.from, io.to, busy)
   flushWhen(raw._1, io.flush)
@@ -23,52 +30,48 @@ class Memory1Top extends Module {
   val info  = raw._1
   val valid = raw._2
   val res   = WireDefault(info)
+  val mem1  = Module(new Memory1Access).io
 
-  // save dcache answer
-  // TODO: seems not important?
-  val dcache_saved_ans = RegInit(0.U(DATA_WIDTH.W))
-  val complete         = RegInit(false.B)
-  when(io.dCache.answer.fire) {
-    dcache_saved_ans := io.dCache.answer.bits
-    complete         := true.B
-  }
-  when(io.from.fire) {
-    complete         := false.B
-    dcache_saved_ans := 0.U
-  }
-  val finish = io.dCache.answer.fire || complete
+  // tlb
+  io.tlb.va     := info.va
+  io.tlb.hitVec := info.hitVec
+  val pa        = Mux(info.isDirect, info.pa, io.tlb.pa)
+  val cached    = io.tlb.cached
+  val exception = io.tlb.exception
+  res.pa     := pa
+  res.cached := cached
 
-  // memory info
-  val mem = Module(new MemoryAccess).io
-  mem.op_type  := info.op_type
-  mem.result   := info.pa
-  mem.rd_value := info.rdInfo.data
+  // mem1
+  mem1.op_type  := info.op_type
+  mem1.addr     := info.va
+  mem1.rd_value := info.rdInfo.data
+  res.wdata     := mem1.wdata
+  res.wmask     := mem1.wmask
 
-  val has_exc     = info.exc_type =/= ECodes.NONE
-  val mem_has_exc = mem.exc_type =/= ECodes.NONE
-  io.dCache.request.valid := (mem.data_sram.en || mem.data_sram.we.orR) && !has_exc && !mem_has_exc
-  when(ShiftRegister(info.pc, 1) === info.pc && ShiftRegister(finish, 1)) {
-    // when getans and this stage is stall
-    io.dCache.request.valid := false.B
-  }
+  // exception
+  val hasExc   = info.exc_type =/= ECodes.NONE
+  val isALE    = mem1.exc_type === ECodes.ALE
+  val excType  = Mux(isALE, ECodes.ALE, Mux(exception.en, exception.excType, ECodes.NONE))
+  val excVaddr = Mux(isALE, mem1.exc_vaddr, io.tlb.exception.excVAddr)
+  val excEn    = isALE || exception.en
+  res.exc_type  := Mux(hasExc, info.exc_type, excType)
+  res.exc_vaddr := Mux(hasExc, info.exc_vaddr, excVaddr)
+  res.iswf      := Mux(excEn, false.B, info.iswf)
 
-  // io.dCache.request.bits.cached := info.cached
-  // io.dCache.request.bits.re     := mem.data_sram.en
-  // io.dCache.request.bits.we     := mem.data_sram.we.orR
-  // io.dCache.request.bits.addr   := info.pa
-  // io.dCache.request.bits.data   := mem.data_sram.wdata
-  // io.dCache.request.bits.strb   := mem.data_sram.we
+  // StoreBuffer
+  io.storeBuffer.forwardpa := pa
+  val rhit  = io.storeBuffer.forwardHit
+  val rdata = io.storeBuffer.forwardData
+  res.storeBufferHit     := rhit
+  res.storeBufferHitData := rdata
 
-  // mem.data_sram.rdata    := Mux(io.dCache.answer.fire, io.dCache.answer.bits, dcache_saved_ans)
-  // io.dCache.answer.ready := true.B
-  // busy                   := !finish && !mem_has_exc
-  // when(io.dCache.answer_imm) { busy := false.B }
+  // D-Cache
+  io.dCache.addr := pa
+  val hitVec = io.dCache.hitVec
+  res.dcachehitVec := hitVec
 
-  // res.result := mem.data
-  res.rdInfo.data := mem.data
-  flushWhen(res, io.flush)
+  io.awake.valid := valid && info.iswf && io.to.fire && hitVec.reduce(_ || _)
+  io.awake.preg  := info.rdInfo.preg
+
   io.to.bits := res
-
-  io.awake.preg  := res.rdInfo.preg
-  io.awake.valid := valid && io.to.fire
 }

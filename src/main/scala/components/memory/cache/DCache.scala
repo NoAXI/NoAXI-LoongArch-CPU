@@ -12,11 +12,11 @@ import const.Config
 import pipeline._
 
 class DCacheIO extends Bundle {
-  val axi      = new DCacheAXI
-  val mem0     = Flipped(new Mem0DCacheIO)
-  val mem1     = Flipped(new Mem1DCacheIO)
-  val mem2     = Flipped(new Mem2DCacheIO)
-  val wbBuffer = Flipped(DecoupledIO(new BufferInfo))
+  val axi         = new DCacheAXI
+  val mem0        = Flipped(new Mem0DCacheIO)
+  val mem1        = Flipped(new Mem1DCacheIO)
+  val mem2        = Flipped(new Mem2DCacheIO)
+  val storeBuffer = Flipped(DecoupledIO(new BufferInfo))
 }
 
 class DCache extends Module {
@@ -28,9 +28,8 @@ class DCache extends Module {
   val valid = VecInit.tabulate(WAY_WIDTH)(i => tagV(i).doutb(0))
   val data =
     VecInit.fill(WAY_WIDTH)(Module(new xilinx_simple_dual_port_1_clock_ram_write_first((LINE_SIZE * 8), LINE_WIDTH)).io)
-  val dirty       = RegInit(VecInit.fill(WAY_WIDTH)(VecInit.fill(LINE_WIDTH)(false.B)))
-  val lru         = RegInit(VecInit.fill(LINE_WIDTH)(0.U(log2Ceil(WAY_WIDTH).W)))
-  val storeBuffer = Module(new Queue(new StoreInfo, BUFFER_WIDTH))
+  val dirty = RegInit(VecInit.fill(WAY_WIDTH)(VecInit.fill(LINE_WIDTH)(false.B)))
+  val lru   = RegInit(VecInit.fill(LINE_WIDTH)(0.U(log2Ceil(WAY_WIDTH).W)))
 
   val ar      = RegInit(0.U.asTypeOf(new AR))
   val arvalid = RegInit(false.B)
@@ -44,11 +43,11 @@ class DCache extends Module {
   // mem 0: send va
   val vaddr = io.mem0.addr
   for (i <- 0 until WAY_WIDTH) {
-    data(i).clka  := clock
-    data(i).addra := 0.U
-    data(i).addrb := vaddr(11, 4)
-    data(i).wea   := false.B
-    data(i).dina  := 0.U
+    // data(i).clka  := clock
+    // data(i).addra := 0.U
+    // data(i).addrb := vaddr(11, 4)
+    // data(i).wea   := false.B
+    // data(i).dina  := 0.U
     tagV(i).clka  := clock
     tagV(i).addra := 0.U
     tagV(i).addrb := vaddr(11, 4)
@@ -56,41 +55,99 @@ class DCache extends Module {
     tagV(i).dina  := 0.U
   }
 
-  // mem 1: check hit & request
-  val paddr           = io.mem1.request.bits.addr
-  val cached          = io.mem1.request.bits.cached
-  val rwType          = io.mem1.request.bits.rw
-  val cacheHitVec     = VecInit.tabulate(WAY_WIDTH)(i => tag(i) === paddr(31, 12) && valid(i))
-  val cacheHit        = cacheHitVec.reduce(_ || _)
-  val cacheHitWay     = PriorityEncoder(cacheHitVec)
-  val uncachedAns     = RegInit(0.U(DATA_WIDTH.W))
-  val savedInfo       = RegInit(0.U.asTypeOf(new savedInfo))
-  val count           = RegInit(1.U(4.W))
-  val linedata        = RegInit(0.U((LINE_SIZE * 8).W))
-  val wmask           = RegInit(1.U(4.W))
-  val wmove           = Mux1H((3 to 0 by -1).map(i => wmask(i) -> (i * 32).U))
-  val afterReplace    = WireDefault(false.B)
-  val replaceDataLine = WireDefault(0.U((LINE_SIZE * 8).W))
+  // mem 1: get hitVec & 推测唤醒 & exception
+  val paddr         = io.mem1.addr
+  val cacheHitVecor = VecInit.tabulate(WAY_WIDTH)(i => tag(i) === paddr(31, 12) && valid(i))
+  io.mem1.hitVec := cacheHitVecor
 
   for (i <- 0 until WAY_WIDTH)
     data(i).addrb := paddr(11, 4)
 
-  val idle :: uncacheRead :: writeBack :: replaceLine :: Nil = Enum(4)
-  val state                                                  = RegInit(idle)
+  // mem 2: act with D-Cache
+  val idle :: uncacheRead :: uncacheWrite :: checkdirty :: writeBack :: replaceLine :: Nil = Enum(6)
+
+  val state  = RegInit(idle)
+  val cached = io.mem2.request.bits.cached
+  val pa     = io.mem2.request.bits.addr
+  val wdata  = io.mem2.request.bits.wdata
+  val wstrb  = io.mem2.request.bits.wstrb
+  val rwType = io.mem2.rwType
+  val hitVec = io.mem2.hitVec
+
+  val cacheHit    = hitVec.reduce(_ || _)
+  val cacheHitWay = PriorityEncoder(hitVec)
+  val hitdataline = Mux1H(hitVec, VecInit.tabulate(2)(i => data(i).doutb))
+  val hitdata = MateDefault(
+    pa(3, 2),
+    0.U,
+    Seq(
+      0.U -> hitdataline(31, 0),
+      1.U -> hitdataline(63, 32),
+      2.U -> hitdataline(95, 64),
+      3.U -> hitdataline(127, 96),
+    ),
+  )
+
+  val imm_ansvalid   = WireDefault(false.B)
+  val imm_cached_ans = RegInit(0.U(DATA_WIDTH.W))
+  val ansvalid       = RegInit(false.B)
+  val isUncachedans  = RegInit(false.B)
+  val uncachedAns    = RegInit(0.U(DATA_WIDTH.W))
+  val savedInfo      = RegInit(0.U.asTypeOf(new savedInfo))
+  val count          = RegInit(1.U(4.W))
+  val linedata       = RegInit(0.U((LINE_SIZE * 8).W))
+  val wmask          = RegInit(1.U(4.W))
+  val wmove          = Mux1H(((DATA_WIDTH / 8 - 1) to 0 by -1).map(i => wmask(i) -> (i * 32).U))
 
   switch(state) {
     is(idle) {
-      when(io.mem1.request.fire && !io.mem1.request.bits.rw) {
+      ansvalid := false.B
+      when(io.mem2.request.fire && !ansvalid) {
         when(cached) {
           when(cacheHit) {
-            io.mem1.answer.valid := true.B
+            lru(pa(11, 4)) := !cacheHitWay
+            imm_ansvalid   := true.B
+            when(io.mem2.rwType) {
+              // write
+              data(cacheHitWay).wea   := true.B
+              data(cacheHitWay).addra := pa(11, 4)
+              data(cacheHitWay).dina := Merge(
+                wstrb,
+                hitdataline,
+                wdata,
+                pa(3, 2),
+              )
+              dirty(cacheHitWay)(pa(11, 4)) := true.B
+            }.otherwise {
+              // read
+              imm_cached_ans := hitdata
+            }
           }.otherwise {
-            savedInfo.addr     := paddr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
             savedInfo.linedata := Seq(data(0).doutb, data(1).doutb)
-            state              := Mux(dirty(cacheHitWay)(paddr(11, 4)), writeBack, replaceLine)
+            savedInfo.op       := rwType
+            savedInfo.addr     := pa
+            // savedInfo.linetag  := Seq(tag(0), tag(1)) // what?
+            savedInfo.wstrb := wstrb
+            savedInfo.wdata := wdata
+            state           := checkdirty
           }
         }.otherwise {
-          state := uncacheRead
+          when(!rwType) {
+            arvalid := true.B
+            rready  := false.B
+            ar.addr := pa
+            ar.len  := 0.U
+            state   := uncacheRead
+          }.otherwise {
+            awvalid := true.B
+            aw.addr := pa
+            aw.len  := 0.U
+            wvalid  := true.B
+            w.strb  := wstrb
+            w.data  := wdata
+            w.last  := true.B
+            state   := uncacheWrite
+          }
         }
       }
     }
@@ -102,10 +159,42 @@ class DCache extends Module {
           rready  := true.B
         }
       }.elsewhen(io.axi.r.fire) {
-        state                := idle
-        io.mem1.answer.valid := true.B
-        uncachedAns          := io.axi.r.bits.data
+        isUncachedans := true.B
+        ansvalid      := true.B
+        uncachedAns   := io.axi.r.bits.data
+        state         := idle
       }
+    }
+    is(uncacheWrite) {
+      when(io.axi.w.fire) {
+        wvalid := false.B
+      }
+      when(io.axi.aw.fire) {
+        awvalid := false.B
+      }
+      when(io.axi.b.fire) {
+        isUncachedans := true.B
+        ansvalid      := true.B
+        uncachedAns   := 0.U // stand for it is no mean
+        state         := idle
+      }
+    }
+
+    is(checkdirty) {
+      // when the line is dirty, send to writebuffer
+      val lru_way = lru(savedInfo.index)
+      when(dirty(lru_way)(savedInfo.index)) {
+        state := writeBack
+      }.otherwise {
+        arvalid  := true.B
+        ar.addr  := savedInfo.addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
+        ar.size  := 2.U
+        ar.len   := (BANK_WIDTH / 4 - 1).U
+        rready   := false.B
+        linedata := 0.U
+        wmask    := 1.U
+        state    := replaceLine
+      } // is not dirty
     }
 
     is(writeBack) {
@@ -148,6 +237,11 @@ class DCache extends Module {
             }
           }
           when(io.axi.b.fire) {
+            arvalid  := true.B
+            ar.addr  := savedInfo.addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
+            ar.size  := 2.U
+            ar.len   := (BANK_WIDTH / 4 - 1).U
+            rready   := false.B
             linedata := 0.U
             wmask    := 1.U
             state    := replaceLine
@@ -178,9 +272,10 @@ class DCache extends Module {
       when(replaceComplete) {
         state := idle
 
-        afterReplace         := true.B
-        replaceDataLine      := linedata
-        io.mem1.answer.valid := true.B
+        for (i <- 0 until WAY_WIDTH) {
+          data(i).addrb := savedInfo.addr(11, 4)
+          tagV(i).addrb := savedInfo.addr(11, 4)
+        }
 
         data(lru_way).wea               := true.B
         data(lru_way).addra             := savedInfo.index
@@ -188,30 +283,12 @@ class DCache extends Module {
         tagV(lru_way).wea               := true.B
         tagV(lru_way).addra             := savedInfo.index
         tagV(lru_way).dina              := savedInfo.tag ## 1.U(1.W)
-        dirty(savedInfo.index)(lru_way) := false.B
+        dirty(lru_way)(savedInfo.index) := false.B
         replaceComplete                 := false.B
+        io.mem2.prevAwake               := true.B
       }
     }
   }
-
-  // mem 2: get res
-  val hitdataline = Mux(
-    ShiftRegister(afterReplace, 1),
-    ShiftRegister(replaceDataLine, 1),
-    Mux1H(ShiftRegister(cacheHitVec, 1), VecInit.tabulate(2)(i => data(i).doutb)),
-  )
-  val hitdata = MateDefault(
-    ShiftRegister(paddr(3, 2), 1),
-    0.U,
-    Seq(
-      0.U -> hitdataline(31, 0),
-      1.U -> hitdataline(63, 32),
-      2.U -> hitdataline(95, 64),
-      3.U -> hitdataline(127, 96),
-    ),
-  )
-  val isUncached = ShiftRegister(!cached, 1)
-  io.mem2.data := Mux(isUncached, uncachedAns, hitdata)
 
   ar.id := 1.U
   // ar.len   := 0.U

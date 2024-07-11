@@ -5,6 +5,7 @@ import chisel3.util._
 
 import isa._
 import const._
+import const.cacheConst._
 import const.Parameters._
 import const.tlbConst._
 import func.Functions._
@@ -40,11 +41,14 @@ class SingleInfo extends Bundle {
   val pipelineType = PipelineType()
 
   // data info
-  val imm = UInt(DATA_WIDTH.W)
+  val imm        = UInt(DATA_WIDTH.W)
+  val src1Ispc   = Output(Bool())
+  val src1IsZero = Output(Bool())
+  val src2IsFour = Output(Bool())
+  val src2IsImm  = Output(Bool())
 
   // write reg
-  val iswf   = Bool()
-  // val result = UInt(DATA_WIDTH.W)
+  val iswf = Bool()
 
   // rename info
   val opreg  = UInt(PREG_WIDTH.W) // the old preg id of rd
@@ -76,6 +80,15 @@ class SingleInfo extends Bundle {
   val cached   = Bool()
   val isDirect = Bool()
   val hitVec   = Vec(TLB_ENTRIES, Bool())
+
+  // mem
+  val dcachehitVec = Vec(WAY_WIDTH, Bool())
+  val wdata        = UInt(DATA_WIDTH.W)
+  val wmask        = UInt((DATA_WIDTH / 8).W)
+
+  // storebuffer
+  val storeBufferHit     = Bool()
+  val storeBufferHitData = UInt(DATA_WIDTH.W)
 }
 
 class DualInfo extends Bundle {

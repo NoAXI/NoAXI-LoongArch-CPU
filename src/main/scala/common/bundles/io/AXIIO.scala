@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 
 import const.Parameters._
+import const.cacheConst._
 
 class AR extends Bundle {
   val id    = UInt(4.W)  // transaction ID
@@ -81,24 +82,29 @@ class FetchICacheIO extends Bundle {
 }
 
 class Mem0DCacheIO extends Bundle {
-  val addr = UInt(ADDR_WIDTH.W)
+  val addr = UInt(ADDR_WIDTH.W) // va
 }
 
-class Mem1DCacheRequestInfo extends Bundle {
+class RequestInfo extends Bundle {
   val cached = Bool()
-  val rw     = Bool()
   val addr   = UInt(ADDR_WIDTH.W)
-  // val data   = UInt(DATA_WIDTH.W)
-  // val strb   = UInt(8.W)
+  val wdata  = UInt(DATA_WIDTH.W)
+  val wstrb  = UInt(4.W)
 }
 
 class Mem1DCacheIO extends Bundle {
-  val request = DecoupledIO(new Mem1DCacheRequestInfo)
-  val answer  = Flipped(DecoupledIO())
-  val cango   = Output(Bool())
+  val addr   = Output(UInt(ADDR_WIDTH.W))
+  val hitVec = Input(Vec(WAY_WIDTH, Bool()))
+  // val answer  = Flipped(DecoupledIO())
+  // val request = DecoupledIO(new RequestInfo)
+  // val cango   = Output(Bool())
 }
 
 class Mem2DCacheIO extends Bundle {
-  val rw   = Output(Bool())
-  val data = Input(UInt(DATA_WIDTH.W))
+  val request   = DecoupledIO(new RequestInfo) // pa
+  val answer    = Flipped(DecoupledIO(UInt(DATA_WIDTH.W)))
+  val rwType    = Output(Bool())
+  val hitVec    = Output(Vec(WAY_WIDTH, Bool()))
+  val prevAwake = Input(Bool())
+  // val cango   = Output(Bool())
 }

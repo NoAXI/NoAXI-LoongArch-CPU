@@ -9,16 +9,15 @@ import func.Functions._
 import const.Parameters._
 
 class BufferInfo extends Bundle {
-  val valid = Bool()
-  val addr  = UInt(ADDR_WIDTH.W) // paddr
-  val data  = UInt(DATA_WIDTH.W)
+  val valid       = Bool()
+  val requestInfo = new RequestInfo
 }
 
 class StoreBufferIO extends Bundle {
-  val memory = Flipped(new MemBufferIO)
-  val from   = Flipped(DecoupledIO(new BufferInfo))
-  val to     = DecoupledIO(new BufferInfo)
-  val flush  = Input(Bool())
+  val memory1 = Flipped(new Mem1BufferIO)
+  val from    = Flipped(DecoupledIO(new BufferInfo)) // memory2
+  val to      = DecoupledIO(new BufferInfo)
+  val flush   = Input(Bool())
 }
 
 class StoreBuffer(
@@ -33,11 +32,12 @@ class StoreBuffer(
   val mem = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(new BufferInfo))))
   val hit = WireDefault(false.B)
   for (i <- 0 until entries) {
-    when(io.memory.pa === mem(i).addr && mem(i).valid) {
-      hit            := true.B
-      io.memory.data := mem(i).data
+    when(io.memory1.forwardpa === mem(i).requestInfo.addr && mem(i).valid) {
+      hit                    := true.B
+      io.memory1.forwardData := mem(i).requestInfo.wdata
     }
   }
+  io.memory1.forwardHit := hit
 
   val topPtr    = RegInit(0.U(log2Ceil(entries).W))
   val maybeFull = RegInit(false.B)
