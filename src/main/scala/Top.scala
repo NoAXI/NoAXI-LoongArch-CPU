@@ -201,8 +201,10 @@ class Top extends Module {
   }
 
   // commit <> rat, rob, debug
-  commit.rat <> rat.commit
-  commit.rob <> rob.commit
+  commit.rat         <> rat.commit
+  commit.rob         <> rob.commit
+  commit.buffer.to   <> storeBuffer.from
+  commit.buffer.from <> storeBuffer.to
   when(clock.asBool) {
     io.debug := commit.debug(0)
   }.otherwise {

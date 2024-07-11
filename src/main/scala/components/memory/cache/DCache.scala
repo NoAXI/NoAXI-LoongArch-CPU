@@ -21,13 +21,15 @@ class DCacheIO extends Bundle {
 class DCache extends Module {
   val io = IO(new DCacheIO)
 
+  io.mem2.prevAwake := false.B
+
   val tagV =
     VecInit.fill(WAY_WIDTH)(Module(new xilinx_simple_dual_port_1_clock_ram_write_first((TAG_WIDTH + 1), LINE_WIDTH)).io)
   val tag   = VecInit.tabulate(WAY_WIDTH)(i => tagV(i).doutb(TAG_WIDTH, 1))
   val valid = VecInit.tabulate(WAY_WIDTH)(i => tagV(i).doutb(0))
   val data =
     VecInit.fill(WAY_WIDTH)(Module(new xilinx_simple_dual_port_1_clock_ram_write_first((LINE_SIZE * 8), LINE_WIDTH)).io)
-  val dirty = RegInit(VecInit.fill(WAY_WIDTH)(VecInit.fill(LINE_WIDTH)(false.B)))
+  // val dirty = RegInit(VecInit(Seq.fill(WAY_WIDTH)(VecInit(Seq.fill(LINE_WIDTH)(false.B)))))
   val lru   = RegInit(VecInit.fill(LINE_WIDTH)(0.U(log2Ceil(WAY_WIDTH).W)))
 
   val ar      = RegInit(0.U.asTypeOf(new AR))
@@ -116,7 +118,7 @@ class DCache extends Module {
                 wdata,
                 pa(3, 2),
               )
-              dirty(cacheHitWay)(pa(11, 4)) := true.B
+              // dirty(cacheHitWay)(pa(11, 4)) := true.B
             }.otherwise {
               // read
               imm_cached_ans := hitdata
@@ -182,18 +184,18 @@ class DCache extends Module {
     is(checkdirty) {
       // when the line is dirty, send to writebuffer
       val lru_way = lru(savedInfo.index)
-      when(dirty(lru_way)(savedInfo.index)) {
-        state := writeBack
-      }.otherwise {
-        arvalid  := true.B
-        ar.addr  := savedInfo.addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
-        ar.size  := 2.U
-        ar.len   := (BANK_WIDTH / 4 - 1).U
-        rready   := false.B
-        linedata := 0.U
-        wmask    := 1.U
-        state    := replaceLine
-      } // is not dirty
+      // when(dirty(lru_way)(savedInfo.index)) {
+      //   state := writeBack
+      // }.otherwise {
+      //   arvalid  := true.B
+      //   ar.addr  := savedInfo.addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
+      //   ar.size  := 2.U
+      //   ar.len   := (BANK_WIDTH / 4 - 1).U
+      //   rready   := false.B
+      //   linedata := 0.U
+      //   wmask    := 1.U
+      //   state    := replaceLine
+      // } // is not dirty
     }
 
     is(writeBack) {
@@ -282,7 +284,7 @@ class DCache extends Module {
         tagV(lru_way).wea               := true.B
         tagV(lru_way).addra             := savedInfo.index
         tagV(lru_way).dina              := savedInfo.tag ## 1.U(1.W)
-        dirty(lru_way)(savedInfo.index) := false.B
+        // dirty(lru_way)(savedInfo.index) := false.B
         replaceComplete                 := false.B
         io.mem2.prevAwake               := true.B
       }
