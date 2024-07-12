@@ -42,9 +42,13 @@ class CommitTop extends Module {
         readyBit(i) := false.B
       }
     }
-
+    when(info.bits.done && info.bits.isStore) {
+      for (j <- i + 1 until ISSUE_WIDTH) {
+        readyBit(j) := false.B
+      }
+    }
     // when detect write / csr / brfail, set next inst stall
-    when(info.bits.done && (info.bits.isStore || info.bits.isPrivilege || hasFlush(i))) {
+    when(info.bits.done && (info.bits.isPrivilege || hasFlush(i))) {
       for (j <- i until ISSUE_WIDTH) {
         readyBit(j) := false.B
       }

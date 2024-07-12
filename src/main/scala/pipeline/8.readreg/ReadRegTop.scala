@@ -12,7 +12,6 @@ class ReadRegTopIO extends SingleStageBundle {
   val forwardReq = Flipped(new ForwardRequestIO)
   val pregRead   = Flipped(new PRegReadIO)
   val awake      = Output(new AwakeInfo)
-  val vaddr      = Output(UInt(ADDR_WIDTH.W))
 }
 
 class ReadRegTop(
@@ -59,7 +58,6 @@ class ReadRegTop(
   // forward -> readreg
   res.rjInfo.data := src1
   res.rkInfo.data := src2
-  res.va          := io.vaddr
 
   // arith: awake
   if (unitType == "arith") {
@@ -67,12 +65,5 @@ class ReadRegTop(
     io.awake.preg  := info.rdInfo.preg
   } else {
     io.awake := DontCare
-  }
-
-  // memory: calc and send vaddr to tag sram and memory0
-  if (unitType == "memory") {
-    io.vaddr := res.rjInfo.data + res.imm
-  } else {
-    io.vaddr := DontCare
   }
 }

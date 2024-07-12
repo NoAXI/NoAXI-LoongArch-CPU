@@ -72,7 +72,7 @@ class BPU extends Module {
       BTB(i).dina := Cat(
         true.B,
         io.preFetch.train.pc(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH),
-        io.preFetch.train.br.tar,
+        io.preFetch.train.br.tar, // TODO: wrong! isCALL isReturn
       )
     }
   }

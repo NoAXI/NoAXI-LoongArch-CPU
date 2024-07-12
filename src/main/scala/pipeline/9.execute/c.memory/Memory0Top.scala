@@ -24,9 +24,11 @@ class Memory0Top extends Module {
   val valid = raw._2
   val res   = WireDefault(info)
 
-  io.dCache.addr := info.va
+  val va = info.rjInfo.data + info.imm
 
-  io.tlb.va      := info.va
+  io.dCache.addr := va
+
+  io.tlb.va      := va
   io.tlb.memType := Mux(MemOpType.isread(info.op_type), memType.load, memType.store)
   val hitVec   = io.tlb.hitVec
   val isDirect = io.tlb.isDirect
