@@ -52,6 +52,19 @@ class RenameTop extends Module {
     to.rdInfo.preg := Mux(writeZero, 0.U, io.ratRename(i).preg)
     to.rjInfo.preg := io.ratRead(i).preg.rj
     to.rkInfo.preg := io.ratRead(i).preg.rk
+    if (i != 0) {
+      for (j <- 0 until i) {
+        when(io.ratRename(j).valid) {
+          val preRdInfo = io.to.bits.bits(j).rdInfo
+          when(preRdInfo.areg === from.rjInfo.areg) {
+            to.rjInfo.preg := preRdInfo.preg
+          }
+          when(preRdInfo.areg === from.rkInfo.areg) {
+            to.rkInfo.preg := preRdInfo.preg
+          }
+        }
+      }
+    }
 
     // rob
     io.rob(i).valid := io.to.ready && valid && from.pipelineType =/= 0.U

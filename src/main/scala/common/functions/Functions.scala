@@ -116,7 +116,7 @@ object Functions {
 
   // for forwarder ---------------------------------------------------------------------------
   def doForward(io: ForwardInfoIO, info: SingleInfo, validInst: Bool): Unit = {
-    io.valid := validInst && info.iswf
+    io.valid := validInst && info.iswf && info.rdInfo.areg =/= 0.U
     io.data  := info.rdInfo.data
     io.preg  := info.rdInfo.preg
   }
