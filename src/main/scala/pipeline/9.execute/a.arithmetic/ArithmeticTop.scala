@@ -46,7 +46,8 @@ class ArithmeticTop(
     val is_br         = info.func_type === FuncType.bru
     val is_jirl       = info.inst === LA32R.JIRL
     val br_tar        = Mux(is_jirl, info.rjInfo.data, info.pc) + info.imm
-    val succeed       = bru.br_en === info.predict.en && br_tar === info.predict.tar && is_br
+    val succeed       = Mux(bru.br_en, bru.br_en === info.predict.en && br_tar === info.predict.tar && is_br,
+                            bru.br_en === info.predict.en && is_br)
     val br_tar_failed = Mux(bru.br_en, br_tar, info.pc + 4.U)
 
     res.realBr.en  := (is_br && !succeed)
