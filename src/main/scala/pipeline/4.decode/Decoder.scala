@@ -46,7 +46,6 @@ class Decoder extends Module {
 
   io.rj := io.inst(9, 5)
   io.rk := io.inst(14, 10)
-  io.rd := io.inst(4, 0)
 
   val List(func_type, op_type) = ListLookup(io.inst, List(0.U, 0.U), LA32R.table)
   io.func_type := func_type
@@ -90,7 +89,14 @@ class Decoder extends Module {
   val is_exc         = func_type === FuncType.exc
   val is_st          = func_type === FuncType.mem && !MemOpType.isread(op_type)
   val br_not_jirl_bl = func_type === FuncType.bru && !is_jirl_bl
-  io.iswf := !(is_exc || is_st || is_none || br_not_jirl_bl) && io.rd =/= 0.U
+  io.iswf := !(is_exc || is_st || is_none || br_not_jirl_bl)
+  io.rd := MuxCase(
+    io.inst(4, 0),
+    List(
+      (io.inst === LA32R.BL)      -> 1.U,
+      (io.inst === LA32R.RDCNTID) -> io.rj,
+    ),
+  )
 
   io.src1Ispc   := is_jirl_bl || io.inst === LA32R.PCADDU12I
   io.src1IsZero := io.inst === LA32R.LU12I_W
