@@ -44,7 +44,7 @@ class Memory1Top extends Module {
   // mem1
   mem1.op_type  := info.op_type
   mem1.addr     := info.va
-  mem1.rd_value := info.rdInfo.data
+  mem1.rd_value := info.rkInfo.data
   res.wdata     := mem1.wdata
   res.wmask     := mem1.wmask
 

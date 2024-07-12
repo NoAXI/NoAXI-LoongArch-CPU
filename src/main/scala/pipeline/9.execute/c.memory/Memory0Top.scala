@@ -38,4 +38,10 @@ class Memory0Top extends Module {
   res.isDirect := isDirect
   res.pa       := directpa
   io.to.bits   := res
+
+  if (Config.debug_on) {
+    dontTouch(info.rjInfo.data)
+    dontTouch(info.rkInfo.data)
+    dontTouch(info.rdInfo.data)
+  }
 }

@@ -52,7 +52,7 @@ class Decoder extends Module {
   io.func_type := func_type
   io.op_type   := op_type
 
-  when(func_type === FuncType.bru) {
+  when(func_type === FuncType.bru || func_type === FuncType.mem) {
     io.rk := io.inst(4, 0)
   }
 
