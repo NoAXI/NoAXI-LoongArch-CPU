@@ -214,12 +214,12 @@ class Top extends Module {
 
   // flush ctrl
   // TODO: connect flushCtrl with (memory, rob)
-  flushCtrl.doFlush  <> commit.flush.doFlush
+  flushCtrl.doFlush  <> commit.doFlush
   flushCtrl.hasFlush := false.B
 
   // front flush
-  flushCtrl.frontFlush <> prefetch.flush
-  flushCtrl.frontFlush <> fetch.flush
+  prefetch.flush       := flushCtrl.frontFlush || predecode.flushapply
+  fetch.flush          := flushCtrl.frontFlush || predecode.flushapply
   flushCtrl.frontFlush <> predecode.flush
   flushCtrl.frontFlush <> ib.flush
   flushCtrl.frontFlush <> decode.flush
@@ -227,8 +227,10 @@ class Top extends Module {
 
   // set (ib, memIssue) stall when has flush
   // set (readreg, mem0) flush when has flush
-  flushCtrl.ibStall  <> ib.stall
-  flushCtrl.memStall <> issue.memoryStall
+  // flushCtrl.ibStall  <> ib.stall
+  // flushCtrl.memStall <> issue.memoryStall
+  issue.memoryStall := false.B
+  ib.stall          := false.B
 
   // recover
   flushCtrl.recover <> rob.flush
@@ -241,11 +243,12 @@ class Top extends Module {
   flushCtrl.backFlush <> issue.flush
 
   for (i <- 0 until BACK_ISSUE_WIDTH) {
-    if (i != MEMORY_ISSUE_ID) {
-      flushCtrl.backFlush <> readreg(i).flush
-    } else {
-      flushCtrl.memStall <> readreg(i).flush
-    }
+    flushCtrl.backFlush <> readreg(i).flush
+    // if (i != MEMORY_ISSUE_ID) {
+    //   flushCtrl.backFlush <> readreg(i).flush
+    // } else {
+    //   flushCtrl.memStall <> readreg(i).flush
+    // }
   }
 
   for (i <- 0 until ARITH_ISSUE_NUM) {
@@ -254,7 +257,7 @@ class Top extends Module {
 
   flushCtrl.backFlush <> muldiv.flush
 
-  flushCtrl.memStall  <> memory0.flush // flush when memStall = 1
+  flushCtrl.backFlush <> memory0.flush // flush when memStall = 1
   flushCtrl.backFlush <> memory1.flush
   flushCtrl.backFlush <> memory2.flush
 

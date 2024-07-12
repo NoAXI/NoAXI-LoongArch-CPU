@@ -15,12 +15,12 @@ class CommitTopIO extends Bundle {
     val from = Flipped(DecoupledIO(new BufferInfo))
     val to   = DecoupledIO(new BufferInfo)
   }
-  val flush = new Bundle {
-    val doFlush = Output(Bool())
-    val info    = Output(new RobInfo)
-  }
-  val bres  = Output(new PredictRes)
-  val debug = Vec(ISSUE_WIDTH, new DebugIO)
+  // val flush = new Bundle {
+  // val info    = Output(new RobInfo)
+  // }
+  val doFlush = Output(Bool())
+  val bres    = Output(new PredictRes)
+  val debug   = Vec(ISSUE_WIDTH, new DebugIO)
 }
 
 class CommitTop extends Module {
@@ -55,17 +55,14 @@ class CommitTop extends Module {
   }
 
   // send fulsh signal
-  io.flush.doFlush := false.B
-  io.flush.info    := 0.U.asTypeOf(new RobInfo)
-  io.bres          := 0.U.asTypeOf(new PredictRes)
+  io.doFlush := false.B
+  io.bres    := 0.U.asTypeOf(new PredictRes)
   when(flushSignal) {
     for (i <- 0 until ISSUE_WIDTH) {
       // use real ready here to avoid unexpected flush
       when(io.rob(i).info.ready && hasFlush(i)) {
-        io.flush.doFlush := true.B
-
+        io.doFlush := true.B
         val info = io.rob(i).info.bits
-        io.flush.info         := info
         io.bres.br            := info.bfail
         io.bres.realDirection := info.realBrDir
         io.bres.pc            := info.debug_pc
