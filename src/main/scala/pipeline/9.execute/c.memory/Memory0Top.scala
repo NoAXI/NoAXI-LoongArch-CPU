@@ -24,7 +24,7 @@ class Memory0Top extends Module {
   val valid = raw._2
   val res   = WireDefault(info)
 
-  val va = info.rjInfo.data + info.imm
+  val va = Mux(info.actualStore, info.writeInfo.requestInfo.addr, info.rjInfo.data + info.imm)
 
   io.dCache.addr := va
 

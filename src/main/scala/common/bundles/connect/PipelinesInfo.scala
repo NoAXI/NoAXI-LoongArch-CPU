@@ -88,6 +88,7 @@ class SingleInfo extends Bundle {
   val dcachehitVec = Vec(WAY_WIDTH, Bool())
   val wdata        = UInt(DATA_WIDTH.W)
   val wmask        = UInt((DATA_WIDTH / 8).W)
+  val actualStore  = Bool()
 
   // storebuffer
   val storeBufferHit     = Bool()

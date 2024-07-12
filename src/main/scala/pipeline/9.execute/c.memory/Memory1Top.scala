@@ -35,8 +35,8 @@ class Memory1Top extends Module {
   // tlb
   io.tlb.va     := info.va
   io.tlb.hitVec := info.hitVec
-  val pa        = Mux(info.isDirect, info.pa, io.tlb.pa)
-  val cached    = io.tlb.cached
+  val pa        = Mux(info.actualStore, info.writeInfo.requestInfo.addr, Mux(info.isDirect, info.pa, io.tlb.pa))
+  val cached    = Mux(info.actualStore, info.writeInfo.requestInfo.cached, io.tlb.cached)
   val exception = io.tlb.exception
   res.pa     := pa
   res.cached := cached
@@ -45,8 +45,8 @@ class Memory1Top extends Module {
   mem1.op_type  := info.op_type
   mem1.addr     := info.va
   mem1.rd_value := info.rkInfo.data
-  res.wdata     := mem1.wdata
-  res.wmask     := mem1.wmask
+  res.wdata     := Mux(info.actualStore, info.writeInfo.requestInfo.wdata, mem1.wdata)
+  res.wmask     := Mux(info.actualStore, info.writeInfo.requestInfo.wstrb, mem1.wmask)
 
   // exception
   val hasExc   = info.exc_type =/= ECodes.NONE
@@ -57,6 +57,12 @@ class Memory1Top extends Module {
   res.exc_type  := Mux(hasExc, info.exc_type, excType)
   res.exc_vaddr := Mux(hasExc, info.exc_vaddr, excVaddr)
   res.iswf      := Mux(excEn, false.B, info.iswf)
+
+  when(info.actualStore) {
+    res.exc_type  := ECodes.NONE
+    res.exc_vaddr := 0.U
+    res.iswf      := false.B
+  }
 
   // StoreBuffer
   io.storeBuffer.forwardpa := pa

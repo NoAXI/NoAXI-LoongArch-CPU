@@ -42,13 +42,13 @@ class Memory2Top extends Module {
   val prevAwake = !storeBufferHit && io.dCache.prevAwake
 
   // D-Cache
-  io.dCache.request.valid       := valid
+  io.dCache.request.valid       := valid && (info.actualStore || !isStore)
   io.dCache.request.bits.addr   := info.pa
   io.dCache.request.bits.cached := info.cached
   io.dCache.request.bits.wdata  := info.wdata
   io.dCache.request.bits.wstrb  := info.wmask
   io.dCache.rwType              := isStore
-  io.dCache.hitVec              := res.dcachehitVec
+  io.dCache.hitVec              := info.dcachehitVec
   io.dCache.answer.ready        := true.B
 
   // load
@@ -62,7 +62,7 @@ class Memory2Top extends Module {
   // store
   io.storeBuffer.valid := false.B
   io.storeBuffer.bits  := 0.U.asTypeOf(new BufferInfo)
-  when(!storeBufferFull && isStore) {
+  when(!storeBufferFull && isStore && !info.actualStore) {
     io.storeBuffer.valid                   := valid
     io.storeBuffer.bits.valid              := true.B
     io.storeBuffer.bits.requestInfo.cached := info.cached
@@ -72,9 +72,9 @@ class Memory2Top extends Module {
   }
 
   // ld but bufferhit, D-Cache dont care
-  when(!(storeBufferHit && !isStore)) {
-    busy := (!io.dCache.answer.fire && !storeBufferHit) || (storeBufferFull && isStore)
-  }
+  busy := ((!io.dCache.answer.fire && !isStore && !info.storeBufferHit)
+    || (storeBufferFull && isStore && !info.actualStore)
+    || (!io.dCache.answer.fire && isStore && info.actualStore))
 
   io.awake.valid := valid && info.iswf && io.to.fire
   io.awake.preg  := info.rdInfo.preg

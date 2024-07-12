@@ -19,7 +19,8 @@ class IssueMemorySelect extends Module {
   val io = IO(new IssueMemorySelectIO)
 
   val toInfo = WireDefault(0.U.asTypeOf(new SingleInfo))
-  toInfo.writeInfo := io.fromBuffer.bits
+  toInfo.writeInfo   := io.fromBuffer.bits
+  toInfo.actualStore := true.B
 
   io.to.bits          := Mux(io.fromBuffer.fire, toInfo, io.fromIssue.bits)
   io.fromBuffer.ready := io.to.ready

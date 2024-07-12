@@ -63,7 +63,7 @@ class Decoder extends Module {
   val imm16   = SignedExtend(Cat(io.inst(25, 10), Fill(2, 0.U)), DATA_WIDTH)
   val imm20   = SignedExtend(Cat(io.inst(24, 5), Fill(12, 0.U)), DATA_WIDTH)
   val imm26   = SignedExtend(Cat(io.inst(9, 0), io.inst(25, 10), Fill(2, 0.U)), DATA_WIDTH)
-  val use_imm = func_type === FuncType.mem || func_type === FuncType.bru || func_type === FuncType.alu_imm
+  val use_imm = func_type === FuncType.bru || func_type === FuncType.alu_imm
   val imm = MateDefault(
     func_type,
     0.U,
