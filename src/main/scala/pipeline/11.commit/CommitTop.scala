@@ -19,6 +19,7 @@ class CommitTopIO extends Bundle {
     val doFlush = Output(Bool())
     val info    = Output(new RobInfo)
   }
+  val bres  = Output(new PredictRes)
   val debug = Vec(ISSUE_WIDTH, new DebugIO)
 }
 
@@ -29,7 +30,7 @@ class CommitTop extends Module {
   val flushSignal = WireDefault(false.B)
   val hasFlush = Seq.tabulate(ISSUE_WIDTH) { i =>
     val rob = io.rob(i).info
-    rob.bits.br.en || rob.bits.exc_type =/= ECodes.NONE
+    rob.bits.bfail.en || rob.bits.exc_type =/= ECodes.NONE
   }
   val readyBit = WireDefault(VecInit(Seq.tabulate(ISSUE_WIDTH)(i => io.rob(i).info.bits.done)))
   for (i <- 0 until ISSUE_WIDTH) {
@@ -43,7 +44,7 @@ class CommitTop extends Module {
     }
 
     // when detect write / csr / brfail, set next inst stall
-    when(info.bits.done && (info.bits.isWrite || info.bits.isPrivilege || hasFlush(i))) {
+    when(info.bits.done && (info.bits.isStore || info.bits.isPrivilege || hasFlush(i))) {
       for (j <- i until ISSUE_WIDTH) {
         readyBit(j) := false.B
       }
@@ -56,19 +57,25 @@ class CommitTop extends Module {
   // send fulsh signal
   io.flush.doFlush := false.B
   io.flush.info    := 0.U.asTypeOf(new RobInfo)
+  io.bres          := 0.U.asTypeOf(new PredictRes)
   when(flushSignal) {
     for (i <- 0 until ISSUE_WIDTH) {
       // use real ready here to avoid unexpected flush
       when(io.rob(i).info.ready && hasFlush(i)) {
         io.flush.doFlush := true.B
-        io.flush.info    := io.rob(i).info.bits
+
+        val info = io.rob(i).info.bits
+        io.flush.info         := info
+        io.bres.br            := info.bfail
+        io.bres.realDirection := info.realBrDir
+        io.bres.pc            := info.debug_pc
       }
     }
   }
 
   // send info
   val writeStall = WireDefault(false.B)
-  val doWrite    = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(false.B)))
+  val doStore    = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(false.B)))
   for (i <- 0 until ISSUE_WIDTH) {
     val rob        = io.rob(i).info
     val writeValid = rob.fire && rob.bits.wen
@@ -79,8 +86,6 @@ class CommitTop extends Module {
     io.debug(i).wb_rf_wnum  := rob.bits.areg
     io.debug(i).wb_rf_wdata := rob.bits.wdata
 
-  
-
     // commit -> rat
     io.rat(i).valid := writeValid
     io.rat(i).areg  := rob.bits.areg
@@ -88,10 +93,10 @@ class CommitTop extends Module {
     io.rat(i).opreg := rob.bits.opreg
 
     // commit -> store buffer <> wb buffer
-    doWrite(i) := readyBit(i) && rob.bits.isWrite
+    doStore(i) := readyBit(i) && rob.bits.isStore
   }
 
-  val writeHappen = doWrite.reduce(_ || _)
+  val writeHappen = doStore.reduce(_ || _)
   io.buffer.to.bits    := io.buffer.from.bits
   io.buffer.to.valid   := io.buffer.from.valid && writeHappen
   io.buffer.from.ready := io.buffer.to.ready && writeHappen

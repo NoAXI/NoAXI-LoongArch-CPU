@@ -69,10 +69,11 @@ class SingleInfo extends Bundle {
   val hasFlush  = Bool() // branch predict fail, exception
 
   // branch predict
-  val predict  = new br
-  val realBr   = new br
-  val isCALL   = Bool()
-  val isReturn = Bool()
+  val predict   = new br
+  val realBr    = new br
+  val realBrDir = Bool()
+  val isCALL    = Bool()
+  val isReturn  = Bool()
 
   // tlb
   val va       = UInt(ADDR_WIDTH.W)

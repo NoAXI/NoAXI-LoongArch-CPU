@@ -19,10 +19,14 @@ class RobInfo extends Bundle {
   val opreg = UInt(PREG_WIDTH.W)
   val wdata = UInt(DATA_WIDTH.W)
 
-  val br          = new br
-  val exc_type    = ECodes()
-  val exc_vaddr   = UInt(ADDR_WIDTH.W)
-  val isWrite     = Bool()
+  val isbr      = Bool()
+  val realBrDir = Bool()
+  val bfail    = new br
+
+  val exc_type  = ECodes()
+  val exc_vaddr = UInt(ADDR_WIDTH.W)
+
+  val isStore     = Bool()
   val isPrivilege = Bool()
   // val hasFlush  = Bool()
 

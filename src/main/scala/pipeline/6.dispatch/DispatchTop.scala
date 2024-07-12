@@ -22,10 +22,12 @@ class DispatchTop extends Module {
   val io = IO(new DispatchTopIO)
 
   // stage connect (from)
-  val stall    = WireDefault(false.B)
-  val info     = RegInit(0.U.asTypeOf(new DualInfo))
-  val validReg = RegInit(false.B)
-  io.from.ready := !validReg || !stall
+  // stall means insts use same port, can only send one inst
+  val stall     = WireDefault(false.B)
+  val portReady = WireDefault(true.B)
+  val info      = RegInit(0.U.asTypeOf(new DualInfo))
+  val validReg  = RegInit(false.B)
+  io.from.ready := !validReg || (portReady && !stall)
   when(io.from.ready) {
     validReg := io.from.valid
   }
@@ -33,6 +35,8 @@ class DispatchTop extends Module {
     info := io.from.bits
   }
   flushWhen(info, io.flush)
+
+  // initial set valid = 0
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     val to = io.to(i)
     to.bits  := 0.U.asTypeOf(to.bits)
@@ -49,7 +53,7 @@ class DispatchTop extends Module {
         cango(i) := true.B
         port(i)  := i.U
       }
-    }.otherwise {
+    }.elsewhen(bits(0).pipelineType =/= PipelineType.nop) {
       cango(0) := true.B
       port(0)  := bits(0).pipelineType
       cango(1) := false.B
@@ -59,16 +63,12 @@ class DispatchTop extends Module {
   }.otherwise {
     for (i <- 0 until ISSUE_WIDTH) {
       when(bits(i).pipelineType === PipelineType.arith) {
-        port(i) := Mux(io.arithSize(0) < io.arithSize(1), 0.U, 1.U)
-      }.otherwise {
-        port(i) := bits(i).pipelineType
+        cango(i) := true.B
+        port(i)  := Mux(io.arithSize(0) < io.arithSize(1), 0.U, 1.U)
+      }.elsewhen(bits(i).pipelineType =/= PipelineType.nop) {
+        cango(i) := true.B
+        port(i)  := bits(i).pipelineType
       }
-    }
-  }
-  for (i <- 0 until ISSUE_WIDTH) {
-    when(bits(i).pipelineType === PipelineType.nop) {
-      cango(i) := false.B
-      stall    := false.B
     }
   }
   when(!validReg) {
@@ -95,12 +95,25 @@ class DispatchTop extends Module {
   when(issueFailed.reduce(_ || _)) { stall := true.B }
   when(!validReg) { stall := false.B }
 
+  // when issue not succeed, set stall
+  for (i <- 0 until ISSUE_WIDTH) {
+    when(cango(i) && !io.to(port(i)).fire) {
+      portReady := false.B
+    }
+  }
+
   // when stall, flush issued inst
-  when(stall && !io.flush) {
+  when(!io.from.ready && !io.flush) {
     for (i <- 0 until ISSUE_WIDTH) {
       when(cango(i) && io.to(port(i)).fire) {
         info.bits(i).pipelineType := 0.U
       }
     }
+  }
+
+  if (Config.debug_on) {
+    dontTouch(stall)
+    dontTouch(cango)
+    dontTouch(portReady)
   }
 }

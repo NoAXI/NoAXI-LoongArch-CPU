@@ -48,9 +48,11 @@ class WritebackTop extends Module {
   io.rob.bits.debug_pc    := res.pc
   io.rob.bits.exc_type    := res.exc_type
   io.rob.bits.exc_vaddr   := res.exc_vaddr
-  io.rob.bits.isWrite     := res.func_type === FuncType.mem && !MemOpType.isread(res.op_type)
+  io.rob.bits.isStore     := res.func_type === FuncType.mem && !MemOpType.isread(res.op_type)
   io.rob.bits.isPrivilege := res.func_type === FuncType.csr
-  io.rob.bits.br          := res.realBr
+  io.rob.bits.bfail       := res.realBr
+  io.rob.bits.isbr        := res.func_type === FuncType.bru
+  io.rob.bits.realBrDir   := res.realBrDir
 
   // writeback -> forward -> readreg
   doForward(io.forward, res, valid)

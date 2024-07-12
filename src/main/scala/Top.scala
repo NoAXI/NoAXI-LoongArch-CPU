@@ -203,6 +203,7 @@ class Top extends Module {
   // commit <> rat, rob, debug
   commit.rat         <> rat.commit
   commit.rob         <> rob.commit
+  commit.bres        <> prefetch.predictResFromBack
   commit.buffer.to   <> storeBuffer.from
   commit.buffer.from <> storeBuffer.to
   when(clock.asBool) {

@@ -48,6 +48,7 @@ class ArithmeticTop(
 
     res.realBr.en  := (is_br && !succeed)
     res.realBr.tar := br_tar_failed
+    res.realBrDir  := bru.br_en
   }
 
   doForward(io.forward, res, valid)
