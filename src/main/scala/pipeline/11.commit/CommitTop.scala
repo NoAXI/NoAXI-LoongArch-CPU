@@ -79,7 +79,7 @@ class CommitTop extends Module {
 
     // rob -> commit
     io.debug(i).wb_rf_we    := writeValid
-    io.debug(i).wb_pc       := rob.bits.debug_pc
+    io.debug(i).wb_pc       := Mux(writeValid, rob.bits.debug_pc, 0.U)
     io.debug(i).wb_rf_wnum  := rob.bits.areg
     io.debug(i).wb_rf_wdata := rob.bits.wdata
 

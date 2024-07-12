@@ -21,7 +21,7 @@ class RobInfo extends Bundle {
 
   val isbr      = Bool()
   val realBrDir = Bool()
-  val bfail    = new br
+  val bfail     = new br
 
   val exc_type  = ECodes()
   val exc_vaddr = UInt(ADDR_WIDTH.W)
@@ -30,13 +30,13 @@ class RobInfo extends Bundle {
   val isPrivilege = Bool()
   // val hasFlush  = Bool()
 
-  val debug_pc    = UInt(ADDR_WIDTH.W)
-  val debug_using = Bool()
+  val debug_pc = UInt(ADDR_WIDTH.W)
 }
 
 class RobRenameIO extends Bundle {
-  val valid = Input(Bool())
-  val index = Output(UInt(ROB_WIDTH.W))
+  val valid    = Input(Bool())
+  val debug_pc = Input(UInt(ADDR_WIDTH.W))
+  val index    = Output(UInt(ROB_WIDTH.W))
 }
 
 class RobWriteIO extends Bundle {

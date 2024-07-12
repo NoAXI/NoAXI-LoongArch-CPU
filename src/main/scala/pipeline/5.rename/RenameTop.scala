@@ -56,5 +56,8 @@ class RenameTop extends Module {
     // rob
     io.rob(i).valid := io.to.ready && valid && from.pipelineType =/= 0.U
     to.robId        := io.rob(i).index
+
+    // debug
+    io.rob(i).debug_pc := info.bits(i).pc
   }
 }

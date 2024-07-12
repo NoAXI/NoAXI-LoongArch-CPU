@@ -55,7 +55,11 @@ class UnorderedIssue[T <: Data](
 
   // ptr update
   when(io.from.fire) {
-    mem(topPtr) := io.from.bits
+    when(io.to.fire) {
+      mem(topPtr - 1.U) := io.from.bits
+    }.otherwise {
+      mem(topPtr) := io.from.bits
+    }
   }
   when(io.from.fire =/= io.to.fire) {
     when(io.from.fire) {

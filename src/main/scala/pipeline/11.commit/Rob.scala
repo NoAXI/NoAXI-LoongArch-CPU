@@ -36,7 +36,7 @@ class Rob extends Module {
     rob.push(i).valid := io.rename(i).valid
     val info = WireDefault(0.U.asTypeOf(new RobInfo))
     if (Config.debug_on) {
-      info.debug_using := true.B
+      info.debug_pc := io.rename(i).debug_pc
     }
     rob.push(i).bits   := info
     io.rename(i).index := rob.index + i.U
