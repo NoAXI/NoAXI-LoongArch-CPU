@@ -78,6 +78,7 @@ class Top extends Module {
   val itlb        = Module(new TLB("fetch")).io
   val dtlb        = Module(new TLB("memory")).io
   val storeBuffer = Module(new StoreBuffer(STORE_BUFFER_LENGTH)).io
+  val memIssueSel = Module(new IssueMemorySelect).io
 
   // ==================== stage connect ====================
   // prefetch -> ... -> dispatch
@@ -99,7 +100,9 @@ class Top extends Module {
     dispatch.to(i) <> issue.from(i)
   }
   for (i <- 0 until BACK_ISSUE_WIDTH) {
-    issue.to(i) <> readreg(i).from
+    if (i != MEMORY_ISSUE_ID) {
+      issue.to(i) <> readreg(i).from
+    }
   }
 
   // readreg -> execute
@@ -201,16 +204,22 @@ class Top extends Module {
   }
 
   // commit <> rat, rob, debug
-  commit.rat         <> rat.commit
-  commit.rob         <> rob.commit
-  commit.bres        <> prefetch.predictResFromBack
-  commit.buffer.to   <> storeBuffer.from
-  commit.buffer.from <> storeBuffer.to
+  commit.rat  <> rat.commit
+  commit.rob  <> rob.commit
+  commit.bres <> prefetch.predictResFromBack
+  // commit.buffer.to   <> storeBuffer.from
+  // commit.buffer.from <> storeBuffer.to
   when(clock.asBool) {
     io.debug := commit.debug(0)
   }.otherwise {
     io.debug := commit.debug(1)
   }
+
+  // store roll back
+  storeBuffer.to            <> commit.buffer.from
+  commit.buffer.to          <> memIssueSel.fromBuffer
+  issue.to(MEMORY_ISSUE_ID) <> memIssueSel.fromIssue
+  memIssueSel.to            <> readreg(MEMORY_ISSUE_ID).from
 
   // flush ctrl
   // TODO: connect flushCtrl with (memory, rob)

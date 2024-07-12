@@ -5,6 +5,7 @@ import chisel3.util._
 
 import isa._
 import const._
+import pipeline._
 import const.cacheConst._
 import const.Parameters._
 import const.tlbConst._
@@ -83,6 +84,7 @@ class SingleInfo extends Bundle {
   val hitVec   = Vec(TLB_ENTRIES, Bool())
 
   // mem
+  val writeInfo    = new BufferInfo
   val dcachehitVec = Vec(WAY_WIDTH, Bool())
   val wdata        = UInt(DATA_WIDTH.W)
   val wmask        = UInt((DATA_WIDTH / 8).W)
