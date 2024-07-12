@@ -9,11 +9,12 @@ import func.Functions._
 import const.Parameters._
 
 class PrefetchTopIO extends StageBundle {
-  val iCache        = new PreFetchICacheIO
-  val tlb           = new Stage0TLBIO
-  val bpu           = new PreFetchBPUIO
-  val predictRes    = Input(new PredictRes) // 预测结果
-  val exceptionJump = Input(new br)         // 异常跳转
+  val iCache              = new PreFetchICacheIO
+  val tlb                 = new Stage0TLBIO
+  val bpu                 = new PreFetchBPUIO
+  val predictResFromFront = Input(new PredictRes) // 预测结果
+  val predictResFromBack  = Input(new PredictRes) // 预测结果
+  val exceptionJump       = Input(new br)         // 异常跳转
 }
 
 class PrefetchTop extends Module {
@@ -29,15 +30,17 @@ class PrefetchTop extends Module {
   val pc_add_4 = pc + 4.U
   val pc_add_8 = pc + 8.U
 
+  val predictRes = Mux(io.predictResFromBack.br.en, io.predictResFromBack, io.predictResFromFront)
+
   // bpu
   io.bpu.stall    := !io.from.fire
   io.bpu.pcValid  := VecInit(Seq(true.B, pc_add_4(2)))
   io.bpu.pcGroup  := VecInit(Seq(pc, pc_add_4))
   io.bpu.npcGroup := VecInit(Seq(pc_add_4, pc_add_8))
-  io.bpu.train    := io.predictRes
+  io.bpu.train    := predictRes
 
   // pc
-  val (predictFailed, exactPC) = (io.predictRes.br.en, io.predictRes.br.tar)
+  val (predictFailed, exactPC) = (predictRes.br.en, predictRes.br.tar)
   val (excHappen, excPC)       = (io.exceptionJump.en, io.exceptionJump.tar)
   val (predictEn, predictPC)   = (io.bpu.nextPC.en, io.bpu.nextPC.tar)
   when(io.from.fire) {

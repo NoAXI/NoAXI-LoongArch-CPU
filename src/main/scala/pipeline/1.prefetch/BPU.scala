@@ -10,6 +10,11 @@ import const._
 import func.Functions._
 import memory.cache._
 
+/*
+ARAT中维护了寄存器映射表的有效位，可在分支预测失败时恢复到重命名单元中。
+同时，ARAT还维护了分支预测器返回地址栈的栈顶指针，在分支预测失败时，也会恢复到分支预测器中，对分支预测正确率有一定提升。 
+ */
+
 class BPUIO extends Bundle {
   val preFetch = Flipped(new PreFetchBPUIO)
 }

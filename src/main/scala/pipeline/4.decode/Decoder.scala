@@ -116,8 +116,8 @@ class Decoder extends Module {
   io.pipelineType := MuxCase(
     PipelineType.memory,
     List(
-      (func_type === FuncType.alu || func_type === FuncType.alu_imm) -> PipelineType.arith,
-      (func_type === FuncType.mul || func_type === FuncType.div)     -> PipelineType.muldiv,
+      (func_type === FuncType.alu || func_type === FuncType.alu_imm || func_type === FuncType.bru) -> PipelineType.arith,
+      (func_type === FuncType.mul || func_type === FuncType.div) -> PipelineType.muldiv,
     ),
   )
 

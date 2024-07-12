@@ -81,18 +81,18 @@ class Top extends Module {
 
   // ==================== stage connect ====================
   // prefetch -> ... -> dispatch
-  prefetch.from.bits     := 0.U.asTypeOf(prefetch.from.bits)
-  prefetch.from.valid    := RegNext(!reset.asBool) & !reset.asBool
-  prefetch.predictRes    := predecode.predictRes                         // TODO：优先级
-  prefetch.exceptionJump := csr.exceptionJump
-  prefetch.flush         := flushCtrl.frontFlush || predecode.flushapply // TODO: 优先级
-  prefetch.to            <> fetch.from
-  fetch.to               <> predecode.from
-  fetch.flush            := flushCtrl.backFlush || predecode.flushapply
-  predecode.to           <> ib.from
-  ib.to                  <> decode.from
-  decode.to              <> rename.from
-  rename.to              <> dispatch.from
+  prefetch.from.bits           := 0.U.asTypeOf(prefetch.from.bits)
+  prefetch.from.valid          := RegNext(!reset.asBool) & !reset.asBool
+  prefetch.predictResFromFront := predecode.predictRes
+  prefetch.exceptionJump       := csr.exceptionJump
+  prefetch.flush               := flushCtrl.frontFlush || predecode.flushapply // TODO: 优先级
+  prefetch.to                  <> fetch.from
+  fetch.to                     <> predecode.from
+  fetch.flush                  := flushCtrl.backFlush || predecode.flushapply
+  predecode.to                 <> ib.from
+  ib.to                        <> decode.from
+  decode.to                    <> rename.from
+  rename.to                    <> dispatch.from
 
   // dispatch -> issue -> readreg
   for (i <- 0 until BACK_ISSUE_WIDTH) {

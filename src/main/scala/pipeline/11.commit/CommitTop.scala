@@ -79,6 +79,8 @@ class CommitTop extends Module {
     io.debug(i).wb_rf_wnum  := rob.bits.areg
     io.debug(i).wb_rf_wdata := rob.bits.wdata
 
+  
+
     // commit -> rat
     io.rat(i).valid := writeValid
     io.rat(i).areg  := rob.bits.areg
