@@ -49,7 +49,7 @@ class Top extends Module {
   // backend execute
   val arith = Seq(
     Module(new ArithmeticTop(hasBru = true)).io,
-    Module(new ArithmeticTop(hasBru = false)).io,
+    Module(new ArithmeticTop(hasBru = true)).io,
   )
   val muldiv  = Module(new MuldivTop).io
   val memory0 = Module(new Memory0Top).io

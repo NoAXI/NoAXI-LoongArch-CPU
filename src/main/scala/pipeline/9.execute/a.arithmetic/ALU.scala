@@ -10,15 +10,18 @@ import func.Functions._
 import const.Parameters._
 
 class ALUIO extends Bundle {
-  val info   = Input(new SingleInfo)
+  val src1 = Input(UInt(DATA_WIDTH.W))
+  val src2 = Input(UInt(DATA_WIDTH.W))
+  val op_type = Input(AluOpType())
+  val func_type = Input(FuncType())
   val result = Output(UInt(DATA_WIDTH.W))
 }
 
 class ALU extends Module {
   val io = IO(new ALUIO)
 
-  val src1 = io.info.rjInfo.data
-  val src2 = io.info.rkInfo.data
+  val src1 = io.src1
+  val src2 = io.src2
 
   val addResult = src1 + src2
   val subResult = src1 - src2
@@ -34,7 +37,7 @@ class ALU extends Module {
   val srlResult = src1 >> (src2(4, 0))
   val sraResult = (src1.asSInt >> (src2(4, 0))).asUInt
 
-  val opType = io.info.op_type
+  val opType = io.op_type
   val result = MateDefault(
     opType,
     0.U,
@@ -53,12 +56,10 @@ class ALU extends Module {
     ),
   )
 
-  val funcType = io.info.func_type
+  val funcType = io.func_type
   when(funcType === FuncType.alu || funcType === FuncType.alu_imm) {
     io.result := result
   }.elsewhen(funcType === FuncType.bru) {
-    io.result := addResult
-  }.elsewhen(funcType === FuncType.mem) {
     io.result := addResult
   }.otherwise {
     io.result := 0.U

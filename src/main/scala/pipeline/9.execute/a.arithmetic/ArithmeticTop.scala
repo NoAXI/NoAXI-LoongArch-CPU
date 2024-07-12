@@ -29,8 +29,11 @@ class ArithmeticTop(
 
   // alu
   val alu = Module(new ALU).io
-  alu.info        := info
-  res.rdInfo.data := alu.result
+  alu.src1        := info.rjInfo.data
+  alu.src2        := Mux(info.func_type === FuncType.bru, info.imm, info.rkInfo.data)
+  alu.func_type   := info.func_type
+  alu.op_type     := info.op_type
+  res.rdInfo.data := Mux(info.func_type === FuncType.bru, info.pc + 4.U, alu.result)
 
   // bru
   if (hasBru) {
@@ -52,4 +55,9 @@ class ArithmeticTop(
   }
 
   doForward(io.forward, res, valid)
+
+  if (Config.debug_on) {
+    dontTouch(info.rjInfo)
+    dontTouch(info.rkInfo)
+  }
 }

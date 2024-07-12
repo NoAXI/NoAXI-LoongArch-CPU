@@ -3,6 +3,8 @@ package isa
 import chisel3._
 import chisel3.util._
 
+import const.Parameters._
+
 object FuncType {
   def none    = "b0000".U
   def bru     = "b0001".U
@@ -14,5 +16,5 @@ object FuncType {
   def csr     = "b0111".U
   def exc     = "b1000".U
   def tlb     = "b1001".U
-  def apply() = UInt(4.W)
+  def apply() = UInt(FUNC_TYPE_WIDTH.W)
 }

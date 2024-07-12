@@ -42,14 +42,9 @@ class CommitTop extends Module {
         readyBit(i) := false.B
       }
     }
-    when(info.bits.done && info.bits.isStore) {
-      for (j <- i + 1 until ISSUE_WIDTH) {
-        readyBit(j) := false.B
-      }
-    }
     // when detect write / csr / brfail, set next inst stall
-    when(info.bits.done && (info.bits.isPrivilege || hasFlush(i))) {
-      for (j <- i until ISSUE_WIDTH) {
+    when(info.bits.done && (info.bits.isPrivilege || info.bits.isStore || info.bits.bfail.en)) {
+      for (j <- i + 1 until ISSUE_WIDTH) {
         readyBit(j) := false.B
       }
       when(hasFlush(i)) {
@@ -84,8 +79,8 @@ class CommitTop extends Module {
     // rob -> commit
     io.debug(i).wb_rf_we    := writeValid
     io.debug(i).wb_pc       := Mux(writeValid, rob.bits.debug_pc, 0.U)
-    io.debug(i).wb_rf_wnum  := rob.bits.areg
-    io.debug(i).wb_rf_wdata := rob.bits.wdata
+    io.debug(i).wb_rf_wnum  := Mux(writeValid, rob.bits.areg, 0.U)
+    io.debug(i).wb_rf_wdata := Mux(writeValid, rob.bits.wdata, 0.U)
 
     // commit -> rat
     io.rat(i).valid := writeValid

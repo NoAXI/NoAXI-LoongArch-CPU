@@ -14,6 +14,7 @@ object Parameters {
   val FETCH_DEPTH = 2 // maybe 4
 
   // decoded info width
+  val FUNC_TYPE_WIDTH     = 4
   val OP_TYPE_WIDTH       = 5
   val PIPELINE_TYPE_WIDTH = 2
 
