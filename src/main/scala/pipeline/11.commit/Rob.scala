@@ -26,6 +26,8 @@ class Rob extends Module {
       hasWritePort = true,
       writePortNum = BACK_ISSUE_WIDTH,
       clearWhenPop = true,
+      clearWhenFlush = true,
+      // hasValid = true,
     ),
   ).io
   rob.flush := io.flush

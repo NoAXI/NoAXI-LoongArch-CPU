@@ -24,6 +24,7 @@ class MultiPortFifo[T <: Data](
     writePortNum: Int = 0,
     forIB: Boolean = false,
     clearWhenPop: Boolean = false,
+    clearWhenFlush: Boolean = false,
 ) extends Module {
   require(isPow2(entries))
   require((!hasWritePort && writePortNum == 0) || (hasWritePort && writePortNum != 0))
@@ -100,8 +101,12 @@ class MultiPortFifo[T <: Data](
   }
 
   when(io.flush) {
-    pushPtr := 0.U
-    popPtr  := 0.U
+    pushPtr   := 0.U
+    popPtr    := 0.U
+    maybeFull := false.B
+    if (clearWhenFlush) {
+      mem := 0.U.asTypeOf(mem)
+    }
   }
 
   if (hasWritePort) {
