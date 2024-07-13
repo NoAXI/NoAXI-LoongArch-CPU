@@ -169,12 +169,13 @@ class Top extends Module {
   rename.ratRead   <> rat.read
   rename.ratFull   <> rat.empty
 
-  // issue.size -> dispatch
-  dispatch.arithSize <> issue.arithSize
-
   // rename <> rob
   rename.rob      <> rob.rename
   rename.robStall <> rob.renameStall
+
+  // issue
+  issue.arithSize <> dispatch.arithSize
+  issue.busyInfo  <> dispatch.busyInfo
 
   // readreg <> forward, preg, issue
   // TODO: 修改唤醒接口

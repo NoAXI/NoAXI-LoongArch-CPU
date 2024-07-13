@@ -29,6 +29,7 @@ class IssueTopIO extends Bundle {
   val awake       = Vec(AWAKE_NUM, Input(new AwakeInfo))
   val memoryStall = Input(Bool())
   val arithSize   = Vec(ARITH_ISSUE_NUM, Output(UInt((ARITH_QUEUE_WIDTH + 1).W)))
+  val busyInfo    = Vec(ISSUE_WIDTH, Input(new BusyRegUpdateInfo))
 }
 
 class IssueTop extends Module {
@@ -72,10 +73,13 @@ class IssueTop extends Module {
       busyReg(awakeInfo(i).preg) := false.B
     }
   }
-  for (i <- 0 until BACK_ISSUE_WIDTH) {
-    when(io.to(i).fire && io.to(i).bits.rdInfo.preg =/= 0.U) {
-      busyReg(io.to(i).bits.rdInfo.preg) := true.B
+  for (i <- 0 until ISSUE_WIDTH) {
+    when(io.busyInfo(i).valid) {
+      busyReg(io.busyInfo(i).preg) := true.B
     }
+  }
+  when(io.flush) {
+    busyReg := 0.U.asTypeOf(busyReg)
   }
 
   // pipe <> queue

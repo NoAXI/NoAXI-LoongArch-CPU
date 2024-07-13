@@ -14,8 +14,13 @@ class DispatchStageBundle extends Bundle {
   val to    = Vec(BACK_ISSUE_WIDTH, DecoupledIO(new SingleInfo))
   val flush = Input(Bool())
 }
+class BusyRegUpdateInfo extends Bundle {
+  val valid = Bool()
+  val preg  = UInt(PREG_WIDTH.W)
+}
 class DispatchTopIO extends DispatchStageBundle {
   val arithSize = Input(Vec(ARITH_ISSUE_NUM, UInt((ARITH_QUEUE_WIDTH + 1).W)))
+  val busyInfo  = Vec(ISSUE_WIDTH, Output(new BusyRegUpdateInfo))
 }
 
 class DispatchTop extends Module {
@@ -109,6 +114,17 @@ class DispatchTop extends Module {
         info.bits(i).pipelineType := 0.U
       }
     }
+  }
+
+  // update busyreg
+  for (i <- 0 until ISSUE_WIDTH) {
+    val to = io.to(port(i))
+    io.busyInfo(i).valid := validReg &&
+      to.fire &&
+      to.bits.rdInfo.preg =/= 0.U &&
+      to.bits.iswf &&
+      to.bits.pipelineType =/= 0.U
+    io.busyInfo(i).preg := to.bits.rdInfo.preg
   }
 
   if (Config.debug_on) {

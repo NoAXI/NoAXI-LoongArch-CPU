@@ -36,13 +36,14 @@ class Forward extends Module {
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     for (regNum <- 0 until OPERAND_MAX) {
       val req = if (regNum == 0) io.req(i).rj else io.req(i).rk
-      req.out := req.in
+      req.out := WireDefault(req.in)
       for (j <- 0 until BACK_ISSUE_WIDTH) {
-        for (infoNum <- 0 until 2) {
-          val info = if (infoNum == 0) io.wb else io.exe
-          when(info(j).valid && req.preg === info(j).preg) {
-            req.out := info(j).data
-          }
+        val exehit = io.exe(j).valid && req.preg === io.exe(j).preg
+        val wbhit  = io.wb(j).valid && req.preg === io.wb(j).preg
+        when(exehit) {
+          req.out := io.exe(j).data
+        }.elsewhen(wbhit) {
+          req.out := io.wb(j).data
         }
       }
     }
