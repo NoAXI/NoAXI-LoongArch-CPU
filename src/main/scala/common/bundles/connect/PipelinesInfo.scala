@@ -43,10 +43,12 @@ class SingleInfo extends Bundle {
 
   // data info
   val imm        = UInt(DATA_WIDTH.W)
-  val src1Ispc   = Output(Bool())
-  val src1IsZero = Output(Bool())
-  val src2IsFour = Output(Bool())
-  val src2IsImm  = Output(Bool())
+  val src1Ispc   = Bool()
+  val src1IsZero = Bool()
+  val src2IsFour = Bool()
+  val src2IsImm  = Bool()
+  val src1       = UInt(DATA_WIDTH.W)
+  val src2       = UInt(DATA_WIDTH.W)
 
   // write reg
   val iswf = Bool()

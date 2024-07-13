@@ -56,8 +56,10 @@ class ReadRegTop(
   )
 
   // forward -> readreg
-  res.rjInfo.data := src1
-  res.rkInfo.data := src2
+  res.rjInfo.data := io.forwardReq.rj.out
+  res.rkInfo.data := io.forwardReq.rk.out
+  res.src1        := src1
+  res.src2        := src2
 
   // arith: awake
   if (unitType == "arith") {

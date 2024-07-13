@@ -29,8 +29,8 @@ class ArithmeticTop(
 
   // alu
   val alu = Module(new ALU).io
-  alu.src1        := info.rjInfo.data
-  alu.src2        := Mux(info.func_type === FuncType.bru, info.imm, info.rkInfo.data)
+  alu.src1        := info.src1
+  alu.src2        := info.src2
   alu.func_type   := info.func_type
   alu.op_type     := info.op_type
   res.rdInfo.data := Mux(info.func_type === FuncType.bru, info.pc + 4.U, alu.result)
@@ -43,11 +43,14 @@ class ArithmeticTop(
     bru.func_type := info.func_type
     bru.op_type   := info.op_type
 
-    val is_br         = info.func_type === FuncType.bru
-    val is_jirl       = info.inst === LA32R.JIRL
-    val br_tar        = Mux(is_jirl, info.rjInfo.data, info.pc) + info.imm
-    val succeed       = Mux(bru.br_en, bru.br_en === info.predict.en && br_tar === info.predict.tar && is_br,
-                            bru.br_en === info.predict.en && is_br)
+    val is_br   = info.func_type === FuncType.bru
+    val is_jirl = info.inst === LA32R.JIRL
+    val br_tar  = Mux(is_jirl, info.rjInfo.data, info.pc) + info.imm
+    val succeed = Mux(
+      bru.br_en,
+      bru.br_en === info.predict.en && br_tar === info.predict.tar && is_br,
+      bru.br_en === info.predict.en && is_br,
+    )
     val br_tar_failed = Mux(bru.br_en, br_tar, info.pc + 4.U)
 
     res.realBr.en  := (is_br && !succeed)

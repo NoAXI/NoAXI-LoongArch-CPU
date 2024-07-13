@@ -131,7 +131,4 @@ class Decoder extends Module {
   // Return: JIRL $r0,$r1,0 指令
   io.isCALL   := is_bl || is_jirl && io.rd === 1.U
   io.isReturn := io.inst === "b010011_0000000000000000_00000_00001".U
-
-  // TODO: check the pc-relative branch target addr
-
 }
