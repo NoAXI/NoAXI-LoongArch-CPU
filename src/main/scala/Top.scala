@@ -6,7 +6,6 @@ import chisel3.util._
 import const._
 import bundles._
 import const.Parameters._
-import const.ForwardConst._
 
 import csr._
 import controller._
@@ -192,16 +191,18 @@ class Top extends Module {
 
   // forward <> the last stage of execute
   for (i <- 0 until ARITH_ISSUE_NUM) {
-    arith(i).forward <> forward.info(FORWARD_EXE_INDEX)(i)
+    arith(i).forward <> forward.exe(i)
   }
-  muldiv.forward  <> forward.info(FORWARD_EXE_INDEX)(MULDIV_ISSUE_ID) // TODO: 需要改为muldiv的最后一级
-  memory2.forward <> forward.info(FORWARD_EXE_INDEX)(MEMORY_ISSUE_ID)
-
-  // writeback <> preg, rob, forward
+  muldiv.forward  <> forward.exe(MULDIV_ISSUE_ID) // TODO: 需要改为muldiv的最后一级
+  memory2.forward <> forward.exe(MEMORY_ISSUE_ID)
   for (i <- 0 until BACK_ISSUE_WIDTH) {
-    writeback(i).preg    <> preg.write(i)
-    writeback(i).rob     <> rob.write(i)
-    writeback(i).forward <> forward.info(FORWARD_WB_INDEX)(i)
+    writeback(i).forward <> forward.wb(i)
+  }
+
+  // writeback <> preg, rob
+  for (i <- 0 until BACK_ISSUE_WIDTH) {
+    writeback(i).preg <> preg.write(i)
+    writeback(i).rob  <> rob.write(i)
   }
 
   // commit <> rat, rob, debug
