@@ -168,7 +168,7 @@ class Top extends Module {
   // rename <> rat
   rename.ratRename <> rat.rename
   rename.ratRead   <> rat.read
-  rename.ratFull   <> rat.full
+  rename.ratFull   <> rat.empty
 
   // issue.size -> dispatch
   dispatch.arithSize <> issue.arithSize

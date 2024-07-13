@@ -62,6 +62,9 @@ class RenameTop extends Module {
           when(preRdInfo.areg === from.rkInfo.areg) {
             to.rkInfo.preg := preRdInfo.preg
           }
+          when(preRdInfo.areg === from.rdInfo.areg) {
+            to.opreg := preRdInfo.preg
+          }
         }
       }
     }

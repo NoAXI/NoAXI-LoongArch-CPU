@@ -35,7 +35,7 @@ class RatCommitIO extends Bundle {
 
 class RatIO extends Bundle {
   val flush  = Input(Bool())
-  val full   = Output(Bool()) // <> rename
+  val empty  = Output(Bool()) // <> rename
   val rename = Vec(ISSUE_WIDTH, new RatRenameIO)
   val read   = Vec(ISSUE_WIDTH, new RatReadIO)
   val commit = Vec(ISSUE_WIDTH, new RatCommitIO)
@@ -43,10 +43,6 @@ class RatIO extends Bundle {
 
 class Rat extends Module {
   val io = IO(new RatIO)
-
-  // stall when freelist is empty (freelistSize < readSize)
-  val stall = WireDefault(false.B)
-  io.full := stall
 
   // rat def
   val sRat = RegInit(VecInit(Seq.tabulate(AREG_NUM)(i => i.U(PREG_WIDTH.W))))
@@ -59,7 +55,7 @@ class Rat extends Module {
   }
 
   // rename: sRat update
-  when(!stall) {
+  when(!io.empty) {
     for (i <- 0 until ISSUE_WIDTH) {
       val info = io.rename(i)
       when(info.valid && info.areg =/= 0.U) {
@@ -133,7 +129,7 @@ class Rat extends Module {
   when(!full && popOffset > maxPop) {
     popStall := true.B
   }
-  io.full := popStall
+  io.empty := popStall
 
   // when recover, set freelist full
   when(io.flush) {
