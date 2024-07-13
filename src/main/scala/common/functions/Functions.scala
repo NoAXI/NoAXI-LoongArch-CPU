@@ -98,7 +98,7 @@ object Functions {
   // for issue queue ---------------------------------------------------------------------------
   def checkIssueHit(rj: UInt, rk: UInt, awake: Vec[AwakeInfo], busy: Vec[Bool]): Vec[Bool] = {
     val awakeHit = WireDefault(VecInit(Seq.fill(OPERAND_MAX)(false.B)))
-    for (i <- 0 until BACK_ISSUE_WIDTH) {
+    for (i <- 0 until AWAKE_NUM) {
       for (j <- 0 until OPERAND_MAX) {
         val preg = if (j == 0) rj else rk
         when(awake(i).valid && awake(i).preg === preg) {

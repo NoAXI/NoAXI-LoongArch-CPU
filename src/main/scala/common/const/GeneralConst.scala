@@ -35,6 +35,7 @@ object Parameters {
   val ARITH_ISSUE_NUM  = 2                   // real id = 0, 1
   val MULDIV_ISSUE_ID  = ARITH_ISSUE_NUM     // real id = 2
   val MEMORY_ISSUE_ID  = ARITH_ISSUE_NUM + 1 // real id = 3
+  val AWAKE_NUM        = 5
 
   // backend stage const
   val ARITH_STAGE_NUM  = 2 // readreg, arith

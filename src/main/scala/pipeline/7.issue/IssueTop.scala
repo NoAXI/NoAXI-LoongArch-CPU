@@ -16,7 +16,7 @@ class AwakeInfo extends Bundle {
 // this IO is defined for a single issue queue,
 // which is contained inside of this issue module
 class IssueQueueIO extends SingleStageBundle {
-  val awake     = Input(Vec(BACK_ISSUE_WIDTH, new AwakeInfo))
+  val awake     = Input(Vec(AWAKE_NUM, new AwakeInfo))
   val busy      = Input(Vec(PREG_NUM, Bool()))
   val stall     = Input(Bool())
   val arithSize = Output(UInt((ARITH_QUEUE_WIDTH + 1).W))
@@ -26,7 +26,7 @@ class IssueTopIO extends Bundle {
   val flush       = Input(Bool())
   val from        = Vec(BACK_ISSUE_WIDTH, Flipped(DecoupledIO(new SingleInfo)))
   val to          = Vec(BACK_ISSUE_WIDTH, DecoupledIO(new SingleInfo))
-  val awake       = Vec(BACK_ISSUE_WIDTH, Input(new AwakeInfo))
+  val awake       = Vec(AWAKE_NUM, Input(new AwakeInfo))
   val memoryStall = Input(Bool())
   val arithSize   = Vec(ARITH_ISSUE_NUM, Output(UInt((ARITH_QUEUE_WIDTH + 1).W)))
 }
@@ -61,13 +61,13 @@ class IssueTop extends Module {
   // TODO: when add additional awake info,
   // should modify the BACK_ISSUE_WIDTH here
   val awakeInfo = WireDefault(io.awake)
-  for(i <- 0 until BACK_ISSUE_WIDTH) {
+  for (i <- 0 until AWAKE_NUM) {
     when(io.awake(i).valid && io.awake(i).preg === 0.U) {
       awakeInfo(i).valid := false.B
     }
   }
   val busyReg = RegInit(VecInit(Seq.fill(PREG_NUM)(false.B)))
-  for (i <- 0 until BACK_ISSUE_WIDTH) {
+  for (i <- 0 until AWAKE_NUM) {
     when(awakeInfo(i).valid) {
       busyReg(awakeInfo(i).preg) := false.B
     }

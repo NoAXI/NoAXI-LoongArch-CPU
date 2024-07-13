@@ -188,6 +188,7 @@ class Top extends Module {
   }
   muldiv.awake  <> issue.awake(MULDIV_ISSUE_ID)
   memory1.awake <> issue.awake(MEMORY_ISSUE_ID)
+  memory2.awake <> issue.awake(MEMORY_ISSUE_ID + 1)
 
   // forward <> the last stage of execute
   for (i <- 0 until ARITH_ISSUE_NUM) {
