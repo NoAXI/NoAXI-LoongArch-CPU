@@ -9,62 +9,47 @@ import func.Functions._
 import const.Parameters._
 
 class FlushCtrlIO extends Bundle {
-  val hasFlush = Input(Bool()) // from mem1: there's a should-do-flush inst in pipeline
-  val doFlush  = Input(Bool()) // from rob: the should-do-flush inst has been committed
+  val flushInfo  = Input(new br)
+  val fetchStall = Input(Bool())
 
-  val frontFlush = Output(Bool()) // flush all frontend info
-  val backFlush  = Output(Bool()) // only flush back when recover
-  val recover    = Output(Bool()) // let rob, rat flushed
-  // val memStall   = Output(Bool()) // set (readreg -> mem0) stall, let mem0 flushed
-  // val ibStall    = Output(Bool()) // set (ib -> decode) stall
+  val frontFlush  = Output(Bool())
+  val backFlush   = Output(Bool())
+  val recover     = Output(Bool()) // let rob, rat flushed
+  val commitStall = Output(Bool())
+
+  val flushTarget = Output(new br)
 }
-
-trait FlushCtrlStateTable  { val sIdle :: sFlushWait :: Nil = Enum(2)                   }
-trait FlushCtrlMemoryConst { val mStageRR :: mStageM0 :: mStageM1 :: mStageM2 = Enum(4) }
-object FlushCtrlConst extends FlushCtrlStateTable with FlushCtrlMemoryConst
-import FlushCtrlConst._
-
 class FlushCtrl extends Module {
   val io = IO(new FlushCtrlIO)
 
   val frontFlush = WireDefault(false.B)
   val recover    = WireDefault(false.B)
-  val memStall   = WireDefault(false.B)
-  val ibStall    = WireDefault(false.B)
 
-  when(io.doFlush) {
-    frontFlush := true.B
-    recover    := true.B
-    // memStall   := false.B
-    // ibStall    := false.B
+  // flush reg
+  // when fetch got stall, keep flush state
+  val flushReg  = RegInit(false.B)
+  val flushNext = WireDefault(flushReg)
+  when(!flushReg && io.flushInfo.en) {
+    flushNext := true.B
   }
+  when(flushReg && !io.fetchStall) {
+    flushNext := false.B
+  }
+  flushReg   := flushNext
+  frontFlush := flushReg
+  recover    := flushReg
 
-  // FSM
-  // val state = RegInit(sIdle)
-  // switch(state) {
-  //   is(sIdle) {
-  //     when(io.doFlush) {
-  //       frontFlush := true.B
-  //       recover    := true.B
-  //     }.elsewhen(io.hasFlush) {
-  //       memStall   := true.B
-  //       frontFlush := true.B
-  //       state      := sFlushWait
-  //     }
-  //   }
-  //   is(sFlushWait) {
-  //     memStall := true.B
-  //     ibStall  := true.B
-  //     when(io.doFlush) {
-  //       state   := sIdle
-  //       recover := true.B
-  //     }
-  //   }
-  // }
+  // branch reg
+  // when next clock flush signal removes, update the branch info
+  val addrReg = RegInit(0.U(ADDR_WIDTH.W))
+  when(!flushReg) {
+    addrReg := io.flushInfo.tar
+  }
+  io.flushTarget.tar := addrReg
+  io.flushTarget.en  := flushReg && !flushNext
+  io.commitStall     := flushReg
 
   io.frontFlush := frontFlush
   io.backFlush  := recover
   io.recover    := recover
-  // io.memStall   := memStall
-  // io.ibStall    := ibStall
 }

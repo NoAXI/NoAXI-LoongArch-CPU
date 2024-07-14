@@ -53,6 +53,7 @@ class WritebackTop extends Module {
   io.rob.bits.bfail       := res.realBr
   io.rob.bits.isbr        := res.func_type === FuncType.bru
   io.rob.bits.realBrDir   := res.realBrDir
+  io.rob.bits.isException := res.exc_type =/= ECodes.NONE
 
   // writeback -> forward -> readreg
   doForward(io.forward, res, valid)

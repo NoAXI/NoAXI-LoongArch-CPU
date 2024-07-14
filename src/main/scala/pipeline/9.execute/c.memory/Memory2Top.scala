@@ -79,6 +79,6 @@ class Memory2Top extends Module {
   io.awake.valid := valid && info.iswf && io.to.fire
   io.awake.preg  := info.rdInfo.preg
 
-  doForward(io.forward, res, valid)
+  doForward(io.forward, res, valid) // false.B)
   io.to.bits := res
 }

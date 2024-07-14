@@ -28,6 +28,7 @@ class RobInfo extends Bundle {
 
   val isStore     = Bool()
   val isPrivilege = Bool()
+  val isException = Bool()
   // val hasFlush  = Bool()
 
   val debug_pc = UInt(ADDR_WIDTH.W)

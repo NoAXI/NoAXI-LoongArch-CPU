@@ -218,9 +218,8 @@ class Top extends Module {
   }
 
   // commit <> rat, rob, debug
-  commit.rat  <> rat.commit
-  commit.rob  <> rob.commit
-  commit.bres <> prefetch.predictResFromBack
+  commit.rat <> rat.commit
+  commit.rob <> rob.commit
   // commit.buffer.to   <> storeBuffer.from
   // commit.buffer.from <> storeBuffer.to
   when(clock.asBool) {
@@ -235,11 +234,6 @@ class Top extends Module {
   issue.to(MEMORY_ISSUE_ID) <> memIssueSel.fromIssue
   memIssueSel.to            <> readreg(MEMORY_ISSUE_ID).from
 
-  // flush ctrl
-  // TODO: connect flushCtrl with (memory, rob)
-  flushCtrl.doFlush  <> commit.doFlush
-  flushCtrl.hasFlush := false.B
-
   // front flush
   prefetch.flush       := flushCtrl.frontFlush || predecode.flushapply
   fetch.flush          := flushCtrl.frontFlush || predecode.flushapply
@@ -248,30 +242,21 @@ class Top extends Module {
   flushCtrl.frontFlush <> decode.flush
   flushCtrl.frontFlush <> rename.flush
 
-  // set (ib, memIssue) stall when has flush
-  // set (readreg, mem0) flush when has flush
-  // flushCtrl.ibStall  <> ib.stall
-  // flushCtrl.memStall <> issue.memoryStall
-  issue.memoryStall := false.B
-  ib.stall          := false.B
-
-  // recover
+  // recover flush
   flushCtrl.recover <> rob.flush
   flushCtrl.recover <> rat.flush
   flushCtrl.recover <> storeBuffer.flush
 
+  // stall
+  ib.stall          := false.B
+  issue.memoryStall := false.B
+
   // back flush
-  // mem.readreg & mem.mem0 use memStall to flush
   flushCtrl.backFlush <> dispatch.flush
   flushCtrl.backFlush <> issue.flush
 
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     flushCtrl.backFlush <> readreg(i).flush
-    // if (i != MEMORY_ISSUE_ID) {
-    //   flushCtrl.backFlush <> readreg(i).flush
-    // } else {
-    //   flushCtrl.memStall <> readreg(i).flush
-    // }
   }
 
   for (i <- 0 until ARITH_ISSUE_NUM) {
@@ -289,4 +274,13 @@ class Top extends Module {
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     flushCtrl.backFlush <> writeback(i).flush
   }
+
+  flushCtrl.backFlush <> commit.flush
+
+  // flush control: branch
+  flushCtrl.flushInfo   <> commit.flushInfo
+  flushCtrl.flushTarget <> prefetch.flushTarget
+  flushCtrl.commitStall <> commit.stall
+  flushCtrl.fetchStall  <> fetch.busy
+  commit.predictResult  <> prefetch.predictResFromBack
 }

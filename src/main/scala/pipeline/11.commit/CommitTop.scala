@@ -15,26 +15,23 @@ class CommitTopIO extends Bundle {
     val from = Flipped(DecoupledIO(new BufferInfo))
     val to   = DecoupledIO(new BufferInfo)
   }
-  // val flush = new Bundle {
-  // val info    = Output(new RobInfo)
-  // }
-  val doFlush = Output(Bool())
-  val bres    = Output(new PredictRes)
-  val debug   = Vec(ISSUE_WIDTH, new DebugIO)
+  val debug = Vec(ISSUE_WIDTH, new DebugIO)
+
+  // ctrl signal
+  val flush         = Input(Bool())
+  val stall         = Input(Bool())
+  val predictResult = Output(new PredictRes)
+  val flushInfo     = Output(new br)
 }
 
 class CommitTop extends Module {
   val io = IO(new CommitTopIO)
 
   // generate ready signal
-  val flushSignal = WireDefault(false.B)
-  val hasFlush = Seq.tabulate(ISSUE_WIDTH) { i =>
-    val rob = io.rob(i).info
-    rob.bits.bfail.en || rob.bits.exc_type =/= ECodes.NONE
-  }
   val readyBit = WireDefault(VecInit(Seq.tabulate(ISSUE_WIDTH)(i => io.rob(i).info.bits.done)))
+  val hasEx    = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(false.B)))
   for (i <- 0 until ISSUE_WIDTH) {
-    val info = io.rob(i).info
+    val info = io.rob(i).info.bits
 
     // when previous info isn't ready, set current inst stall
     if (i != 0) {
@@ -42,30 +39,48 @@ class CommitTop extends Module {
         readyBit(i) := false.B
       }
     }
+
     // when detect write / csr / brfail, set next inst stall
-    when(info.bits.done && (info.bits.isPrivilege || info.bits.isStore || info.bits.bfail.en)) {
+    when(info.done && (info.isPrivilege || info.isStore || info.isbr || info.isException)) {
       for (j <- i + 1 until ISSUE_WIDTH) {
         readyBit(j) := false.B
       }
-      when(hasFlush(i)) {
-        flushSignal := true.B
+      when(info.isException) {
+        hasEx(i) := true.B
       }
     }
   }
 
-  // send fulsh signal
-  io.doFlush := false.B
-  io.bres    := 0.U.asTypeOf(new PredictRes)
-  when(flushSignal) {
-    for (i <- 0 until ISSUE_WIDTH) {
-      // use real ready here to avoid unexpected flush
-      when(io.rob(i).info.ready && hasFlush(i)) {
-        io.doFlush := true.B
-        val info = io.rob(i).info.bits
-        io.bres.br            := info.bfail
-        io.bres.realDirection := info.realBrDir
-        io.bres.pc            := info.debug_pc
-      }
+  // when got flushed or detect exception,
+  // then this inst shouldn't be committed
+  when(io.flush || io.stall || hasEx.reduce(_ || _)) {
+    readyBit := 0.U.asTypeOf(readyBit)
+  }
+
+  // send predict update info
+  io.predictResult := 0.U.asTypeOf(new PredictRes)
+  for (i <- 0 until ISSUE_WIDTH) {
+    val info = io.rob(i).info.bits
+    when(io.rob(i).info.ready && info.isbr) {
+      val out = io.predictResult
+      out.br            := info.bfail
+      out.realDirection := info.realBrDir
+      out.pc            := info.debug_pc
+      out.isbr          := info.isbr
+    }
+  }
+
+  // when ex / bfail appears, do flush
+  io.flushInfo := 0.U.asTypeOf(new br)
+  for (i <- 0 until ISSUE_WIDTH) {
+    val info    = io.rob(i).info.bits
+    val isBfail = info.bfail.en && info.isbr
+    val isEx    = info.isException
+    // TODO: add exception here
+    when(io.rob(i).info.ready && isBfail) {
+      val out = io.flushInfo
+      out.en  := true.B
+      out.tar := info.bfail.tar
     }
   }
 

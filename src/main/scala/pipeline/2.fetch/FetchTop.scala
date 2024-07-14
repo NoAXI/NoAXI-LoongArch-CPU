@@ -11,12 +11,14 @@ import const.Parameters._
 class FetchTopIO extends StageBundle {
   val tlb    = new Stage1TLBIO
   val iCache = new FetchICacheIO
+  val busy   = Output(Bool())
 }
 
 class FetchTop extends Module {
   val io   = IO(new FetchTopIO)
   val busy = WireDefault(0.U.asTypeOf(new BusyInfo))
   val from = stageConnect(io.from, io.to, busy)
+  io.busy := busy.info.reduce(_ || _)
 
   val info = WireDefault(from._1.bits(0))
   flushWhen(info, io.flush)

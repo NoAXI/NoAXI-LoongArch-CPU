@@ -76,7 +76,7 @@ class Memory1Top extends Module {
   val hitVec = io.dCache.hitVec
   res.dcachehitVec := hitVec
 
-  io.awake.valid := valid && info.iswf && io.to.fire && hitVec.reduce(_ || _)
+  io.awake.valid := valid && info.iswf && io.to.fire && hitVec.reduce(_ || _) // false.B
   io.awake.preg  := info.rdInfo.preg
 
   io.to.bits := res
