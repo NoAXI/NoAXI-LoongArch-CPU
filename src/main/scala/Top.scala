@@ -50,7 +50,11 @@ class Top extends Module {
     Module(new ArithmeticTop(hasBru = true)).io,
     Module(new ArithmeticTop(hasBru = true)).io,
   )
-  val muldiv  = Module(new MuldivTop).io
+
+  val muldiv0 = Module(new Muldiv0Top).io
+  val muldiv1 = Module(new Muldiv1Top).io
+  val muldiv2 = Module(new Muldiv2Top).io
+
   val memory0 = Module(new Memory0Top).io
   val memory1 = Module(new Memory1Top).io
   val memory2 = Module(new Memory2Top).io
@@ -86,13 +90,14 @@ class Top extends Module {
   prefetch.predictResFromFront := predecode.predictRes
   prefetch.exceptionJump       := csr.exceptionJump
   prefetch.flush               := flushCtrl.frontFlush || predecode.flushapply // TODO: 优先级
-  prefetch.to                  <> fetch.from
-  fetch.to                     <> predecode.from
-  fetch.flush                  := flushCtrl.backFlush || predecode.flushapply
-  predecode.to                 <> ib.from
-  ib.to                        <> decode.from
-  decode.to                    <> rename.from
-  rename.to                    <> dispatch.from
+
+  prefetch.to  <> fetch.from
+  fetch.to     <> predecode.from
+  fetch.flush  := flushCtrl.backFlush || predecode.flushapply
+  predecode.to <> ib.from
+  ib.to        <> decode.from
+  decode.to    <> rename.from
+  rename.to    <> dispatch.from
 
   // dispatch -> issue -> readreg
   for (i <- 0 until BACK_ISSUE_WIDTH) {
@@ -107,17 +112,23 @@ class Top extends Module {
   // readreg -> execute
   readreg(0).to <> arith(0).from
   readreg(1).to <> arith(1).from
-  readreg(2).to <> muldiv.from
+  readreg(2).to <> muldiv0.from
   readreg(3).to <> memory0.from
 
-  // execute -> writeback
-  // TODO: 这里的muldiv和memory需要修改为对应流水线的最后一级
+  // arith
   arith(0).to <> writeback(0).from
   arith(1).to <> writeback(1).from
-  muldiv.to   <> writeback(2).from
-  memory0.to  <> memory1.from
-  memory1.to  <> memory2.from
-  memory2.to  <> writeback(3).from
+
+  // muldiv
+  muldiv0.to  <> muldiv1.from
+  muldiv1.to  <> muldiv2.from
+  muldiv2.to  <> writeback(2).from
+  muldiv2.mul <> muldiv0.mul // multiplier connect
+
+  // memory
+  memory0.to <> memory1.from
+  memory1.to <> memory2.from
+  memory2.to <> writeback(3).from
 
   // always set write-ready high for wb stage
   for (i <- 0 until BACK_ISSUE_WIDTH) {
@@ -186,7 +197,7 @@ class Top extends Module {
       readreg(i).awake <> issue.awake(i)
     }
   }
-  muldiv.awake  <> issue.awake(MULDIV_ISSUE_ID)
+  muldiv1.awake <> issue.awake(MULDIV_ISSUE_ID)
   memory1.awake <> issue.awake(MEMORY_ISSUE_ID)
   memory2.awake <> issue.awake(MEMORY_ISSUE_ID + 1)
 
@@ -194,7 +205,7 @@ class Top extends Module {
   for (i <- 0 until ARITH_ISSUE_NUM) {
     arith(i).forward <> forward.exe(i)
   }
-  muldiv.forward  <> forward.exe(MULDIV_ISSUE_ID) // TODO: 需要改为muldiv的最后一级
+  muldiv2.forward <> forward.exe(MULDIV_ISSUE_ID) // TODO: 需要改为muldiv的最后一级
   memory2.forward <> forward.exe(MEMORY_ISSUE_ID)
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     writeback(i).forward <> forward.wb(i)
@@ -267,7 +278,9 @@ class Top extends Module {
     flushCtrl.backFlush <> arith(i).flush
   }
 
-  flushCtrl.backFlush <> muldiv.flush
+  flushCtrl.backFlush <> muldiv0.flush
+  flushCtrl.backFlush <> muldiv1.flush
+  flushCtrl.backFlush <> muldiv2.flush
 
   flushCtrl.backFlush <> memory0.flush // flush when memStall = 1
   flushCtrl.backFlush <> memory1.flush

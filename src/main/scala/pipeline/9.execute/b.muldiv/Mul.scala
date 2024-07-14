@@ -20,14 +20,14 @@ class SignedMul extends BlackBox with HasBlackBoxResource {
 }
 
 class MulIO extends Bundle {
-  val op_type  = Input(MulOpType())
-  val src1     = Input(UInt(DATA_WIDTH.W))
-  val src2     = Input(UInt(DATA_WIDTH.W))
-  val result   = Output(UInt(DATA_WIDTH.W))
-  val running  = Input(Bool())
-  val complete = Output(Bool())
+  val op_type = Input(MulOpType())
+  val src1    = Input(UInt(DATA_WIDTH.W))
+  val src2    = Input(UInt(DATA_WIDTH.W))
+  val result  = Output(UInt(DATA_WIDTH.W))
 }
 
+// use xilinx ip
+// pipeline delay: 3
 class Mul extends Module {
   val io = IO(new MulIO)
 
@@ -54,25 +54,15 @@ class Mul extends Module {
       ),
     )
   } else {
-    val signed_result   = (io.src1.asSInt * io.src2.asSInt).asUInt
-    val unsigned_result = io.src1 * io.src2
-    io.result := MateDefault(
-      io.op_type,
-      0.U,
-      List(
-        MulOpType.shigh -> signed_result(DATA_WIDTH * 2 - 1, DATA_WIDTH),
-        MulOpType.slow  -> signed_result(DATA_WIDTH, 0),
-        MulOpType.uhigh -> unsigned_result(DATA_WIDTH * 2 - 1, DATA_WIDTH),
-        MulOpType.ulow  -> unsigned_result(DATA_WIDTH - 1, 0),
-      ),
-    )
+    io.result := DontCare
   }
 
-  val running_lock = RegInit(false.B)
-  val running      = WireDefault(io.running)
-  running_lock := running // foolish
-  when(running_lock) {
-    running := false.B
-  }
-  io.complete := !running
+  // io.complete := true.B
+  // val running_lock = RegInit(false.B)
+  // val running      = WireDefault(io.running)
+  // running_lock := running // foolish
+  // when(running_lock) {
+  //   running := false.B
+  // }
+  // io.complete := !running
 }

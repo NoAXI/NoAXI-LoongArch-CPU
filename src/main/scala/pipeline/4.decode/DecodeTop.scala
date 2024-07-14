@@ -18,6 +18,7 @@ class DecodeTop extends Module {
 
   val info         = from._1.bits
   val valid_signal = from._2
+  flushWhen(from._1, io.flush)
 
   val dec     = VecInit.fill(ISSUE_WIDTH)(Module(new Decoder).io)
   val to_info = WireDefault(0.U.asTypeOf(new DualInfo))
