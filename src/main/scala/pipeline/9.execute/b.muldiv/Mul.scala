@@ -27,7 +27,7 @@ class MulIO extends Bundle {
 }
 
 // use xilinx ip
-// pipeline delay: 3
+// pipeline delay: 2
 class Mul extends Module {
   val io = IO(new MulIO)
 
@@ -54,7 +54,20 @@ class Mul extends Module {
       ),
     )
   } else {
-    io.result := DontCare
+    val curSigned       = (io.src1.asSInt * io.src2.asSInt).asUInt
+    val curUnsigned     = io.src1 * io.src2
+    val signed_result   = ShiftRegister(curSigned, 2)
+    val unsigned_result = ShiftRegister(curUnsigned, 2)
+    io.result := MateDefault(
+      io.op_type,
+      0.U,
+      List(
+        MulOpType.shigh -> signed_result(DATA_WIDTH * 2 - 1, DATA_WIDTH),
+        MulOpType.slow  -> signed_result(DATA_WIDTH, 0),
+        MulOpType.uhigh -> unsigned_result(DATA_WIDTH * 2 - 1, DATA_WIDTH),
+        MulOpType.ulow  -> unsigned_result(DATA_WIDTH - 1, 0),
+      ),
+    )
   }
 
   // io.complete := true.B

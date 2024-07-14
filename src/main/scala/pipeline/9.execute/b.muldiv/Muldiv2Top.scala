@@ -32,27 +32,8 @@ class Muldiv2Top extends Module {
 
   io.mul.op_type := info.op_type
 
-  if (Config.hasBlackBox) {
-    when(info.func_type === FuncType.mul) {
-      res.rdInfo.data := io.mul.result
-    }
-  } else {
-    // only used in simulator
-    val signed_result   = (info.rjInfo.data.asSInt * info.rjInfo.data.asSInt).asUInt
-    val unsigned_result = info.rjInfo.data * info.rjInfo.data
-    val result = MateDefault(
-      info.op_type,
-      0.U,
-      List(
-        MulOpType.shigh -> signed_result(DATA_WIDTH * 2 - 1, DATA_WIDTH),
-        MulOpType.slow  -> signed_result(DATA_WIDTH, 0),
-        MulOpType.uhigh -> unsigned_result(DATA_WIDTH * 2 - 1, DATA_WIDTH),
-        MulOpType.ulow  -> unsigned_result(DATA_WIDTH - 1, 0),
-      ),
-    )
-    when(info.func_type === FuncType.mul) {
-      res.rdInfo.data := result
-    }
+  when(info.func_type === FuncType.mul) {
+    res.rdInfo.data := io.mul.result
   }
 
   doForward(io.forward, res, valid)
