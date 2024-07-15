@@ -53,11 +53,13 @@ class PrefetchTop extends Module {
       nextPC(pc),
       Seq(
         // excHappen     -> excPC,
-        flushHappen   -> flushPC,
         predictFailed -> exactPC,
         predictEn     -> predictPC,
       ),
     )
+  }
+  when(io.flush && flushHappen) {
+    pc := flushPC
   }
 
   // tlb
