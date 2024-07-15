@@ -46,9 +46,9 @@ object Functions {
   def flushWhen(infoReg: DualInfo, flush: Bool): Unit = {
     when(flush) {
       infoReg := 0.U.asTypeOf(infoReg)
-      // for (i <- 0 until ISSUE_WIDTH) {
-      //   infoReg.bits(i).bubble := true.B
-      // }
+      for (i <- 0 until ISSUE_WIDTH) {
+        infoReg.bits(i).bubble := true.B
+      }
     }
   }
   // waiting flush

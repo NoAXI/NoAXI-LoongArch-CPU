@@ -159,6 +159,7 @@ class CSR extends Module {
   when(start) {
     io.flush_by_csr := true.B
     PRMD.info.pplv  := CRMD.info.plv
+    
     PRMD.info.pie   := CRMD.info.ie
     CRMD.info.plv   := 0.U
     CRMD.info.ie    := 0.U

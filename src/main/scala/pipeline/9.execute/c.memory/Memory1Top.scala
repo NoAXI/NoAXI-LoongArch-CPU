@@ -12,6 +12,7 @@ class Mem1BufferIO extends Bundle {
   val forwardpa   = Output(UInt(ADDR_WIDTH.W))
   val forwardHit  = Input(Bool())
   val forwardData = Input(UInt(DATA_WIDTH.W))
+  val forwardStrb = Input(UInt((DATA_WIDTH / 8).W))
 }
 
 class Memory1TopIO extends SingleStageBundle {
@@ -19,6 +20,8 @@ class Memory1TopIO extends SingleStageBundle {
   val dCache      = new Mem1DCacheIO
   val storeBuffer = new Mem1BufferIO
   val awake       = Output(new AwakeInfo)
+  val readreg     = Flipped(new ReadRegMem1ForwardIO)
+  val mem0        = Flipped(new Mem0Mem1ForwardIO)
 }
 
 class Memory1Top extends Module {
@@ -65,11 +68,32 @@ class Memory1Top extends Module {
   }
 
   // StoreBuffer
-  io.storeBuffer.forwardpa := pa
-  val rhit  = io.storeBuffer.forwardHit
-  val rdata = io.storeBuffer.forwardData
-  res.storeBufferHit     := rhit
-  res.storeBufferHitData := rdata
+  io.storeBuffer.forwardpa := pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
+  val bfhit     = io.readreg.actualStore && io.readreg.addr === pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
+  val bfhit1    = io.mem0.actualStore && io.mem0.addr === pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
+  val bfdata    = io.readreg.data
+  val bfdata1   = io.mem0.data
+  val bfstrb    = io.readreg.strb
+  val bfstrb1   = io.mem0.strb
+  val rhit      = io.storeBuffer.forwardHit
+  val rdata     = io.storeBuffer.forwardData
+  val rstrb     = io.storeBuffer.forwardStrb
+  val savedHit  = RegInit(false.B)
+  val savedData = RegInit(0.U(DATA_WIDTH.W))
+  val savedStrb = RegInit(0.U((DATA_WIDTH / 8).W))
+  when(!io.to.ready && !savedHit) {
+    savedHit  := rhit
+    savedData := rdata
+    savedStrb := rstrb
+  }
+  when(io.from.fire) {
+    savedHit  := false.B
+    savedData := 0.U
+    savedStrb := 0.U
+  }
+  res.storeBufferHit     := savedHit || rhit || bfhit
+  res.storeBufferHitData := Mux(rhit, rdata, Mux(bfhit, bfdata, Mux(savedHit, savedData, bfdata1)))
+  res.storeBufferHitStrb := Mux(rhit, rstrb, Mux(bfhit, bfstrb, Mux(savedHit, savedStrb, bfstrb1)))
 
   // D-Cache
   io.dCache.addr := pa

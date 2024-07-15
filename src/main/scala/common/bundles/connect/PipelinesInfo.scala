@@ -95,6 +95,7 @@ class SingleInfo extends Bundle {
   // storebuffer
   val storeBufferHit     = Bool()
   val storeBufferHitData = UInt(DATA_WIDTH.W)
+  val storeBufferHitStrb = UInt((DATA_WIDTH / 8).W)
 }
 
 class DualInfo extends Bundle {

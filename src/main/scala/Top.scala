@@ -155,9 +155,11 @@ class Top extends Module {
   fetch.iCache    <> iCache.fetch
 
   // dcache <> memory0, memory1, memory2
-  memory0.dCache <> dcache.mem0
-  memory1.dCache <> dcache.mem1
-  memory2.dCache <> dcache.mem2
+  memory0.dCache  <> dcache.mem0
+  memory1.dCache  <> dcache.mem1
+  memory2.dCache  <> dcache.mem2
+  memory0.mem1    <> memory1.mem0
+  readreg(3).mem1 <> memory1.readreg
 
   // storeBuffer <> memory1, memory2
   storeBuffer.memory1  <> memory1.storeBuffer

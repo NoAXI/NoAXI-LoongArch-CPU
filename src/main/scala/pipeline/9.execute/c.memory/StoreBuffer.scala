@@ -32,13 +32,31 @@ class StoreBuffer(
   val mem = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(new BufferInfo))))
   val hit = WireDefault(false.B)
   io.memory1.forwardData := WireDefault(0.U.asTypeOf(io.memory1.forwardData))
+  io.memory1.forwardStrb := WireDefault(0.U.asTypeOf(io.memory1.forwardStrb))
+  // for (i <- 0 until entries) {
+  //   when(io.memory1.forwardpa === mem(i).requestInfo.addr && mem(i).valid) {
+  //     hit                    := true.B
+  //     io.memory1.forwardData := mem(i).requestInfo.wdata
+  //     io.memory1.forwardStrb := mem(i).requestInfo.wstrb
+  //   }
+  // }
+  val bitHit  = WireDefault(VecInit(Seq.fill(4)(0.U(8.W))))
+  val bitStrb = WireDefault(VecInit(Seq.fill(4)(false.B)))
   for (i <- 0 until entries) {
     when(io.memory1.forwardpa === mem(i).requestInfo.addr && mem(i).valid) {
-      hit                    := true.B
-      io.memory1.forwardData := mem(i).requestInfo.wdata
+      hit := true.B
+      for (j <- 0 to 3) {
+        when(mem(i).requestInfo.wstrb(j)) {
+          hit        := true.B
+          bitStrb(j) := true.B
+          bitHit(j)  := mem(i).requestInfo.wdata(j * 8 + 7, j * 8)
+        }
+      }
     }
   }
-  io.memory1.forwardHit := hit
+  io.memory1.forwardHit  := hit
+  io.memory1.forwardData := bitHit.asUInt
+  io.memory1.forwardStrb := bitStrb.asUInt
 
   val topPtr    = RegInit(0.U(log2Ceil(entries).W))
   val maybeFull = RegInit(false.B)
