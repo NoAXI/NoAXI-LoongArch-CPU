@@ -110,15 +110,16 @@ class Rat extends Module {
   }
 
   // commit: push, tail inc
-  when(io.commit(0).valid && io.commit(1).valid) {
+  val validVec = WireDefault(VecInit(Seq.tabulate(ISSUE_WIDTH)(i => io.commit(i).valid && io.commit(i).opreg =/= 0.U)))
+  when(validVec(0) && validVec(1)) {
     pushOffset := 2.U
-  }.elsewhen(io.commit(0).valid || io.commit(1).valid) {
+  }.elsewhen(validVec(0) || validVec(1)) {
     pushOffset := 1.U
   }
   for (i <- 0 until ISSUE_WIDTH) {
     when(pushOffset === 2.U) {
       freelist(pushPtr + i.U) := io.commit(i).opreg
-    }.elsewhen(pushOffset === 1.U && io.commit(i).valid) {
+    }.elsewhen(pushOffset === 1.U && validVec(i)) {
       freelist(pushPtr) := io.commit(i).opreg
     }
   }
