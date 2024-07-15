@@ -80,6 +80,6 @@ class Memory2Top extends Module {
   io.awake.preg  := info.rdInfo.preg
 
   doForward(io.forward, res, valid)
-  flushWhen(res, io.flush && !info.actualStore)
+  flushWhen(raw._1, io.flush && !info.actualStore)
   io.to.bits := res
 }

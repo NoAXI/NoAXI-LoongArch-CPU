@@ -95,7 +95,7 @@ class PreDecodeTop extends Module {
   // TODO：not br, but predict jump
 
   io.to.bits := 0.U.asTypeOf(new DualInfo)
-  flushWhen(res, io.flush)
+  flushWhen(from._1, io.flush)
   io.to.bits.bits(0) := res
 
   if (Config.debug_on) {

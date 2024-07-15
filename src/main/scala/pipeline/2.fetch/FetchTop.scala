@@ -21,7 +21,8 @@ class FetchTop extends Module {
   io.busy := busy.info.reduce(_ || _)
 
   val info = WireDefault(from._1.bits(0))
-  flushUntilValidWhen(info, io.flush, io.to.valid)
+  // flushUntilValidWhen(from._1, io.flush, io.to.valid)
+  flushWhen(from._1, io.flush)
   val res = WireDefault(info)
 
   // tlb

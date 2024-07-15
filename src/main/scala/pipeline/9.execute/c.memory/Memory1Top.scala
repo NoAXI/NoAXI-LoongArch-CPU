@@ -78,6 +78,6 @@ class Memory1Top extends Module {
 
   io.awake.valid := valid && info.iswf && io.to.fire && hitVec.reduce(_ || _)
   io.awake.preg  := info.rdInfo.preg
-  flushWhen(res, io.flush && !info.actualStore)
+  flushWhen(raw._1, io.flush && !info.actualStore)
   io.to.bits := res
 }

@@ -25,7 +25,7 @@ class PrefetchTop extends Module {
   val from = stageConnect(io.from, io.to, busy)
 
   val info = WireDefault(from._1.bits(0))
-  flushWhen(info, io.flush)
+  flushWhen(from._1, io.flush)
   val res = WireDefault(0.U.asTypeOf(new SingleInfo))
 
   val pc       = RegInit(START_ADDR.U(ADDR_WIDTH.W))
@@ -79,6 +79,6 @@ class PrefetchTop extends Module {
   res.pa             := directpa
   res.predict        := io.bpu.nextPC
   res.instGroupValid := io.bpu.pcValid
-  flushWhen(res, io.flush)
+  flushWhen(from._1, io.flush)
   io.to.bits.bits(0) := res
 }

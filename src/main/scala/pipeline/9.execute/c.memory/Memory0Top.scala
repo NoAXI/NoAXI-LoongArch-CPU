@@ -37,7 +37,7 @@ class Memory0Top extends Module {
   res.hitVec   := hitVec
   res.isDirect := isDirect
   res.pa       := directpa
-  flushWhen(res, io.flush && !info.actualStore)
+  flushWhen(raw._1, io.flush && !info.actualStore)
   io.to.bits := res
 
   if (Config.debug_on) {
