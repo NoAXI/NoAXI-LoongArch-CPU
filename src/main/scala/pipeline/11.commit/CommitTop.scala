@@ -7,6 +7,7 @@ import const._
 import bundles._
 import func.Functions._
 import const.Parameters._
+import os.read
 
 class CommitTopIO extends Bundle {
   val rob = Flipped(Vec(ISSUE_WIDTH, new RobCommitIO))
@@ -42,6 +43,11 @@ class CommitTop extends Module {
 
     // when detect write / csr / brfail, set next inst stall
     when(info.done && (info.isPrivilege || info.isStore || info.isbr || info.isException)) {
+      if(i == 1) {
+        when(info.isStore) {
+          readyBit(i) := false.B
+        }
+      }
       for (j <- i + 1 until ISSUE_WIDTH) {
         readyBit(j) := false.B
       }

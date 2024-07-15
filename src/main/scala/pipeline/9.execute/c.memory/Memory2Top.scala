@@ -70,6 +70,10 @@ class Memory2Top extends Module {
     io.storeBuffer.bits.requestInfo.wdata  := info.wdata
     io.storeBuffer.bits.requestInfo.wstrb  := info.wmask
   }
+  when(io.flush) {
+    io.storeBuffer.valid := false.B
+    valid                := false.B
+  }
 
   // ld but bufferhit, D-Cache dont care
   busy := ((!io.dCache.answer.fire && !isStore && !info.storeBufferHit)
