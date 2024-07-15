@@ -30,7 +30,7 @@ class UnorderedIssue[T <: Data](
         io.awake,
         io.busy,
       )
-      hitVec(i) := Mux(i.U < topPtr, regHit.reduce(_ && _), false.B)
+      hitVec(i) := Mux(full || i.U < topPtr, regHit.reduce(_ && _), false.B)
     }
   }
 

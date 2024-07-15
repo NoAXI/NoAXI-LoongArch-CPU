@@ -111,6 +111,10 @@ object Functions {
       val preg = if (j == 0) rj else rk
       realHit(j) := awakeHit(j) || !busy(preg)
     }
+    if(Config.debug_on) {
+      dontTouch(awakeHit)
+      dontTouch(realHit)
+    }
     realHit
   }
 
