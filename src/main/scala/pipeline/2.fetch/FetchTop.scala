@@ -21,7 +21,7 @@ class FetchTop extends Module {
   io.busy := busy.info.reduce(_ || _)
 
   val info = WireDefault(from._1.bits(0))
-  flushWhen(info, io.flush)
+  flushUntilValidWhen(info, io.flush, io.to.valid)
   val res = WireDefault(info)
 
   // tlb
@@ -49,7 +49,7 @@ class FetchTop extends Module {
 
   res.instGroup := Mux(info.pc(2), VecInit(instVec(1), instVec(0)), instVec)
   res.fetchExc  := VecInit(excType, excType)
-  flushWhen(res, io.flush)
+  flushUntilValidWhen(res, io.flush, io.to.valid)
 
   io.to.bits         := 0.U.asTypeOf(new DualInfo)
   io.to.bits.bits(0) := res

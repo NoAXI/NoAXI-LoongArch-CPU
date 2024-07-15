@@ -46,9 +46,25 @@ object Functions {
   def flushWhen(infoReg: DualInfo, flush: Bool): Unit = {
     when(flush) {
       infoReg := 0.U.asTypeOf(infoReg)
-      for (i <- 0 until ISSUE_WIDTH) {
-        infoReg.bits(i).bubble := true.B
-      }
+      // for (i <- 0 until ISSUE_WIDTH) {
+      //   infoReg.bits(i).bubble := true.B
+      // }
+    }
+  }
+  // waiting flush
+  def flushUntilValidWhen[T <: Data](infoReg: T, flush: Bool, valid: Bool): Unit = {
+
+    val holdFlush = RegInit(false.B)
+    when(!valid && flush) {
+      holdFlush := true.B
+    }
+    when(valid) {
+      holdFlush := false.B
+    }
+    val isFlush = flush || holdFlush
+
+    when(isFlush) {
+      infoReg := 0.U.asTypeOf(infoReg)
     }
   }
   // single flush
@@ -111,7 +127,7 @@ object Functions {
       val preg = if (j == 0) rj else rk
       realHit(j) := awakeHit(j) || !busy(preg)
     }
-    if(Config.debug_on) {
+    if (Config.debug_on) {
       dontTouch(awakeHit)
       dontTouch(realHit)
     }

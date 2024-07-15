@@ -51,6 +51,25 @@ class Decoder extends Module {
   io.func_type := func_type
   io.op_type   := op_type
 
+  when(
+    func_type === FuncType.alu_imm
+      || func_type === FuncType.mem
+      || func_type === FuncType.bru
+      || io.inst === LA32R.CSRXCHG,
+  ) {
+    io.rk := 0.U
+  }
+
+  when(
+    func_type === FuncType.cnt
+      || func_type === FuncType.exc
+      || (func_type === FuncType.csr && op_type =/= CsrOpType.xchg)
+      || func_type === FuncType.tlb,
+  ) {
+    io.rj := 0.U
+    io.rk := 0.U
+  }
+
   when(func_type === FuncType.bru || func_type === FuncType.mem) {
     io.rk := io.inst(4, 0)
   }

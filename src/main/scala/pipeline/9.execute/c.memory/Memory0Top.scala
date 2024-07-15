@@ -18,7 +18,7 @@ class Memory0Top extends Module {
   val io   = IO(new Memory0TopIO)
   val busy = WireDefault(false.B)
   val raw  = stageConnect(io.from, io.to, busy)
-  flushWhen(raw._1, io.flush)
+  flushWhen(raw._1, io.flush && !raw._1.actualStore)
 
   val info  = raw._1
   val valid = raw._2
@@ -37,7 +37,8 @@ class Memory0Top extends Module {
   res.hitVec   := hitVec
   res.isDirect := isDirect
   res.pa       := directpa
-  io.to.bits   := res
+  flushWhen(res, io.flush && !info.actualStore)
+  io.to.bits := res
 
   if (Config.debug_on) {
     dontTouch(info.rjInfo.data)

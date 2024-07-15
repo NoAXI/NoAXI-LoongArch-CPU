@@ -25,7 +25,7 @@ class Memory1Top extends Module {
   val io   = IO(new Memory1TopIO)
   val busy = WireDefault(false.B)
   val raw  = stageConnect(io.from, io.to, busy)
-  flushWhen(raw._1, io.flush)
+  flushWhen(raw._1, io.flush && !raw._1.actualStore)
 
   val info  = raw._1
   val valid = raw._2
@@ -76,8 +76,8 @@ class Memory1Top extends Module {
   val hitVec = io.dCache.hitVec
   res.dcachehitVec := hitVec
 
-  io.awake.valid := valid && info.iswf && io.to.fire && hitVec.reduce(_ || _) // false.B
+  io.awake.valid := valid && info.iswf && io.to.fire && hitVec.reduce(_ || _)
   io.awake.preg  := info.rdInfo.preg
-
+  flushWhen(res, io.flush && !info.actualStore)
   io.to.bits := res
 }

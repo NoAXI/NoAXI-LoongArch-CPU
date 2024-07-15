@@ -16,5 +16,6 @@ object FuncType {
   def csr     = "b0111".U
   def exc     = "b1000".U
   def tlb     = "b1001".U
+  def cnt     = "b1010".U
   def apply() = UInt(FUNC_TYPE_WIDTH.W)
 }
