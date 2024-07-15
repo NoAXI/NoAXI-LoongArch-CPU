@@ -23,9 +23,9 @@ object Predict {
   val BTB_INDEX_LENGTH = 10 // maybe 7
   val BTB_INDEX_WIDTH  = 1 << BTB_INDEX_LENGTH
 
-  val BTB_TAG_LENGTH  = ADDR_WIDTH - BTB_INDEX_LENGTH - 2         // 20
-  val BTB_FLAG_LENGTH = 2                                         // isCALL and isReturn
-  val BTB_INFO_LENGTH = BTB_TAG_LENGTH + 32 + BTB_FLAG_LENGTH + 1 // 53
+  val BTB_TAG_LENGTH  = ADDR_WIDTH - BTB_INDEX_LENGTH - 2                 // 20
+  val BTB_FLAG_LENGTH = 2                                                 // isCALL and isReturn
+  val BTB_INFO_LENGTH = 1 + BTB_TAG_LENGTH + ADDR_WIDTH + BTB_FLAG_LENGTH // 55
 
   // RAS
   val RAS_DEPTH = 8

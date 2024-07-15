@@ -6,7 +6,6 @@ import const.Parameters._
 import const.Predict._
 
 class PreFetchBPUIO extends Bundle {
-  val stall    = Output(Bool())
   val pcValid  = Output(Vec(FETCH_DEPTH, Bool()))
   val pcGroup  = Output(Vec(FETCH_DEPTH, UInt(ADDR_WIDTH.W)))
   val npcGroup = Output(Vec(FETCH_DEPTH, UInt(ADDR_WIDTH.W)))
@@ -24,7 +23,7 @@ class PredictRes extends Bundle {
 //   val isCALL        = Bool() // is call or PC-relative branch
 //   val isReturn      = Bool() // is Return
 
-  def index = pc(INDEX_LENGTH + 3, 4)
+  def index = pc(INDEX_LENGTH + 1, 2)
 //   def BTBIndex = pc(BTB_INDEX_LENGTH + 3, 4)
 //   def BTBTag   = pc(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH)
 }

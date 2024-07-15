@@ -88,7 +88,6 @@ class Top extends Module {
   prefetch.from.bits           := 0.U.asTypeOf(prefetch.from.bits)
   prefetch.from.valid          := RegNext(!reset.asBool) & !reset.asBool
   prefetch.predictResFromFront := predecode.predictRes
-  prefetch.exceptionJump       := csr.exceptionJump
   prefetch.flush               := flushCtrl.frontFlush || predecode.flushapply // TODO: 优先级
 
   prefetch.to  <> fetch.from

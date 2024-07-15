@@ -16,7 +16,6 @@ class PrefetchTopIO extends StageBundle {
   val predictResFromBack  = Input(new PredictRes) // 预测结果
   // 考虑到predecode的指令最终还是会流到后端，后端一定会更新分治预测器，所有前端如果不能更新也问题不大
   val flushTarget   = Input(new br)
-  val exceptionJump = Input(new br) // 异常跳转
 }
 
 class PrefetchTop extends Module {
@@ -37,14 +36,12 @@ class PrefetchTop extends Module {
   val flushRes   = io.flushTarget
 
   // bpu
-  io.bpu.stall    := !io.from.fire
   io.bpu.pcValid  := VecInit(Seq(true.B, pc_add_4(2)))
   io.bpu.pcGroup  := VecInit(Seq(pc, pc_add_4))
   io.bpu.npcGroup := VecInit(Seq(pc_add_4, pc_add_8))
   io.bpu.train    := Mux(io.predictResFromBack.isbr, io.predictResFromBack, io.predictResFromFront)
 
   // pc
-  // val (excHappen, excPC)       = (io.exceptionJump.en, io.exceptionJump.tar)
   val (flushHappen, flushPC)   = (flushRes.en, flushRes.tar)
   val (predictFailed, exactPC) = (predictRes.br.en, predictRes.br.tar)
   val (predictEn, predictPC)   = (io.bpu.nextPC.en, io.bpu.nextPC.tar)
@@ -58,7 +55,7 @@ class PrefetchTop extends Module {
       ),
     )
   }
-  when(io.flush && flushHappen) {
+  when(flushHappen) {
     pc := flushPC
   }
 
