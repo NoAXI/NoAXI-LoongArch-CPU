@@ -107,13 +107,13 @@ class TLB(
     } else {
       io.stage1.cached := ShiftRegister(io.csr.crmd.datm(0), 1) // send cached info when at stage1
     }
-    io.stage1.exception := ShiftRegister(0.U.asTypeOf(new Exception), 1)
+    io.stage1.exception := ShiftRegister(0.U.asTypeOf(new ExceptionInfo), 1)
   }.elsewhen(direct_hitted) {
     // check if Direct mapping mode
     io.stage0.isDirect  := true.B
     io.stage0.directpa  := Cat(io.csr.dmw(direct_hittedway).pseg, io.stage0.va(28, 0))
     io.stage1.cached    := ShiftRegister(io.csr.dmw(direct_hittedway).mat(0), 1)
-    io.stage1.exception := ShiftRegister(0.U.asTypeOf(new Exception), 1)
+    io.stage1.exception := ShiftRegister(0.U.asTypeOf(new ExceptionInfo), 1)
   }.otherwise {
     // Page Table Mapping Mode
     io.stage1.pa := Mux(found_ps(3), Cat(found.ppn, io.stage1.va(11, 0)), Cat(found.ppn(19, 9), io.stage1.va(20, 0)))

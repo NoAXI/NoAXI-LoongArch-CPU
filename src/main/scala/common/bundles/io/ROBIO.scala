@@ -29,6 +29,8 @@ class RobInfo extends Bundle {
   val isStore     = Bool()
   val isPrivilege = Bool()
   val isException = Bool()
+  val isSyscall   = Bool()
+  val isEret      = Bool()
   // val hasFlush  = Bool()
 
   val debug_pc = UInt(ADDR_WIDTH.W)
@@ -50,7 +52,7 @@ class RobCommitIO extends Bundle {
   val info = DecoupledIO(new RobInfo)
 }
 
-// class RobStoreBufferIO extends Bundle {
-//   val from = Flipped(DecoupledIO(new BufferInfo))
-//   val to   = DecoupledIO(new BufferInfo)
-// }
+class StoreBufferPipeIO extends Bundle {
+  val from = Flipped(DecoupledIO(new BufferInfo))
+  val to   = DecoupledIO(new BufferInfo)
+}

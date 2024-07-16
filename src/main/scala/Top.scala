@@ -169,12 +169,6 @@ class Top extends Module {
   // bpu <> prefetch, fetch
   bpu.preFetch <> prefetch.bpu
 
-  // csr
-  csr.csr_reg_read.re    := false.B
-  csr.csr_reg_read.raddr := 0.U
-  csr.exc_happen         := 0.U.asTypeOf(new excHappen) // TODO: fix
-  csr.csr_write          := 0.U.asTypeOf(new CSRWrite)  // TODO: fix
-
   // rename <> rat
   rename.ratRename <> rat.rename
   rename.ratRead   <> rat.read
@@ -282,4 +276,10 @@ class Top extends Module {
   flushCtrl.commitStall <> commit.stall
   flushCtrl.fetchStall  <> fetch.busy
   commit.predictResult  <> prefetch.predictResFromBack
+
+  // csr
+  csr.csrRead   <> memory1.csrRead
+  csr.csrWrite  <> commit.csrWrite
+  csr.excJump   <> commit.excJump
+  csr.excHappen <> commit.excHappen
 }

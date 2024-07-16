@@ -19,6 +19,7 @@ class Memory1TopIO extends SingleStageBundle {
   val tlb         = new Stage1TLBIO
   val dCache      = new Mem1DCacheIO
   val mem2        = new Mem1Mem2ForwardIO
+  val csrRead = Flipped(new CsrReadIO)
 }
 
 class Memory1Top extends Module {
@@ -72,6 +73,10 @@ class Memory1Top extends Module {
 
   // D-Cache
   io.dCache.addr := info.va
+
+  // csr read
+  io.csrRead.addr := info.csr_addr
+  res.rdInfo.data := io.csrRead.data
 
   flushWhen(raw._1, io.flush && !info.actualStore)
   io.to.bits := res

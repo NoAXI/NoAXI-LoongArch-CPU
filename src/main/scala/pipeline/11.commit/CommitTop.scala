@@ -7,22 +7,29 @@ import const._
 import bundles._
 import func.Functions._
 import const.Parameters._
-import os.read
 
 class CommitTopIO extends Bundle {
+  // architectural state update
   val rob = Flipped(Vec(ISSUE_WIDTH, new RobCommitIO))
   val rat = Flipped(Vec(ISSUE_WIDTH, new RatCommitIO))
-  val buffer = new Bundle {
-    val from = Flipped(DecoupledIO(new BufferInfo))
-    val to   = DecoupledIO(new BufferInfo)
-  }
-  val debug = Vec(ISSUE_WIDTH, new DebugIO)
+
+  // store buffer (pop port) connect
+  val buffer = new StoreBufferPipeIO
 
   // ctrl signal
   val flush         = Input(Bool())
   val stall         = Input(Bool())
   val predictResult = Output(new PredictRes)
   val flushInfo     = Output(new br)
+
+  // exception
+  val excInfo   = Output(new ExceptionInfo)
+  val excHappen = Output(new ExcHappenInfo)
+  val csrWrite  = Output(new CSRWrite)
+  val excJump   = Input(new br)
+
+  // debug info output
+  val debug = Vec(ISSUE_WIDTH, new DebugIO)
 }
 
 class CommitTop extends Module {
@@ -43,7 +50,7 @@ class CommitTop extends Module {
 
     // when detect write / csr / brfail, set next inst stall
     when(info.done && (info.isPrivilege || info.isStore || info.isbr || info.isException)) {
-      if(i == 1) {
+      if (i == 1) {
         when(info.isStore) {
           readyBit(i) := false.B
         }
@@ -84,10 +91,12 @@ class CommitTop extends Module {
     val isEx    = info.isException
     // TODO: add exception here
     when(io.rob(i).info.ready && isBfail) {
-      val out = io.flushInfo
-      out.en  := true.B
-      out.tar := info.bfail.tar
+      io.flushInfo.en  := true.B
+      io.flushInfo.tar := info.bfail.tar
     }
+  }
+  when(io.excJump.en) {
+    io.flushInfo := io.excJump
   }
 
   // send info
@@ -113,6 +122,7 @@ class CommitTop extends Module {
     doStore(i) := readyBit(i) && rob.bits.isStore
   }
 
+  // store buffer
   val writeHappen = doStore.reduce(_ || _)
   io.buffer.to.bits    := io.buffer.from.bits
   io.buffer.to.valid   := io.buffer.from.valid && writeHappen
@@ -124,4 +134,24 @@ class CommitTop extends Module {
   for (i <- 0 until ISSUE_WIDTH) {
     io.rob(i).info.ready := readyBit(i) && !writeStall
   }
+
+  // exception
+  io.excInfo := 0.U.asTypeOf(io.excInfo)
+  for (i <- 0 until ISSUE_WIDTH) {
+    val info = io.rob(i).info.bits
+    when(hasEx(i)) {
+      io.excInfo.en       := true.B
+      io.excInfo.excType  := info.exc_type
+      io.excInfo.excVAddr := info.exc_vaddr
+    }
+  }
+  io.excHappen := 0.U.asTypeOf(io.excHappen)
+  for (i <- 0 until ISSUE_WIDTH) {
+    val info = io.rob(i).info.bits
+    when(info.isSyscall || info.isEret) {
+      io.excHappen.start := info.isSyscall
+      io.excHappen.end   := info.isEret
+    }
+  }
+  io.csrWrite := 0.U.asTypeOf(io.csrWrite)
 }

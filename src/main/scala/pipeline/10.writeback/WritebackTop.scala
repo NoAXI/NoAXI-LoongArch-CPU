@@ -82,6 +82,11 @@ class WritebackTop(
   io.rob.bits.realBrDir   := res.realBrDir
   io.rob.bits.isException := res.exc_type =/= ECodes.NONE
 
+  // TODO: eret
+  io.rob.bits.isEret    := false.B
+  io.rob.bits.isSyscall := false.B
+  io.rob.bits.isEret    := false.B
+
   // writeback -> forward -> readreg
   doForward(io.forward, res, valid)
 }

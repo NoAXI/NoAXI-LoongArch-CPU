@@ -8,30 +8,27 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 
-class CSR_IO extends Bundle {
-  // act with ds
-  val csr_reg_read = Flipped(new csrRegRead)
+class CSRIO extends Bundle {
+  // memory2
+  val csrRead = new CsrReadIO
 
-  // from wb
-  val exc_happen   = Input(new excHappen)
-  val flush_by_csr = Output(Bool())
-  val csr_write    = Input(new CSRWrite)
-
-  // to fs
-  val exceptionJump = Output(new br)
+  // commit
+  val excHappen = Input(new ExcHappenInfo)
+  val csrWrite  = Input(new CSRWrite)
+  val excJump   = Output(new br)
 
   // to tlb
   val tlb = Vec(2, new CSRTLBIO)
 }
 
 class CSR extends Module {
-  val io = IO(new CSR_IO)
+  val io = IO(new CSRIO)
 
   val saved_info = RegInit(0.U.asTypeOf(new SingleInfo))
-  when(!io.exc_happen.info.bubble) {
-    saved_info := io.exc_happen.info
+  when(!io.excHappen.info.bubble) {
+    saved_info := io.excHappen.info
   }
-  val info = Mux(io.exc_happen.info.bubble, saved_info, io.exc_happen.info)
+  val info = Mux(io.excHappen.info.bubble, saved_info, io.excHappen.info)
 
   val CRMD    = new CRMD
   val PRMD    = new PRMD
@@ -98,14 +95,12 @@ class CSR extends Module {
   )
 
   // 读 or 写
-  io.csr_reg_read.rdata := 0.U
-  when(io.csr_reg_read.re) {
-    for (x <- csrlist) {
-      when(io.csr_reg_read.raddr === x.id) {
-        io.csr_reg_read.rdata := x.info.asUInt
-        when(x.id === CSRCodes.TICLR) {
-          io.csr_reg_read.rdata := 0.U
-        }
+  io.csrRead.data := 0.U
+  for (x <- csrlist) {
+    when(io.csrRead.addr === x.id) {
+      io.csrRead.data := x.info.asUInt
+      when(x.id === CSRCodes.TICLR) {
+        io.csrRead.data := 0.U
       }
     }
   }
@@ -113,10 +108,10 @@ class CSR extends Module {
   val conuter_run    = WireDefault(true.B)
   val is_soft_int_ex = WireDefault(false.B)
 
-  when(io.csr_write.we) {
+  when(io.csrWrite.we) {
     for (x <- csrlist) {
-      when(io.csr_write.waddr === x.id) {
-        val wdata = writeMask(io.csr_write.wmask, x.info.asUInt, io.csr_write.wdata)
+      when(io.csrWrite.waddr === x.id) {
+        val wdata = writeMask(io.csrWrite.wmask, x.info.asUInt, io.csrWrite.wdata)
         x.write(wdata)
         // 清除中断位 当有写1的行为
         when(x.id === CSRCodes.TICLR && wdata(0) === 1.U) {
@@ -151,18 +146,16 @@ class CSR extends Module {
   val is_tlb_exc    = ECodes.istlbException(info.exc_type)
   val is_tlb_refill = info.exc_type === ECodes.TLBR
 
-  val start = io.exc_happen.start || (any_exc.orR && CRMD.info.ie)
+  val start = io.excHappen.start || (any_exc.orR && CRMD.info.ie)
 
   // 例外跳转
-  io.exceptionJump := WireDefault(0.U.asTypeOf(new br))
-  io.flush_by_csr  := false.B
+  io.excJump := WireDefault(0.U.asTypeOf(new br))
   when(start) {
-    io.flush_by_csr := true.B
-    PRMD.info.pplv  := CRMD.info.plv
-    
-    PRMD.info.pie   := CRMD.info.ie
-    CRMD.info.plv   := 0.U
-    CRMD.info.ie    := 0.U
+    PRMD.info.pplv := CRMD.info.plv
+
+    PRMD.info.pie := CRMD.info.ie
+    CRMD.info.plv := 0.U
+    CRMD.info.ie  := 0.U
     // 中断>例外>tlb例外的优先级，不过本身的设计保证例外和tlb例外不会同时发生，且普通例外优先
     ESTAT.info.ecode := MuxCase(
       info.exc_type,
@@ -186,26 +179,25 @@ class CSR extends Module {
       ),
     )
 
-    io.exceptionJump.en  := true.B
-    io.exceptionJump.tar := EENTRY.info.asUInt
+    io.excJump.en  := true.B
+    io.excJump.tar := EENTRY.info.asUInt
 
     when(is_tlb_exc) {
       when(is_tlb_refill) {
-        CRMD.info.da         := true.B
-        CRMD.info.pg         := false.B
-        io.exceptionJump.tar := TLBRENTRY.info.asUInt
+        CRMD.info.da   := true.B
+        CRMD.info.pg   := false.B
+        io.excJump.tar := TLBRENTRY.info.asUInt
       }
       TLBEHI.info.vppn := info.exc_vaddr(31, 13)
     }
   }
 
-  when(io.exc_happen.end) {
-    io.flush_by_csr := true.B
-    CRMD.info.plv   := PRMD.info.pplv
-    CRMD.info.ie    := PRMD.info.pie
+  when(io.excHappen.end) {
+    CRMD.info.plv := PRMD.info.pplv
+    CRMD.info.ie  := PRMD.info.pie
 
-    io.exceptionJump.en  := true.B
-    io.exceptionJump.tar := ERA.info.pc
+    io.excJump.en  := true.B
+    io.excJump.tar := ERA.info.pc
   }
 
   for (i <- 0 until 2) {
