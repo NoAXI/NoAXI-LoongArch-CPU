@@ -10,15 +10,15 @@ class PreFetchBPUIO extends Bundle {
   val pcGroup  = Output(Vec(FETCH_DEPTH, UInt(ADDR_WIDTH.W)))
   val npcGroup = Output(Vec(FETCH_DEPTH, UInt(ADDR_WIDTH.W)))
   val train    = Output(new PredictRes)
-  val nextPC   = Input(new br)
+  val nextPC   = Input(new BranchInfo)
   // val predict  = Input(Vec(FETCH_DEPTH, new br))
 }
 
 // 不是跳转指令br.en = false.B
 class PredictRes extends Bundle {
-  val isbr          = Bool() // is branch
-  val br            = new br // is predict fail
-  val realDirection = Bool() // branch direction
+  val isbr          = Bool()         // is branch
+  val br            = new BranchInfo // is predict fail
+  val realDirection = Bool()         // branch direction
   val pc            = UInt(ADDR_WIDTH.W)
 //   val isCALL        = Bool() // is call or PC-relative branch
 //   val isReturn      = Bool() // is Return

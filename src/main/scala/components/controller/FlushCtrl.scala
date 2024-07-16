@@ -9,7 +9,7 @@ import func.Functions._
 import const.Parameters._
 
 class FlushCtrlIO extends Bundle {
-  val flushInfo  = Input(new br)
+  val flushInfo  = Input(new BranchInfo)
   val fetchStall = Input(Bool())
 
   val frontFlush  = Output(Bool())
@@ -17,7 +17,7 @@ class FlushCtrlIO extends Bundle {
   val recover     = Output(Bool()) // let rob, rat flushed
   val commitStall = Output(Bool())
 
-  val flushTarget = Output(new br)
+  val flushTarget = Output(new BranchInfo)
 }
 class FlushCtrl extends Module {
   val io = IO(new FlushCtrlIO)

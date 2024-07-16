@@ -5,12 +5,12 @@ import chisel3.util._
 import const.Parameters._
 import const.Predict._
 
-class br extends Bundle {
+class BranchInfo extends Bundle {
   val en  = Bool()
   val tar = UInt(ADDR_WIDTH.W)
 }
 
-class brCheck extends Bundle {
+class BranchCheck extends Bundle {
   val en      = Bool()
   val succeed = Bool()
   val real    = Bool()

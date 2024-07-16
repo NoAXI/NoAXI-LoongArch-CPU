@@ -15,7 +15,7 @@ class PrefetchTopIO extends StageBundle {
   val predictResFromFront = Input(new PredictRes) // 预测结果
   val predictResFromBack  = Input(new PredictRes) // 预测结果
   // 考虑到predecode的指令最终还是会流到后端，后端一定会更新分治预测器，所有前端如果不能更新也问题不大
-  val flushTarget   = Input(new br)
+  val flushTarget   = Input(new BranchInfo)
 }
 
 class PrefetchTop extends Module {

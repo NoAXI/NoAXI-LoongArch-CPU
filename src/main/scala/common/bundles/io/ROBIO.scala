@@ -21,7 +21,7 @@ class RobInfo extends Bundle {
 
   val isbr      = Bool()
   val realBrDir = Bool()
-  val bfail     = new br
+  val bfail     = new BranchInfo
 
   val exc_type  = ECodes()
   val exc_vaddr = UInt(ADDR_WIDTH.W)

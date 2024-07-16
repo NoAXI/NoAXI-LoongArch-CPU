@@ -21,13 +21,13 @@ class CommitTopIO extends Bundle {
   val flush         = Input(Bool())
   val stall         = Input(Bool())
   val predictResult = Output(new PredictRes)
-  val flushInfo     = Output(new br)
+  val flushInfo     = Output(new BranchInfo)
 
   // exception
   val excInfo   = Output(new ExceptionInfo)
   val excHappen = Output(new ExcHappenInfo)
   val csrWrite  = Output(new CSRWrite)
-  val excJump   = Input(new br)
+  val excJump   = Input(new BranchInfo)
 
   // debug info output
   val debug = Vec(ISSUE_WIDTH, new DebugIO)
@@ -85,7 +85,7 @@ class CommitTop extends Module {
   }
 
   // when ex / bfail appears, do flush
-  io.flushInfo := 0.U.asTypeOf(new br)
+  io.flushInfo := 0.U.asTypeOf(new BranchInfo)
   for (i <- 0 until ISSUE_WIDTH) {
     val info    = io.rob(i).info.bits
     val isBfail = info.bfail.en && info.isbr

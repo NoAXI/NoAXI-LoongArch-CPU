@@ -72,8 +72,8 @@ class SingleInfo extends Bundle {
   val hasFlush  = Bool() // branch predict fail, exception
 
   // branch predict
-  val predict   = new br
-  val realBr    = new br
+  val predict   = new BranchInfo
+  val realBr    = new BranchInfo
   val realBrDir = Bool()
   val isCALL    = Bool()
   val isReturn  = Bool()

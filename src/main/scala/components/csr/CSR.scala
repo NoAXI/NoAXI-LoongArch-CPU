@@ -15,7 +15,7 @@ class CSRIO extends Bundle {
   // commit
   val excHappen = Input(new ExcHappenInfo)
   val csrWrite  = Input(new CSRWrite)
-  val excJump   = Output(new br)
+  val excJump   = Output(new BranchInfo)
 
   // to tlb
   val tlb = Vec(2, new CSRTLBIO)
@@ -149,7 +149,7 @@ class CSR extends Module {
   val start = io.excHappen.start || (any_exc.orR && CRMD.info.ie)
 
   // 例外跳转
-  io.excJump := WireDefault(0.U.asTypeOf(new br))
+  io.excJump := WireDefault(0.U.asTypeOf(new BranchInfo))
   when(start) {
     PRMD.info.pplv := CRMD.info.plv
 

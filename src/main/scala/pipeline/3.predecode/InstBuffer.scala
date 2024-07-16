@@ -23,7 +23,7 @@ class InstBufferInfo extends Bundle {
   val pc      = UInt(ADDR_WIDTH.W)
   val inst    = UInt(ADDR_WIDTH.W)
   val excType = ECodes()
-  val predict = new br
+  val predict = new BranchInfo
 }
 
 class InstBufferIO extends StageBundle {
