@@ -10,11 +10,20 @@ import const.Parameters._
 import isa.MemOpType
 import isa.FuncType
 
+class Mem2BufferIO extends Bundle {
+  val forwardpa   = Output(UInt(ADDR_WIDTH.W))
+  val forwardHit  = Input(Bool())
+  val forwardData = Input(UInt(DATA_WIDTH.W))
+  val forwardStrb = Input(UInt((DATA_WIDTH / 8).W))
+}
+
 class Memory2TopIO extends SingleStageBundle {
-  val dCache      = new Mem2DCacheIO
-  val storeBuffer = DecoupledIO(new BufferInfo)
-  val forward     = Flipped(new ForwardInfoIO)
-  val awake       = Output(new AwakeInfo)
+  val dCache           = new Mem2DCacheIO
+  val storeBufferWrite = DecoupledIO(new BufferInfo)
+  val storeBufferRead  = new Mem2BufferIO
+  val mem1             = Flipped(new Mem1Mem2ForwardIO)
+  val forward          = Flipped(new ForwardInfoIO)
+  val awake            = Output(new AwakeInfo)
 }
 
 class Memory2Top extends Module {
@@ -27,19 +36,13 @@ class Memory2Top extends Module {
   val info  = raw._1
   val valid = raw._2
   val res   = WireDefault(info)
-  val mem2  = Module(new Memory2Access).io
+  // val mem2  = Module(new Memory2Access).io
 
   val isMem   = info.func_type === FuncType.mem
   val isStore = !MemOpType.isread(info.op_type) && isMem || info.actualStore
   val isLoad  = !isStore && isMem
 
-  val loadData           = WireDefault(0.U(DATA_WIDTH.W))
-  val storeBufferHit     = info.storeBufferHit && isLoad
-  val storeBufferHitData = info.storeBufferHitData
-  val storeBufferHitStrb = info.storeBufferHitStrb
-  val storeBufferFull    = !io.storeBuffer.ready
-
-  val prevAwake = !storeBufferHit && io.dCache.prevAwake
+  val storeBufferFull = !io.storeBufferWrite.ready
 
   // D-Cache
   io.dCache.request.valid       := valid && (info.actualStore || isLoad) && !info.bubble
@@ -48,38 +51,38 @@ class Memory2Top extends Module {
   io.dCache.request.bits.wdata  := info.wdata
   io.dCache.request.bits.wstrb  := info.wmask
   io.dCache.rwType              := isStore
-  io.dCache.hitVec              := info.dcachehitVec
   io.dCache.answer.ready        := true.B
 
   // load
-  when(io.dCache.answer.fire) {
-    when(storeBufferHit) {
-      val cacheRes = io.dCache.answer.bits
-      val bitMask  = Cat((3 to 0 by -1).map(i => Fill(8, storeBufferHitStrb(i))))
-      loadData := writeMask(bitMask, cacheRes, storeBufferHitData)
-    }.otherwise {
-      loadData := io.dCache.answer.bits
-    }
-  }
-  mem2.rdata      := loadData
-  mem2.addr       := info.pa
-  mem2.op_type    := info.op_type
-  res.rdInfo.data := mem2.data
+  // mem2.rdata      := loadData
+  // mem2.addr       := info.pa
+  // mem2.op_type    := info.op_type
+  // res.rdInfo.data := mem2.data
 
-  // store
-  io.storeBuffer.valid := false.B
-  io.storeBuffer.bits  := 0.U.asTypeOf(new BufferInfo)
+  // storebuffer write
+  io.storeBufferWrite.valid := false.B
+  io.storeBufferWrite.bits  := 0.U.asTypeOf(new BufferInfo)
   when(!storeBufferFull && isStore && !info.actualStore) {
-    io.storeBuffer.valid                   := valid && !info.bubble
-    io.storeBuffer.bits.valid              := true.B
-    io.storeBuffer.bits.requestInfo.cached := info.cached
-    io.storeBuffer.bits.requestInfo.addr   := info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
-    io.storeBuffer.bits.requestInfo.wdata  := info.wdata
-    io.storeBuffer.bits.requestInfo.wstrb  := info.wmask
+    io.storeBufferWrite.valid                   := valid && !info.bubble
+    io.storeBufferWrite.bits.valid              := true.B
+    io.storeBufferWrite.bits.requestInfo.cached := info.cached
+    io.storeBufferWrite.bits.requestInfo.addr   := info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
+    io.storeBufferWrite.bits.requestInfo.wdata  := info.wdata
+    io.storeBufferWrite.bits.requestInfo.wstrb  := info.wmask
   }
   when(io.flush) {
-    io.storeBuffer.valid := false.B
+    io.storeBufferWrite.valid := false.B
   }
+
+  // get forward
+  io.storeBufferRead.forwardpa := info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
+  res.ldData                   := io.dCache.answer.bits
+  res.forwardHitVec(0)         := io.mem1.actualStore && io.mem1.addr === info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
+  res.forwardHitVec(1)         := io.storeBufferRead.forwardHit
+  res.forwardData(0)           := io.mem1.data
+  res.forwardData(1)           := io.storeBufferRead.forwardData
+  res.forwardStrb(0)           := io.mem1.strb
+  res.forwardStrb(1)           := io.storeBufferRead.forwardStrb
 
   // ld but bufferhit, D-Cache dont care
   busy := (!io.dCache.answer.fire && (info.actualStore || isLoad)) || (storeBufferFull && isStore && !info.actualStore)
@@ -87,11 +90,9 @@ class Memory2Top extends Module {
   io.awake.valid := valid && info.iswf && io.to.fire
   io.awake.preg  := info.rdInfo.preg
 
-  doForward(io.forward, res, valid)
+  doForward(io.forward, res, false.B)
   flushWhen(raw._1, io.flush && !info.actualStore)
   io.to.bits := res
 
-  if (Config.debug_on) {
-    dontTouch(loadData)
-  }
+  if (Config.debug_on) {}
 }

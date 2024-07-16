@@ -38,7 +38,7 @@ generate:
 
 # make way x=N
 wav:
-	@cd $(simulator_path) && gtkwave trace-perf-$(x).vcd debugdiffwave.out.gtkw
+	@cd $(simulator_path) && gtkwave trace-perf-$(x).fst debugFST.gtkw
 
 # make set EXP=N
 set:

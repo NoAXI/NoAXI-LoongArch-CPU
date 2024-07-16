@@ -15,7 +15,9 @@ class WritebackTopIO extends SingleStageBundle {
   val forward = Flipped(new ForwardInfoIO)
 }
 
-class WritebackTop extends Module {
+class WritebackTop(
+    special: String = "",
+) extends Module {
   val io = IO(new WritebackTopIO)
 
   val busy = WireDefault(false.B)
@@ -26,6 +28,31 @@ class WritebackTop extends Module {
   val valid = io.to.fire && raw._2
   val res   = WireDefault(info)
   io.to.bits := res
+
+  // load merge
+  if (special == "memory") {
+    val bitHit  = WireDefault(VecInit(Seq.fill(4)(0.U(8.W))))
+    val bitStrb = WireDefault(VecInit(Seq.fill(4)(false.B)))
+    for (i <- 0 until 2) {
+      when(info.forwardHitVec(i)) {
+        for (j <- 0 to 3) {
+          when(info.forwardStrb(i)(j)) {
+            bitStrb(j) := true.B
+            bitHit(j)  := info.forwardData(i)(j * 8 + 7, j * 8)
+          }
+        }
+      }
+    }
+    val bitMask = Cat((3 to 0 by -1).map(i => Fill(8, bitStrb(i))))
+    val result  = writeMask(bitMask, info.ldData, bitHit.asUInt)
+
+    val mem2 = Module(new MemoryLoadAccess).io
+    mem2.rdata      := result
+    mem2.addr       := info.pa
+    mem2.op_type    := info.op_type
+    res.rdInfo.data := mem2.data
+    dontTouch(bitHit)
+  }
 
   // writeback -> preg
   io.preg.en    := valid && res.iswf

@@ -14,7 +14,7 @@ class BufferInfo extends Bundle {
 }
 
 class StoreBufferIO extends Bundle {
-  val memory1 = Flipped(new Mem1BufferIO)
+  val memory2 = Flipped(new Mem2BufferIO)
   val from    = Flipped(DecoupledIO(new BufferInfo)) // memory2
   val to      = DecoupledIO(new BufferInfo)
   val flush   = Input(Bool())
@@ -31,8 +31,8 @@ class StoreBuffer(
   // use compressive queue
   val mem = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(new BufferInfo))))
   val hit = WireDefault(false.B)
-  io.memory1.forwardData := WireDefault(0.U.asTypeOf(io.memory1.forwardData))
-  io.memory1.forwardStrb := WireDefault(0.U.asTypeOf(io.memory1.forwardStrb))
+  io.memory2.forwardData := WireDefault(0.U.asTypeOf(io.memory2.forwardData))
+  io.memory2.forwardStrb := WireDefault(0.U.asTypeOf(io.memory2.forwardStrb))
   // for (i <- 0 until entries) {
   //   when(io.memory1.forwardpa === mem(i).requestInfo.addr && mem(i).valid) {
   //     hit                    := true.B
@@ -43,7 +43,7 @@ class StoreBuffer(
   val bitHit  = WireDefault(VecInit(Seq.fill(4)(0.U(8.W))))
   val bitStrb = WireDefault(VecInit(Seq.fill(4)(false.B)))
   for (i <- 0 until entries) {
-    when(io.memory1.forwardpa === mem(i).requestInfo.addr && mem(i).valid) {
+    when(io.memory2.forwardpa === mem(i).requestInfo.addr && mem(i).valid) {
       hit := true.B
       for (j <- 0 to 3) {
         when(mem(i).requestInfo.wstrb(j)) {
@@ -54,9 +54,9 @@ class StoreBuffer(
       }
     }
   }
-  io.memory1.forwardHit  := hit
-  io.memory1.forwardData := bitHit.asUInt
-  io.memory1.forwardStrb := bitStrb.asUInt
+  io.memory2.forwardHit  := hit
+  io.memory2.forwardData := bitHit.asUInt
+  io.memory2.forwardStrb := bitStrb.asUInt
 
   val topPtr    = RegInit(0.U(log2Ceil(entries).W))
   val maybeFull = RegInit(false.B)

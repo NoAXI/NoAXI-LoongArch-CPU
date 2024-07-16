@@ -8,18 +8,10 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 
-class ReadRegMem1ForwardIO extends Bundle {
-  val actualStore = Output(Bool())
-  val addr        = Output(UInt(ADDR_WIDTH.W))
-  val data        = Output(UInt(DATA_WIDTH.W))
-  val strb        = Output(UInt((DATA_WIDTH / 8).W))
-}
-
 class ReadRegTopIO extends SingleStageBundle {
   val forwardReq = Flipped(new ForwardRequestIO)
   val pregRead   = Flipped(new PRegReadIO)
   val awake      = Output(new AwakeInfo)
-  val mem1       = new ReadRegMem1ForwardIO
 }
 
 class ReadRegTop(
@@ -37,11 +29,6 @@ class ReadRegTop(
   val valid = raw._2
   val res   = WireDefault(info)
   io.to.bits := res
-
-  io.mem1.actualStore := info.actualStore
-  io.mem1.addr        := info.writeInfo.requestInfo.addr
-  io.mem1.data        := info.writeInfo.requestInfo.wdata
-  io.mem1.strb        := info.writeInfo.requestInfo.wstrb
 
   // readreg -> preg
   io.pregRead.rj.index := info.rjInfo.preg

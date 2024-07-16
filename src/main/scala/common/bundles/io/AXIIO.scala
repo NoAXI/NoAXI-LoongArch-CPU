@@ -94,7 +94,6 @@ class RequestInfo extends Bundle {
 
 class Mem1DCacheIO extends Bundle {
   val addr   = Output(UInt(ADDR_WIDTH.W))
-  val hitVec = Input(Vec(WAY_WIDTH, Bool()))
   // val answer  = Flipped(DecoupledIO())
   // val request = DecoupledIO(new RequestInfo)
   // val cango   = Output(Bool())
@@ -104,7 +103,6 @@ class Mem2DCacheIO extends Bundle {
   val request   = DecoupledIO(new RequestInfo) // pa
   val answer    = Flipped(DecoupledIO(UInt(DATA_WIDTH.W)))
   val rwType    = Output(Bool())
-  val hitVec    = Output(Vec(WAY_WIDTH, Bool()))
   val prevAwake = Input(Bool())
   // val cango   = Output(Bool())
 }

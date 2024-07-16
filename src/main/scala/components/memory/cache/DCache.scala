@@ -13,7 +13,7 @@ import pipeline._
 
 class DCacheIO extends Bundle {
   val axi  = new DCacheAXI
-  val mem0 = Flipped(new Mem0DCacheIO)
+  // val mem0 = Flipped(new Mem0DCacheIO)
   val mem1 = Flipped(new Mem1DCacheIO)
   val mem2 = Flipped(new Mem2DCacheIO)
 }
@@ -41,8 +41,8 @@ class DCache extends Module {
   val wvalid  = RegInit(false.B)
   val bready  = true.B
 
-  // mem 0: send va
-  val vaddr = io.mem0.addr
+  // mem 1: send va & exception
+  val vaddr = io.mem1.addr
   for (i <- 0 until WAY_WIDTH) {
     data(i).clka  := clock
     data(i).addra := 0.U
@@ -56,10 +56,10 @@ class DCache extends Module {
     tagV(i).dina  := 0.U
   }
 
-  // mem 1: get hitVec & 推测唤醒 & exception
+  // mem 2: get hitVec
   val paddr         = io.mem1.addr
   val cacheHitVecor = VecInit.tabulate(WAY_WIDTH)(i => tag(i) === paddr(31, 12) && valid(i))
-  io.mem1.hitVec := cacheHitVecor
+  // io.mem1.hitVec := cacheHitVecor
 
   for (i <- 0 until WAY_WIDTH)
     data(i).addrb := paddr(11, 4)
@@ -73,7 +73,7 @@ class DCache extends Module {
   val wdata  = io.mem2.request.bits.wdata
   val wstrb  = io.mem2.request.bits.wstrb
   val rwType = io.mem2.rwType
-  val hitVec = io.mem2.hitVec
+  val hitVec = ShiftRegister(cacheHitVecor, 1)
 
   val cacheHit    = hitVec.reduce(_ || _)
   val cacheHitWay = PriorityEncoder(hitVec)

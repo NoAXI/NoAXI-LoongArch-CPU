@@ -8,20 +8,17 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 
-class Mem1BufferIO extends Bundle {
-  val forwardpa   = Output(UInt(ADDR_WIDTH.W))
-  val forwardHit  = Input(Bool())
-  val forwardData = Input(UInt(DATA_WIDTH.W))
-  val forwardStrb = Input(UInt((DATA_WIDTH / 8).W))
+class Mem1Mem2ForwardIO extends Bundle {
+  val actualStore = Output(Bool())
+  val addr        = Output(UInt(ADDR_WIDTH.W))
+  val data        = Output(UInt(DATA_WIDTH.W))
+  val strb        = Output(UInt((DATA_WIDTH / 8).W))
 }
 
 class Memory1TopIO extends SingleStageBundle {
   val tlb         = new Stage1TLBIO
   val dCache      = new Mem1DCacheIO
-  val storeBuffer = new Mem1BufferIO
-  val awake       = Output(new AwakeInfo)
-  val readreg     = Flipped(new ReadRegMem1ForwardIO)
-  val mem0        = Flipped(new Mem0Mem1ForwardIO)
+  val mem2        = new Mem1Mem2ForwardIO
 }
 
 class Memory1Top extends Module {
@@ -67,41 +64,15 @@ class Memory1Top extends Module {
     res.iswf      := false.B
   }
 
-  // StoreBuffer
-  io.storeBuffer.forwardpa := pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
-  val bfhit     = io.readreg.actualStore && io.readreg.addr === pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
-  val bfhit1    = io.mem0.actualStore && io.mem0.addr === pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
-  val bfdata    = io.readreg.data
-  val bfdata1   = io.mem0.data
-  val bfstrb    = io.readreg.strb
-  val bfstrb1   = io.mem0.strb
-  val rhit      = io.storeBuffer.forwardHit
-  val rdata     = io.storeBuffer.forwardData
-  val rstrb     = io.storeBuffer.forwardStrb
-  val savedHit  = RegInit(false.B)
-  val savedData = RegInit(0.U(DATA_WIDTH.W))
-  val savedStrb = RegInit(0.U((DATA_WIDTH / 8).W))
-  when(!io.to.ready && !savedHit) {
-    savedHit  := rhit
-    savedData := rdata
-    savedStrb := rstrb
-  }
-  when(io.from.fire) {
-    savedHit  := false.B
-    savedData := 0.U
-    savedStrb := 0.U
-  }
-  res.storeBufferHit     := savedHit || rhit || bfhit
-  res.storeBufferHitData := Mux(rhit, rdata, Mux(bfhit, bfdata, Mux(savedHit, savedData, bfdata1)))
-  res.storeBufferHitStrb := Mux(rhit, rstrb, Mux(bfhit, bfstrb, Mux(savedHit, savedStrb, bfstrb1)))
+  // forward
+  io.mem2.actualStore := info.actualStore
+  io.mem2.addr        := info.writeInfo.requestInfo.addr
+  io.mem2.data        := info.writeInfo.requestInfo.wdata
+  io.mem2.strb        := info.writeInfo.requestInfo.wstrb
 
   // D-Cache
-  io.dCache.addr := pa
-  val hitVec = io.dCache.hitVec
-  res.dcachehitVec := hitVec
+  io.dCache.addr := info.va
 
-  io.awake.valid := valid && info.iswf && io.to.fire && hitVec.reduce(_ || _)
-  io.awake.preg  := info.rdInfo.preg
   flushWhen(raw._1, io.flush && !info.actualStore)
   io.to.bits := res
 }

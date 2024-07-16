@@ -9,15 +9,15 @@ import const.ECodes
 import const.Parameters._
 import func.Functions._
 
-class Memory2AccessIO extends Bundle {
+class MemoryLoadAccessIO extends Bundle {
   val op_type = Input(UInt(5.W))
   val addr    = Input(UInt(ADDR_WIDTH.W))
   val rdata   = Input(UInt(DATA_WIDTH.W))
   val data    = Output(UInt(DATA_WIDTH.W))
 }
 
-class Memory2Access extends Module {
-  val io = IO(new Memory2AccessIO)
+class MemoryLoadAccess extends Module {
+  val io = IO(new MemoryLoadAccessIO)
 
   val re    = MemOpType.isread(io.op_type)
   val we    = !re
