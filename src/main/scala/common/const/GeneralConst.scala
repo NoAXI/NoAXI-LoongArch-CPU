@@ -22,9 +22,9 @@ object Parameters {
   val AREG_WIDTH     = 5
   val PREG_WIDTH     = 6
   val FREELIST_WIDTH = 5
-  val ROB_WIDTH      = 5
-  val ROB_NUM        = 32
+  val ROB_WIDTH      = 4
   val OPERAND_MAX    = 2
+  val ROB_NUM        = 1 << ROB_WIDTH
   val AREG_NUM       = 1 << AREG_WIDTH
   val PREG_NUM       = 1 << PREG_WIDTH
   val FREELIST_NUM   = 1 << FREELIST_WIDTH
