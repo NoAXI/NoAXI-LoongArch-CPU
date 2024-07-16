@@ -14,10 +14,11 @@ class BufferInfo extends Bundle {
 }
 
 class StoreBufferIO extends Bundle {
-  val memory2 = Flipped(new Mem2BufferIO)
-  val from    = Flipped(DecoupledIO(new BufferInfo)) // memory2
-  val to      = DecoupledIO(new BufferInfo)
-  val flush   = Input(Bool())
+  val memory2  = Flipped(new Mem2BufferIO)
+  val from     = Flipped(DecoupledIO(new BufferInfo)) // memory2
+  val to       = DecoupledIO(new BufferInfo)
+  val popValid = Input(Bool())
+  val flush    = Input(Bool())
 }
 
 class StoreBuffer(
@@ -97,7 +98,7 @@ class StoreBuffer(
   }
 
   // handshake
-  io.from.ready := !full
-  io.to.valid   := !empty
+  io.from.ready := !full || (io.from.valid && io.popValid)
+  io.to.valid   := !empty && io.popValid
   io.to.bits    := mem(0)
 }

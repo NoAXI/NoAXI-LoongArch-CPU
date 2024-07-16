@@ -62,7 +62,7 @@ class Memory2Top extends Module {
   // storebuffer write
   io.storeBufferWrite.valid := false.B
   io.storeBufferWrite.bits  := 0.U.asTypeOf(new BufferInfo)
-  when(!storeBufferFull && isStore && !info.actualStore) {
+  when(isStore && !info.actualStore) {
     io.storeBufferWrite.valid                   := valid && !info.bubble
     io.storeBufferWrite.bits.valid              := true.B
     io.storeBufferWrite.bits.requestInfo.cached := info.cached

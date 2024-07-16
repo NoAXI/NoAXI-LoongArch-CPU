@@ -14,7 +14,8 @@ class CommitTopIO extends Bundle {
   val rat = Flipped(Vec(ISSUE_WIDTH, new RatCommitIO))
 
   // store buffer (pop port) connect
-  val buffer = new StoreBufferPipeIO
+  val bufferPopValid = Output(Bool())
+  val bufferToReady  = Input(Bool())
 
   // ctrl signal
   val flush         = Input(Bool())
@@ -124,12 +125,10 @@ class CommitTop extends Module {
 
   // store buffer
   val writeHappen = doStore.reduce(_ || _)
-  io.buffer.to.bits    := io.buffer.from.bits
-  io.buffer.to.valid   := io.buffer.from.valid && writeHappen
-  io.buffer.from.ready := io.buffer.to.ready && writeHappen
-  when(writeHappen && !io.buffer.to.ready) {
+  when(writeHappen && !io.bufferToReady) {
     writeStall := true.B
   }
+  io.bufferPopValid := writeHappen
 
   for (i <- 0 until ISSUE_WIDTH) {
     io.rob(i).info.ready := readyBit(i) && !writeStall

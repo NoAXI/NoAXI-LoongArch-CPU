@@ -223,9 +223,10 @@ class Top extends Module {
   }
 
   // store roll back
-  storeBuffer.to   <> commit.buffer.from
-  commit.buffer.to <> memorySel.fromBuffer
-  memorySel.to     <> memory1.from
+  storeBuffer.popValid := commit.bufferPopValid
+  commit.bufferToReady := storeBuffer.to.ready
+  storeBuffer.to       <> memorySel.fromBuffer
+  memorySel.to         <> memory1.from
 
   // front flush
   prefetch.flush       := flushCtrl.frontFlush || predecode.flushapply

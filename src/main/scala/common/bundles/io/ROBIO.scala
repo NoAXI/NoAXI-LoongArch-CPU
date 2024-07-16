@@ -52,7 +52,7 @@ class RobCommitIO extends Bundle {
   val info = DecoupledIO(new RobInfo)
 }
 
-class StoreBufferPipeIO extends Bundle {
-  val from = Flipped(DecoupledIO(new BufferInfo))
-  val to   = DecoupledIO(new BufferInfo)
-}
+// class StoreBufferPipeIO extends Bundle {
+//   val from = Flipped(DecoupledIO(new BufferInfo))
+//   val to   = DecoupledIO(new BufferInfo)
+// }
