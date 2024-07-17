@@ -37,6 +37,7 @@ class PreDecodeTop extends Module {
   val pcGroup       = VecInit(info.pc, info.pc_add_4)
   val immGroup      = VecInit.tabulate(FETCH_DEPTH)(i => Mux(info.instGroup(i)(28, 27) === "b10".U, imm26(i), imm16(i)))
   val tar           = VecInit.tabulate(FETCH_DEPTH)(i => pcGroup(i) + immGroup(i))
+  val notbrTar      = VecInit.tabulate(FETCH_DEPTH)(i => nextPC(pcGroup(i)))
 
   io.predictRes := 0.U.asTypeOf(new PredictRes)
   io.flushapply := false.B
@@ -96,7 +97,26 @@ class PreDecodeTop extends Module {
 
   // TODO: branch jump, first meet?
 
-  // TODO：not br, but predict jump
+  // when not jump but predict jump
+  when(!isbr(0) && info.predict.en && info.instGroupValid(0)) {
+    predictFailed               := true.B
+    io.flushapply               := true.B
+    io.predictRes.isbr          := false.B
+    io.predictRes.br.en         := true.B
+    io.predictRes.br.tar        := notbrTar(0)
+    io.predictRes.realDirection := false.B
+    io.predictRes.pc            := pcGroup(0)
+    res.predict.en              := false.B
+  }.elsewhen(!isbr(1) && info.predict.en && info.instGroupValid(1)) {
+    predictFailed               := true.B
+    io.flushapply               := true.B
+    io.predictRes.isbr          := false.B
+    io.predictRes.br.en         := true.B
+    io.predictRes.br.tar        := notbrTar(1)
+    io.predictRes.realDirection := false.B
+    io.predictRes.pc            := pcGroup(1)
+    res.predict.en              := false.B
+  }
 
   io.to.bits := 0.U.asTypeOf(new DualInfo)
   flushWhen(from._1, io.flush)

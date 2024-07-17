@@ -14,8 +14,7 @@ class PrefetchTopIO extends StageBundle {
   val bpu                 = new PreFetchBPUIO
   val predictResFromFront = Input(new PredictRes) // 预测结果
   val predictResFromBack  = Input(new PredictRes) // 预测结果
-  // 考虑到predecode的指令最终还是会流到后端，后端一定会更新分治预测器，所有前端如果不能更新也问题不大
-  val flushTarget   = Input(new BranchInfo)
+  val flushTarget         = Input(new BranchInfo)
 }
 
 class PrefetchTop extends Module {
@@ -35,12 +34,6 @@ class PrefetchTop extends Module {
   val predictRes = io.predictResFromFront
   val flushRes   = io.flushTarget
 
-  // bpu
-  io.bpu.pcValid  := VecInit(Seq(true.B, pc_add_4(2)))
-  io.bpu.pcGroup  := VecInit(Seq(pc, pc_add_4))
-  io.bpu.npcGroup := VecInit(Seq(pc_add_4, pc_add_8))
-  io.bpu.train    := Mux(io.predictResFromBack.isbr, io.predictResFromBack, io.predictResFromFront)
-
   // pc
   val (flushHappen, flushPC)   = (flushRes.en, flushRes.tar)
   val (predictFailed, exactPC) = (predictRes.br.en, predictRes.br.tar)
@@ -59,6 +52,12 @@ class PrefetchTop extends Module {
     pc := flushPC
   }
 
+  // bpu
+  io.bpu.pcValid  := VecInit(Seq(true.B, pc_add_4(2)))
+  io.bpu.pcGroup  := VecInit(Seq(pc, pc_add_4))
+  io.bpu.npcGroup := VecInit(Seq(pc_add_4, pc_add_8))
+  io.bpu.train    := Mux(io.predictResFromBack.isbr, io.predictResFromBack, io.predictResFromFront)
+
   // tlb
   io.tlb.va      := pc
   io.tlb.memType := memType.fetch
@@ -73,11 +72,12 @@ class PrefetchTop extends Module {
   io.to.bits         := 0.U.asTypeOf(new DualInfo)
   res.pc             := pc
   res.pc_add_4       := pc_add_4
+  res.pc_add_8       := pc_add_8
   res.hitVec         := hitVec
   res.isDirect       := isDirect
   res.pa             := directpa
   res.predict        := io.bpu.nextPC
-  res.instGroupValid := io.bpu.pcValid
+  res.instGroupValid := VecInit(Seq(true.B, pc_add_4(2)))
   flushWhen(from._1, io.flush)
   io.to.bits.bits(0) := res
 }

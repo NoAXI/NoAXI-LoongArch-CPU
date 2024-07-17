@@ -29,6 +29,7 @@ class SingleInfo extends Bundle {
   // basic
   val pc       = UInt(ADDR_WIDTH.W)
   val pc_add_4 = UInt(ADDR_WIDTH.W)
+  val pc_add_8 = UInt(ADDR_WIDTH.W)
   val inst     = UInt(INST_WIDTH.W)
 
   // only used in fetch stage

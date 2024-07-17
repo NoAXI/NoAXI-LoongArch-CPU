@@ -10,6 +10,7 @@ import const.Parameters._
 import func.Functions._
 
 class Memory1AccessIO extends Bundle {
+  val isMem    = Input(Bool())
   val op_type  = Input(UInt(5.W))
   val addr     = Input(UInt(DATA_WIDTH.W))
   val rd_value = Input(UInt(DATA_WIDTH.W))
@@ -23,8 +24,8 @@ class Memory1AccessIO extends Bundle {
 class Memory1Access extends Module {
   val io = IO(new Memory1AccessIO)
 
-  val re    = MemOpType.isread(io.op_type)
-  val we    = !re
+  val re    = MemOpType.isread(io.op_type) && io.isMem
+  val we    = !re && io.isMem
   val piece = io.addr(1, 0)
 
   io.exc_type := Mux(

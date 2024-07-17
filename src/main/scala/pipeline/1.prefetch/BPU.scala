@@ -138,7 +138,7 @@ class BPU extends Module {
     io.preFetch.nextPC.en := false.B
   }
 
-  if(Config.staticPredict) {
+  if (Config.staticPredict) {
     io.preFetch.nextPC.en := false.B
   }
 
@@ -147,6 +147,12 @@ class BPU extends Module {
     // not sure
     val tot_time     = RegInit(0.U(20.W))
     val succeed_time = RegInit(0.U(20.W))
+    when(io.preFetch.train.isbr) {
+      tot_time := tot_time + 1.U
+      when(!io.preFetch.train.br.en) {
+        succeed_time := succeed_time + 1.U
+      }
+    }
     dontTouch(tot_time)
     dontTouch(succeed_time)
     dontTouch(validVec)

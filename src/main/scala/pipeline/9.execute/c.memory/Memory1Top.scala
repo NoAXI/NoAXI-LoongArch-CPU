@@ -7,6 +7,7 @@ import const._
 import bundles._
 import func.Functions._
 import const.Parameters._
+import isa.FuncType
 
 class Mem1Mem2ForwardIO extends Bundle {
   val actualStore = Output(Bool())
@@ -16,9 +17,9 @@ class Mem1Mem2ForwardIO extends Bundle {
 }
 
 class Memory1TopIO extends SingleStageBundle {
-  val tlb         = new Stage1TLBIO
-  val dCache      = new Mem1DCacheIO
-  val mem2        = new Mem1Mem2ForwardIO
+  val tlb     = new Stage1TLBIO
+  val dCache  = new Mem1DCacheIO
+  val mem2    = new Mem1Mem2ForwardIO
   val csrRead = Flipped(new CsrReadIO)
 }
 
@@ -43,6 +44,7 @@ class Memory1Top extends Module {
   res.cached := cached
 
   // mem1
+  mem1.isMem    := info.func_type === FuncType.mem
   mem1.op_type  := info.op_type
   mem1.addr     := info.va
   mem1.rd_value := info.rkInfo.data
