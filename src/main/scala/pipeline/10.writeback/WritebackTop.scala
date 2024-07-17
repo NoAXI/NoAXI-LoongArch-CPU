@@ -86,7 +86,7 @@ class WritebackTop(
   io.rob.bits.isException := res.exc_type =/= ECodes.NONE
 
   // csr write
-  io.rob.bits.csr_iswf  := res.csr_iswf
+  io.rob.bits.csr_iswf  := res.isWriteCsr
   io.rob.bits.csr_wmask := res.csr_wmask
   io.rob.bits.csr_addr  := res.csr_addr
   io.rob.bits.csr_value := res.csr_value

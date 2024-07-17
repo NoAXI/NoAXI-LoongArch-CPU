@@ -23,8 +23,9 @@ class DecoderIO extends Bundle {
   val rd   = Output(UInt(AREG_WIDTH.W))
   val imm  = Output(UInt(DATA_WIDTH.W))
 
-  val csr_iswf  = Output(Bool())
-  val csr_wfreg = Output(UInt(CSR_WIDTH.W))
+  val isReadCsr  = Output(Bool())
+  val isWriteCsr = Output(Bool())
+  val csrReg     = Output(UInt(CSR_WIDTH.W))
 
   val exc_type = Output(ECodes())
 
@@ -125,8 +126,10 @@ class Decoder extends Module {
   val is_csr  = func_type === FuncType.csr
   val is_wr   = op_type === CsrOpType.wr
   val is_xchg = op_type === CsrOpType.xchg
-  io.csr_iswf  := is_csr && (is_wr || is_xchg)
-  io.csr_wfreg := imm(13, 0)
+  io.isReadCsr  := is_csr
+  io.isWriteCsr := is_csr && (is_wr || is_xchg)
+  io.csrReg     := imm(13, 0)
+  // io.csr_wmask          := Mux(is_xchg, rj_value, ALL_MASK.U)
 
   io.exc_type := MuxCase(
     ECodes.NONE,
@@ -142,7 +145,7 @@ class Decoder extends Module {
     PipelineType.memory,
     List(
       (func_type === FuncType.alu || func_type === FuncType.alu_imm || func_type === FuncType.bru) -> PipelineType.arith,
-      (func_type === FuncType.mul || func_type === FuncType.div) -> PipelineType.muldiv,
+      (func_type === FuncType.mul || func_type === FuncType.div)                                   -> PipelineType.muldiv,
     ),
   )
 

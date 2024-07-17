@@ -61,11 +61,12 @@ class SingleInfo extends Bundle {
   val rdInfo = new RegInfo
   val robId  = UInt(ROB_WIDTH.W)
 
-  // write csr
-  val csr_iswf  = Bool()
-  val csr_wmask = UInt(DATA_WIDTH.W)
-  val csr_addr  = UInt(CSR_WIDTH.W)
-  val csr_value = UInt(DATA_WIDTH.W)
+  // csr
+  val isWriteCsr = Bool()
+  val isReadCsr  = Bool()
+  val csr_wmask  = UInt(DATA_WIDTH.W)
+  val csr_addr   = UInt(CSR_WIDTH.W)
+  val csr_value  = UInt(DATA_WIDTH.W)
 
   // exception
   val exc_en    = Bool()

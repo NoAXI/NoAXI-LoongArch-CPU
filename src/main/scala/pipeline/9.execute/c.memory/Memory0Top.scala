@@ -23,6 +23,10 @@ class Memory0Top extends Module {
   val valid = raw._2
   val res   = WireDefault(info)
 
+  // calculate csr_wmask
+  val is_xchg = info.func_type === FuncType.csr && info.op_type === CsrOpType.xchg
+  res.csr_wmask := Mux(is_xchg, info.rjInfo.data, ALL_MASK.U)
+
   val va = Mux(info.actualStore, info.writeInfo.requestInfo.addr, info.rjInfo.data + info.imm)
 
   io.tlb.va      := va
