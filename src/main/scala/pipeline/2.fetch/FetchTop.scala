@@ -41,7 +41,7 @@ class FetchTop extends Module {
   val wholeInstVec = io.iCache.answer.bits
   val instVec =
     Mux(info.pc(3), VecInit(wholeInstVec(2), wholeInstVec(3)), VecInit(wholeInstVec(0), wholeInstVec(1)))
-  busy.info(0) := !io.iCache.answer.fire && !exception.en
+  busy.info(0) := !io.iCache.answer.fire
 
   // exception
   val isADEF  = info.pc(1, 0) =/= "b00".U

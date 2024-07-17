@@ -87,11 +87,11 @@ object CsrOpType {
   def rd      = "b00".U
   def wr      = "b01".U
   def xchg    = "b10".U
+  def cntrd   = "b11".U
   def apply() = UInt(2.W)
 }
 
 object CntOpType {
-  def cntrd   = "b11".U
   def cnth    = "b00".U
   def cntl    = "b01".U
   def apply() = UInt(2.W)

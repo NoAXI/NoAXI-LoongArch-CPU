@@ -72,10 +72,11 @@ class Top extends Module {
   val csr       = Module(new CSR).io
 
   // backend unit
-  val rat     = Module(new Rat).io
-  val rob     = Module(new Rob).io
-  val preg    = Module(new PReg).io
-  val forward = Module(new Forward).io
+  val rat           = Module(new Rat).io
+  val rob           = Module(new Rob).io
+  val preg          = Module(new PReg).io
+  val forward       = Module(new Forward).io
+  val stableCounter = Module(new StableCounter).io
 
   // memory access
   val axilayer    = Module(new AXILayer).io
@@ -279,4 +280,9 @@ class Top extends Module {
   csr.intExc    <> decode.intExc
 
   memory0.commitCsrWriteDone <> commit.csrWritePop
+
+  // cnt
+  for(i <- 0 until ARITH_ISSUE_NUM) {
+    stableCounter.counter <> arith(i).stableCounter
+  }
 }

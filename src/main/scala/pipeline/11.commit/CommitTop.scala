@@ -100,7 +100,7 @@ class CommitTop extends Module {
   val doStore    = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(false.B)))
   for (i <- 0 until ISSUE_WIDTH) {
     val rob        = io.rob(i).info
-    val writeValid = rob.fire && rob.bits.wen
+    val writeValid = rob.fire && rob.bits.wen && !rob.bits.isException
 
     // rob -> commit
     io.debug(i).wb_rf_we    := writeValid

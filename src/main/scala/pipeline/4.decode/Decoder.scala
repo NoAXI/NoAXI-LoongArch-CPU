@@ -64,7 +64,7 @@ class Decoder extends Module {
   when(
     func_type === FuncType.cnt
       || func_type === FuncType.exc
-      || (func_type === FuncType.csr && op_type =/= CsrOpType.xchg)
+      || (func_type === FuncType.csr && op_type =/= CsrOpType.xchg && op_type =/= CsrOpType.cntrd)
       || func_type === FuncType.tlb,
   ) {
     io.rj := 0.U
@@ -128,7 +128,7 @@ class Decoder extends Module {
   val is_xchg = op_type === CsrOpType.xchg
   io.isReadCsr  := is_csr
   io.isWriteCsr := is_csr && (is_wr || is_xchg)
-  io.csrReg     := imm(13, 0)
+  io.csrReg     := Mux(io.inst === LA32R.RDCNTID, CSRCodes.TID, imm(13, 0))
   // io.csr_wmask          := Mux(is_xchg, rj_value, ALL_MASK.U)
 
   io.exc_type := MuxCase(
@@ -144,8 +144,8 @@ class Decoder extends Module {
   io.pipelineType := MuxCase(
     PipelineType.memory,
     List(
-      (func_type === FuncType.alu || func_type === FuncType.alu_imm || func_type === FuncType.bru) -> PipelineType.arith,
-      (func_type === FuncType.mul || func_type === FuncType.div)                                   -> PipelineType.muldiv,
+      (func_type === FuncType.alu || func_type === FuncType.alu_imm || func_type === FuncType.bru || func_type === FuncType.cnt) -> PipelineType.arith,
+      (func_type === FuncType.mul || func_type === FuncType.div)                                                                 -> PipelineType.muldiv,
     ),
   )
 

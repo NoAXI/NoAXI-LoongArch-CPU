@@ -94,7 +94,7 @@ object LA32R {
 
   val table = Array(
     // act with stable_counter, then write to rd
-    RDCNTID  -> List(FuncType.cnt, CntOpType.cntrd),
+    RDCNTID  -> List(FuncType.csr, CsrOpType.cntrd),
     RDCNTVHW -> List(FuncType.cnt, CntOpType.cnth),
     RDCNTVLW -> List(FuncType.cnt, CntOpType.cntl),
 

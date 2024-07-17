@@ -10,7 +10,8 @@ import func.Functions._
 import const.Parameters._
 
 class ArithmeticTopIO extends SingleStageBundle {
-  val forward = Flipped(new ForwardInfoIO)
+  val forward       = Flipped(new ForwardInfoIO)
+  val stableCounter = Input(UInt(64.W))
 }
 
 class ArithmeticTop(
@@ -56,6 +57,17 @@ class ArithmeticTop(
     res.realBr.en  := (is_br && !succeed)
     res.realBr.tar := br_tar_failed
     res.realBrDir  := bru.br_en
+  }
+
+  when(info.func_type === FuncType.cnt) {
+    res.rdInfo.data := MateDefault(
+      info.op_type,
+      0.U,
+      Seq(
+        CntOpType.cnth -> io.stableCounter(63, 32),
+        CntOpType.cntl -> io.stableCounter(31, 0),
+      ),
+    )
   }
 
   doForward(io.forward, res, valid)
