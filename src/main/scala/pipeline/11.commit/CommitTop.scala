@@ -37,7 +37,6 @@ class CommitTop extends Module {
 
   // generate ready signal
   val readyBit = WireDefault(VecInit(Seq.tabulate(ISSUE_WIDTH)(i => io.rob(i).info.bits.done)))
-  val hasEx    = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(false.B)))
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rob(i).info.bits
 
@@ -51,22 +50,19 @@ class CommitTop extends Module {
     // when detect write / csr / brfail, set next inst stall
     when(info.done && (info.isPrivilege || info.isStore || info.isbr || info.isException)) {
       if (i != 0) {
-        when(info.isStore) {
+        when(info.isStore || info.isException) {
           readyBit(i) := false.B
         }
       }
       for (j <- i + 1 until ISSUE_WIDTH) {
         readyBit(j) := false.B
       }
-      when(info.isException) {
-        hasEx(i) := true.B
-      }
     }
   }
 
   // when got flushed or detect exception,
   // then this inst shouldn't be committed
-  when(io.flush || io.stall || hasEx.reduce(_ || _)) {
+  when(io.flush || io.stall) {
     readyBit := 0.U.asTypeOf(readyBit)
   }
 
@@ -136,7 +132,7 @@ class CommitTop extends Module {
   io.excHappen := 0.U.asTypeOf(io.excHappen)
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rob(i).info.bits
-    when(hasEx(i)) {
+    when(io.rob(i).info.ready && info.isException) {
       when(info.exc_type === ECodes.ertn) {
         io.excHappen.end := true.B
       }.otherwise {
@@ -155,7 +151,7 @@ class CommitTop extends Module {
       io.csrWrite.we    := info.csr_iswf
       io.csrWrite.wmask := info.csr_wmask
       io.csrWrite.waddr := info.csr_addr
-      io.csrWrite.wdata := info.wdata
+      io.csrWrite.wdata := info.csr_value
     }
   }
 }

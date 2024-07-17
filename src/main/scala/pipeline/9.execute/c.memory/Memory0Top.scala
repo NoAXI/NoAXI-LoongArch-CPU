@@ -10,7 +10,8 @@ import func.Functions._
 import const.Parameters._
 
 class Memory0TopIO extends SingleStageBundle {
-  val tlb = new Stage0TLBIO
+  val tlb     = new Stage0TLBIO
+  val csrRead = Flipped(new CsrReadIO)
 }
 
 class Memory0Top extends Module {
@@ -26,6 +27,14 @@ class Memory0Top extends Module {
   // calculate csr_wmask
   val is_xchg = info.func_type === FuncType.csr && info.op_type === CsrOpType.xchg
   res.csr_wmask := Mux(is_xchg, info.rjInfo.data, ALL_MASK.U)
+  
+  // csr read
+  io.csrRead.addr := info.csr_addr
+  res.rdInfo.data := io.csrRead.data
+
+  // csr hazard
+  // val csrWriteCount = RegInit(0.U(ROB_WIDTH.W))
+  // when(res.func_type === FuncType.csr && res.op_type === CsrOpType.)
 
   val va = Mux(info.actualStore, info.writeInfo.requestInfo.addr, info.rjInfo.data + info.imm)
 

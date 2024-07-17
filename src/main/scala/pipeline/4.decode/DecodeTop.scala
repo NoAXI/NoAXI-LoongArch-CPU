@@ -48,7 +48,7 @@ class DecodeTop extends Module {
     to_info.bits(i).predict      := info(i).predict
     to_info.bits(i).exc_type     := Mux(info(i).exc_type =/= ECodes.NONE, info(i).exc_type, dec(i).exc_type)
     to_info.bits(i).exc_vaddr    := info(i).pc
-    to_info.bits(i).pipelineType := Mux(to_info.bits(i).exc_type =/= ECodes.NONE, PipelineType.nop, dec(i).pipelineType)
+    to_info.bits(i).pipelineType := Mux(info(i).bubble, PipelineType.nop, dec(i).pipelineType)
   }
 
   io.to.bits := Mux(io.flush, 0.U.asTypeOf(new DualInfo), to_info)

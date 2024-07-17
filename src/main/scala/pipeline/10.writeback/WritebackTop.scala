@@ -50,7 +50,7 @@ class WritebackTop(
     mem2.rdata      := result
     mem2.addr       := info.pa
     mem2.op_type    := info.op_type
-    res.rdInfo.data := mem2.data
+    res.rdInfo.data := Mux(info.func_type === FuncType.mem, mem2.data, info.rdInfo.data)
     dontTouch(bitHit)
   }
 
@@ -89,7 +89,7 @@ class WritebackTop(
   io.rob.bits.csr_iswf  := res.isWriteCsr
   io.rob.bits.csr_wmask := res.csr_wmask
   io.rob.bits.csr_addr  := res.csr_addr
-  io.rob.bits.csr_value := res.csr_value
+  io.rob.bits.csr_value := res.rkInfo.data // use rk to save data
 
   // writeback -> forward -> readreg
   doForward(io.forward, res, valid)

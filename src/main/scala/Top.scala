@@ -273,7 +273,7 @@ class Top extends Module {
   commit.predictResult  <> prefetch.predictResFromBack
 
   // csr
-  csr.csrRead   <> memory1.csrRead
+  csr.csrRead   <> memory0.csrRead
   csr.csrWrite  <> commit.csrWrite
   csr.excJump   <> commit.excJump
   csr.excHappen <> commit.excHappen
