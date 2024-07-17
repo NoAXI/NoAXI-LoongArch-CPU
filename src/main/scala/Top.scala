@@ -277,4 +277,6 @@ class Top extends Module {
   csr.csrWrite  <> commit.csrWrite
   csr.excJump   <> commit.excJump
   csr.excHappen <> commit.excHappen
+
+  memory0.commitCsrWriteDone <> commit.csrWritePop
 }

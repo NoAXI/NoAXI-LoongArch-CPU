@@ -84,12 +84,16 @@ object MemOpType {
 }
 
 object CsrOpType {
-  def rd      = "b000".U
-  def wr      = "b001".U
-  def xchg    = "b010".U
-  def cntrd   = "b011".U
-  def cnth    = "b100".U
-  def cntl    = "b101".U
+  def rd      = "b00".U
+  def wr      = "b01".U
+  def xchg    = "b10".U
+  def apply() = UInt(2.W)
+}
+
+object CntOpType {
+  def cntrd   = "b11".U
+  def cnth    = "b00".U
+  def cntl    = "b01".U
   def apply() = UInt(2.W)
 }
 

@@ -94,9 +94,9 @@ object LA32R {
 
   val table = Array(
     // act with stable_counter, then write to rd
-    RDCNTID  -> List(FuncType.cnt, CsrOpType.cntrd),
-    RDCNTVHW -> List(FuncType.cnt, CsrOpType.cnth),
-    RDCNTVLW -> List(FuncType.cnt, CsrOpType.cntl),
+    RDCNTID  -> List(FuncType.cnt, CntOpType.cntrd),
+    RDCNTVHW -> List(FuncType.cnt, CntOpType.cnth),
+    RDCNTVLW -> List(FuncType.cnt, CntOpType.cntl),
 
     // rj, rk calculated by ALU, then write to rd
     ADD_W   -> List(FuncType.alu, AluOpType.add),

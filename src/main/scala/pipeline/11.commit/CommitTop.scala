@@ -24,9 +24,10 @@ class CommitTopIO extends Bundle {
   val flushInfo     = Output(new BranchInfo)
 
   // exception
-  val excHappen = Output(new ExcHappenInfo)
-  val csrWrite  = Output(new CSRWrite)
-  val excJump   = Input(new BranchInfo)
+  val excHappen   = Output(new ExcHappenInfo)
+  val csrWrite    = Output(new CSRWrite)
+  val excJump     = Input(new BranchInfo)
+  val csrWritePop = Output(Bool())
 
   // debug info output
   val debug = Vec(ISSUE_WIDTH, new DebugIO)
@@ -144,7 +145,8 @@ class CommitTop extends Module {
       io.excHappen.info.pc_add_4 := info.pc + 4.U
     }
   }
-  io.csrWrite := 0.U.asTypeOf(io.csrWrite)
+  io.csrWrite    := 0.U.asTypeOf(io.csrWrite)
+  io.csrWritePop := false.B
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rob(i).info.bits
     when(io.rob(i).info.ready && info.csr_iswf) {
@@ -152,6 +154,7 @@ class CommitTop extends Module {
       io.csrWrite.wmask := info.csr_wmask
       io.csrWrite.waddr := info.csr_addr
       io.csrWrite.wdata := info.csr_value
+      io.csrWritePop    := true.B
     }
   }
 }

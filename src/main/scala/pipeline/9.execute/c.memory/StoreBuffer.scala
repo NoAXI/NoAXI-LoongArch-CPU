@@ -95,6 +95,7 @@ class StoreBuffer(
   when(io.flush) {
     topPtr    := 0.U
     maybeFull := false.B
+    mem       := 0.U.asTypeOf(mem)
   }
 
   // handshake
