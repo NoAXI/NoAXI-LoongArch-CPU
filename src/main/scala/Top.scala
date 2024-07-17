@@ -95,7 +95,6 @@ class Top extends Module {
 
   prefetch.to  <> fetch.from
   fetch.to     <> predecode.from
-  fetch.flush  := flushCtrl.backFlush || predecode.flushapply
   predecode.to <> ib.from
   ib.to        <> decode.from
   decode.to    <> rename.from
@@ -277,6 +276,7 @@ class Top extends Module {
   csr.csrWrite  <> commit.csrWrite
   csr.excJump   <> commit.excJump
   csr.excHappen <> commit.excHappen
+  csr.intExc    <> decode.intExc
 
   memory0.commitCsrWriteDone <> commit.csrWritePop
 }

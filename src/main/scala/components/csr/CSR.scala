@@ -19,6 +19,9 @@ class CSRIO extends Bundle {
 
   // to tlb
   val tlb = Vec(2, new CSRTLBIO)
+
+  // mark to dec
+  val intExc = Output(Bool())
 }
 
 class CSR extends Module {
@@ -142,7 +145,9 @@ class CSR extends Module {
   val is_tlb_exc    = ECodes.istlbException(info.excType)
   val is_tlb_refill = info.excType === ECodes.TLBR
 
-  val start = io.excHappen.start || (any_exc.orR && CRMD.info.ie)
+  val start = io.excHappen.start
+
+  io.intExc := any_exc.orR && CRMD.info.ie
 
   // 例外跳转
   io.excJump := WireDefault(0.U.asTypeOf(new BranchInfo))

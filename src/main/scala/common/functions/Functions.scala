@@ -52,8 +52,7 @@ object Functions {
     }
   }
   // waiting flush
-  def flushUntilValidWhen[T <: Data](infoReg: T, flush: Bool, valid: Bool): Unit = {
-
+  def flushUntilValidWhen[T <: Data](infoReg: SingleInfo, flush: Bool, valid: Bool): Unit = {
     val holdFlush = RegInit(false.B)
     when(!valid && flush) {
       holdFlush := true.B
@@ -65,6 +64,9 @@ object Functions {
 
     when(isFlush) {
       infoReg := 0.U.asTypeOf(infoReg)
+      for (i <- 0 until ISSUE_WIDTH) {
+        infoReg.bubble := true.B
+      }
     }
   }
   // single flush

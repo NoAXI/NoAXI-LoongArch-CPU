@@ -78,6 +78,6 @@ class PrefetchTop extends Module {
   res.pa             := directpa
   res.predict        := io.bpu.nextPC
   res.instGroupValid := VecInit(Seq(true.B, pc_add_4(2)))
-  flushWhen(from._1, io.flush)
+  res.invalidInst    := !predictFailed && predictEn
   io.to.bits.bits(0) := res
 }

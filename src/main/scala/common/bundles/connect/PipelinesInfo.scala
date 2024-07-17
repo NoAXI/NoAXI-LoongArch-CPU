@@ -33,6 +33,7 @@ class SingleInfo extends Bundle {
   val inst     = UInt(INST_WIDTH.W)
 
   // only used in fetch stage
+  val invalidInst    = Bool()
   val instGroup      = Vec(FETCH_DEPTH, UInt(INST_WIDTH.W))
   val instGroupValid = Vec(FETCH_DEPTH, Bool())
   val fetchExc       = Vec(FETCH_DEPTH, ECodes())
