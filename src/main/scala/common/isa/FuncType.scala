@@ -13,9 +13,11 @@ object FuncType {
   def div     = "b0100".U
   def mul     = "b0101".U
   def alu_imm = "b0110".U
-  def csr     = "b0111".U
+  def csr     = "b1010".U
   def exc     = "b1000".U
   def tlb     = "b1001".U
-  def cnt     = "b1010".U
+  def cnt     = "b0111".U
   def apply() = UInt(FUNC_TYPE_WIDTH.W)
+
+  def isPrivilege(funcType: UInt): Bool = funcType(3).asBool
 }

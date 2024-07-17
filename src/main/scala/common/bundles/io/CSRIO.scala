@@ -12,7 +12,14 @@ class CsrReadIO extends Bundle {
   val data = Output(UInt(DATA_WIDTH.W))
 }
 
-class ExceptionInfo extends Bundle {
+class ExcBasicInfo extends Bundle {
+  val excType  = ECodes()
+  val excVAddr = UInt(ADDR_WIDTH.W)
+  val pc       = UInt(ADDR_WIDTH.W)
+  val pc_add_4 = UInt(ADDR_WIDTH.W)
+}
+
+class ExcInfo extends Bundle {
   val en       = Bool()
   val excType  = ECodes()
   val excVAddr = UInt(ADDR_WIDTH.W)
@@ -21,5 +28,5 @@ class ExceptionInfo extends Bundle {
 class ExcHappenInfo extends Bundle {
   val start = Bool()
   val end   = Bool()
-  val info  = new SingleInfo
+  val info  = new ExcBasicInfo
 }

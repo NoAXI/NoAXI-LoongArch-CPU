@@ -12,6 +12,7 @@ import pipeline._
 
 class RobInfo extends Bundle {
   val done = Bool()
+  val pc   = UInt(ADDR_WIDTH.W)
 
   val wen   = Bool()
   val areg  = UInt(AREG_WIDTH.W)
@@ -23,17 +24,19 @@ class RobInfo extends Bundle {
   val realBrDir = Bool()
   val bfail     = new BranchInfo
 
-  val exc_type  = ECodes()
-  val exc_vaddr = UInt(ADDR_WIDTH.W)
+  val isStore = Bool()
 
-  val isStore     = Bool()
+  // exception
+  val exc_type    = ECodes()
+  val exc_vaddr   = UInt(ADDR_WIDTH.W)
   val isPrivilege = Bool()
   val isException = Bool()
-  val isSyscall   = Bool()
-  val isEret      = Bool()
-  // val hasFlush  = Bool()
-
-  val debug_pc = UInt(ADDR_WIDTH.W)
+  
+  // csr write info
+  val csr_iswf  = Bool()
+  val csr_wmask = UInt(DATA_WIDTH.W)
+  val csr_addr  = UInt(CSR_WIDTH.W)
+  val csr_value = UInt(DATA_WIDTH.W)
 }
 
 class RobRenameIO extends Bundle {

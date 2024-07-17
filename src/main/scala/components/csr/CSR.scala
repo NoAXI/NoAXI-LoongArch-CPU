@@ -24,11 +24,7 @@ class CSRIO extends Bundle {
 class CSR extends Module {
   val io = IO(new CSRIO)
 
-  val saved_info = RegInit(0.U.asTypeOf(new SingleInfo))
-  when(!io.excHappen.info.bubble) {
-    saved_info := io.excHappen.info
-  }
-  val info = Mux(io.excHappen.info.bubble, saved_info, io.excHappen.info)
+  val info = io.excHappen.info
 
   val CRMD    = new CRMD
   val PRMD    = new PRMD
@@ -143,8 +139,8 @@ class CSR extends Module {
 
   val any_exc = Cat(ESTAT.info.is_12, ESTAT.info.is_11, ESTAT.info.is_9_2, ESTAT.info.is_1_0) &
     Cat(ECFG.info.lie_12_11, ECFG.info.lie_9_0)
-  val is_tlb_exc    = ECodes.istlbException(info.exc_type)
-  val is_tlb_refill = info.exc_type === ECodes.TLBR
+  val is_tlb_exc    = ECodes.istlbException(info.excType)
+  val is_tlb_refill = info.excType === ECodes.TLBR
 
   val start = io.excHappen.start || (any_exc.orR && CRMD.info.ie)
 
@@ -158,7 +154,7 @@ class CSR extends Module {
     CRMD.info.ie  := 0.U
     // 中断>例外>tlb例外的优先级，不过本身的设计保证例外和tlb例外不会同时发生，且普通例外优先
     ESTAT.info.ecode := MuxCase(
-      info.exc_type,
+      info.excType,
       List(
         ESTAT.info.is_1_0.orR -> ECodes.INT,
         ESTAT.info.is_9_2.orR -> ECodes.INT,
@@ -166,16 +162,16 @@ class CSR extends Module {
         ESTAT.info.is_12      -> ECodes.INT,
       ),
     )
-    ESTAT.info.esubcode := Mux(info.exc_type === ECodes.ADEM, 1.U, 0.U)
+    ESTAT.info.esubcode := Mux(info.excType === ECodes.ADEM, 1.U, 0.U)
     // 软中断的ERApc是下一个pc, TODO:中断标记在某个指令上
     ERA.info.pc := Mux(is_soft_int_ex, info.pc_add_4, info.pc)
     BADV.info.vaddr := MateDefault(
-      info.exc_type,
+      info.excType,
       BADV.info.vaddr,
       List(
-        ECodes.ADEF -> info.exc_vaddr,
-        ECodes.ADEM -> info.exc_vaddr,
-        ECodes.ALE  -> info.exc_vaddr,
+        ECodes.ADEF -> info.excVAddr,
+        ECodes.ADEM -> info.excVAddr,
+        ECodes.ALE  -> info.excVAddr,
       ),
     )
 
@@ -188,7 +184,7 @@ class CSR extends Module {
         CRMD.info.pg   := false.B
         io.excJump.tar := TLBRENTRY.info.asUInt
       }
-      TLBEHI.info.vppn := info.exc_vaddr(31, 13)
+      TLBEHI.info.vppn := info.excVAddr(31, 13)
     }
   }
 

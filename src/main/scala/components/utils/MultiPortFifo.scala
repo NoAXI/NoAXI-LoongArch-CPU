@@ -100,15 +100,6 @@ class MultiPortFifo[T <: Data](
     maybeFull := realPushOffset > realPopOffset
   }
 
-  when(io.flush) {
-    pushPtr   := 0.U
-    popPtr    := 0.U
-    maybeFull := false.B
-    if (clearWhenFlush) {
-      mem := 0.U.asTypeOf(mem)
-    }
-  }
-
   if (hasWritePort) {
     for (i <- 0 until BACK_ISSUE_WIDTH) {
       when(io.write(i).valid) {
@@ -119,6 +110,15 @@ class MultiPortFifo[T <: Data](
   } else {
     io.write := DontCare
     io.index := DontCare
+  }
+
+  when(io.flush) {
+    pushPtr   := 0.U
+    popPtr    := 0.U
+    maybeFull := false.B
+    if (clearWhenFlush) {
+      mem := 0.U.asTypeOf(mem)
+    }
   }
 
   if (Config.debug_on) {

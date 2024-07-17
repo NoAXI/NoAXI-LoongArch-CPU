@@ -161,10 +161,8 @@ class Top extends Module {
   memory2.mem1   <> memory1.mem2
 
   // storeBuffer <> memory1, memory2
-  storeBuffer.memory2  <> memory2.storeBufferRead
-  storeBuffer.from     <> memory2.storeBufferWrite
-  storeBuffer.to.ready := true.B // temp
-  // storeBuffer.to
+  storeBuffer.memory2 <> memory2.storeBufferRead
+  storeBuffer.from    <> memory2.storeBufferWrite
 
   // bpu <> prefetch, fetch
   bpu.preFetch <> prefetch.bpu
@@ -183,7 +181,6 @@ class Top extends Module {
   issue.busyInfo  <> dispatch.busyInfo
 
   // readreg <> forward, preg, issue
-  // TODO: 修改唤醒接口
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     readreg(i).forwardReq <> forward.req(i)
     readreg(i).pregRead   <> preg.read(i)
@@ -192,14 +189,13 @@ class Top extends Module {
     }
   }
   muldiv1.awake <> issue.awake(MULDIV_ISSUE_ID)
-  // memory1.awake <> issue.awake(MEMORY_ISSUE_ID)
   memory2.awake <> issue.awake(MEMORY_ISSUE_ID)
 
   // forward <> the last stage of execute
   for (i <- 0 until ARITH_ISSUE_NUM) {
     arith(i).forward <> forward.exe(i)
   }
-  muldiv2.forward <> forward.exe(MULDIV_ISSUE_ID) // TODO: 需要改为muldiv的最后一级
+  muldiv2.forward <> forward.exe(MULDIV_ISSUE_ID)
   memory2.forward <> forward.exe(MEMORY_ISSUE_ID)
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     writeback(i).forward <> forward.wb(i)
@@ -214,8 +210,6 @@ class Top extends Module {
   // commit <> rat, rob, debug
   commit.rat <> rat.commit
   commit.rob <> rob.commit
-  // commit.buffer.to   <> storeBuffer.from
-  // commit.buffer.from <> storeBuffer.to
   when(clock.asBool) {
     io.debug := commit.debug(0)
   }.otherwise {
@@ -261,7 +255,7 @@ class Top extends Module {
   flushCtrl.backFlush <> muldiv1.flush
   flushCtrl.backFlush <> muldiv2.flush
 
-  flushCtrl.backFlush <> memory0.flush // flush when memStall = 1
+  flushCtrl.backFlush <> memory0.flush
   flushCtrl.backFlush <> memory1.flush
   flushCtrl.backFlush <> memory2.flush
 

@@ -60,32 +60,36 @@ class WritebackTop(
   io.preg.data  := res.rdInfo.data
 
   // writeback -> rob
-  io.rob.valid := valid && !res.writeInfo.valid
+  io.rob.valid := valid && !res.writeInfo.valid && !res.bubble
   io.rob.index := res.robId
 
-  io.rob.bits.done := true.B
+  // basic rob info
+  io.rob.bits.done    := true.B
+  io.rob.bits.pc      := res.pc
+  io.rob.bits.wen     := res.iswf
+  io.rob.bits.areg    := res.rdInfo.areg
+  io.rob.bits.preg    := res.rdInfo.preg
+  io.rob.bits.opreg   := res.opreg
+  io.rob.bits.wdata   := res.rdInfo.data
+  io.rob.bits.isStore := res.func_type === FuncType.mem && !MemOpType.isread(res.op_type)
 
-  io.rob.bits.wen   := res.iswf
-  io.rob.bits.areg  := res.rdInfo.areg
-  io.rob.bits.preg  := res.rdInfo.preg
-  io.rob.bits.opreg := res.opreg
-  io.rob.bits.wdata := res.rdInfo.data
+  // branch
+  io.rob.bits.bfail     := res.realBr
+  io.rob.bits.isbr      := res.func_type === FuncType.bru
+  io.rob.bits.realBrDir := res.realBrDir
 
-  // io.rob.bits.debug_using := true.B
-  io.rob.bits.debug_pc    := res.pc
+  // exception & privilege
+  val isExc = res.func_type === FuncType.exc
   io.rob.bits.exc_type    := res.exc_type
   io.rob.bits.exc_vaddr   := res.exc_vaddr
-  io.rob.bits.isStore     := res.func_type === FuncType.mem && !MemOpType.isread(res.op_type)
-  io.rob.bits.isPrivilege := res.func_type === FuncType.csr
-  io.rob.bits.bfail       := res.realBr
-  io.rob.bits.isbr        := res.func_type === FuncType.bru
-  io.rob.bits.realBrDir   := res.realBrDir
+  io.rob.bits.isPrivilege := FuncType.isPrivilege(res.func_type)
   io.rob.bits.isException := res.exc_type =/= ECodes.NONE
 
-  // TODO: eret
-  io.rob.bits.isEret    := false.B
-  io.rob.bits.isSyscall := false.B
-  io.rob.bits.isEret    := false.B
+  // csr write
+  io.rob.bits.csr_iswf  := res.csr_iswf
+  io.rob.bits.csr_wmask := res.csr_wmask
+  io.rob.bits.csr_addr  := res.csr_addr
+  io.rob.bits.csr_value := res.csr_value
 
   // writeback -> forward -> readreg
   doForward(io.forward, res, valid)

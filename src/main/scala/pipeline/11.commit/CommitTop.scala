@@ -24,7 +24,6 @@ class CommitTopIO extends Bundle {
   val flushInfo     = Output(new BranchInfo)
 
   // exception
-  val excInfo   = Output(new ExceptionInfo)
   val excHappen = Output(new ExcHappenInfo)
   val csrWrite  = Output(new CSRWrite)
   val excJump   = Input(new BranchInfo)
@@ -51,7 +50,7 @@ class CommitTop extends Module {
 
     // when detect write / csr / brfail, set next inst stall
     when(info.done && (info.isPrivilege || info.isStore || info.isbr || info.isException)) {
-      if (i == 1) {
+      if (i != 0) {
         when(info.isStore) {
           readyBit(i) := false.B
         }
@@ -72,17 +71,17 @@ class CommitTop extends Module {
   }
 
   // send predict update info
-  io.predictResult := 0.U.asTypeOf(new PredictRes)
+  val predictResult = WireDefault(0.U.asTypeOf(new PredictRes))
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rob(i).info.bits
     when(io.rob(i).info.ready && info.isbr) {
-      val out = io.predictResult
-      out.br            := info.bfail
-      out.realDirection := info.realBrDir
-      out.pc            := info.debug_pc
-      out.isbr          := info.isbr
+      predictResult.br            := info.bfail
+      predictResult.realDirection := info.realBrDir
+      predictResult.pc            := info.pc
+      predictResult.isbr          := info.isbr
     }
   }
+  io.predictResult := RegNext(predictResult)
 
   // when ex / bfail appears, do flush
   io.flushInfo := 0.U.asTypeOf(new BranchInfo)
@@ -90,7 +89,6 @@ class CommitTop extends Module {
     val info    = io.rob(i).info.bits
     val isBfail = info.bfail.en && info.isbr
     val isEx    = info.isException
-    // TODO: add exception here
     when(io.rob(i).info.ready && isBfail) {
       io.flushInfo.en  := true.B
       io.flushInfo.tar := info.bfail.tar
@@ -109,7 +107,7 @@ class CommitTop extends Module {
 
     // rob -> commit
     io.debug(i).wb_rf_we    := writeValid
-    io.debug(i).wb_pc       := Mux(writeValid, rob.bits.debug_pc, 0.U)
+    io.debug(i).wb_pc       := Mux(writeValid, rob.bits.pc, 0.U)
     io.debug(i).wb_rf_wnum  := Mux(writeValid, rob.bits.areg, 0.U)
     io.debug(i).wb_rf_wdata := Mux(writeValid, rob.bits.wdata, 0.U)
 
@@ -134,23 +132,30 @@ class CommitTop extends Module {
     io.rob(i).info.ready := readyBit(i) && !writeStall
   }
 
-  // exception
-  io.excInfo := 0.U.asTypeOf(io.excInfo)
-  for (i <- 0 until ISSUE_WIDTH) {
-    val info = io.rob(i).info.bits
-    when(hasEx(i)) {
-      io.excInfo.en       := true.B
-      io.excInfo.excType  := info.exc_type
-      io.excInfo.excVAddr := info.exc_vaddr
-    }
-  }
+  // exception & csr
   io.excHappen := 0.U.asTypeOf(io.excHappen)
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rob(i).info.bits
-    when(info.isSyscall || info.isEret) {
-      io.excHappen.start := info.isSyscall
-      io.excHappen.end   := info.isEret
+    when(hasEx(i)) {
+      when(info.exc_type === ECodes.ertn) {
+        io.excHappen.end := true.B
+      }.otherwise {
+        io.excHappen.start := true.B
+      }
+      io.excHappen.info.excType  := info.exc_type
+      io.excHappen.info.excVAddr := info.exc_vaddr
+      io.excHappen.info.pc       := info.pc
+      io.excHappen.info.pc_add_4 := info.pc + 4.U
     }
   }
   io.csrWrite := 0.U.asTypeOf(io.csrWrite)
+  for (i <- 0 until ISSUE_WIDTH) {
+    val info = io.rob(i).info.bits
+    when(io.rob(i).info.ready && info.csr_iswf) {
+      io.csrWrite.we    := info.csr_iswf
+      io.csrWrite.wmask := info.csr_wmask
+      io.csrWrite.waddr := info.csr_addr
+      io.csrWrite.wdata := info.wdata
+    }
+  }
 }

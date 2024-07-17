@@ -34,5 +34,5 @@ class Stage1TLBIO extends Bundle {
 
   val pa        = Input(UInt(ADDR_WIDTH.W))
   val cached    = Input(Bool())
-  val exception = Input(new ExceptionInfo)
+  val exception = Input(new ExcInfo)
 }
