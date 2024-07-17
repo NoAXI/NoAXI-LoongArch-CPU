@@ -33,13 +33,13 @@ class Muldiv0Top extends Module {
   val is_div = info.func_type === FuncType.div
 
   // mul
-  mul.op_type   := io.mul.op_type // for muldiv2 to get data
+  mul.op_type   := info.op_type // for muldiv2 to get data
   mul.src1      := src1
   mul.src2      := src2
   io.mul.result := mul.result
+  mul.op_type2  := io.mul.op_type
 
   // div
-  div.flush   := io.flush
   div.running := is_div
   div.op_type := info.op_type
   div.src1    := src1
