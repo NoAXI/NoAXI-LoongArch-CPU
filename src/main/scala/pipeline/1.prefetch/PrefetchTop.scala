@@ -42,10 +42,14 @@ class PrefetchTop extends Module {
       nextPC(pc),
       Seq(
         // excHappen     -> excPC,
-        predictFailed -> exactPC,
-        predictEn     -> predictPC,
+        // predictFailed -> exactPC,
+        predictEn -> predictPC,
       ),
     )
+  }
+
+  when(predictFailed) {
+    pc := exactPC
   }
   when(flushHappen) {
     pc := flushPC

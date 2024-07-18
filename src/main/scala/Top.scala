@@ -223,17 +223,18 @@ class Top extends Module {
   memorySel.to         <> memory1.from
 
   // front flush
-  prefetch.flush      := flushCtrl.frontFlush || predecode.flushapply
-  fetch.flush         := flushCtrl.frontFlush || predecode.flushapply
-  flushCtrl.backFlush <> predecode.flush
-  flushCtrl.backFlush <> ib.flush
-  flushCtrl.backFlush <> decode.flush
-  flushCtrl.backFlush <> rename.flush
+  prefetch.flush       := flushCtrl.frontFlush || predecode.flushapply
+  fetch.flush          := flushCtrl.frontFlush || predecode.flushapply
+  flushCtrl.frontFlush <> predecode.flush
+  flushCtrl.frontFlush <> ib.flush
+  flushCtrl.backFlush  <> decode.flush
+  flushCtrl.backFlush  <> rename.flush
 
   // recover flush
   flushCtrl.recover <> rob.flush
   flushCtrl.recover <> rat.flush
   flushCtrl.recover <> storeBuffer.flush
+  flushCtrl.recover <> commit.flush
 
   // stall
   ib.stall          := false.B // flushCtrl.backFlush
@@ -256,14 +257,12 @@ class Top extends Module {
   flushCtrl.backFlush <> muldiv2.flush
 
   flushCtrl.backFlush <> memory0.flush
-  flushCtrl.backFlush <> memory1.flush
-  flushCtrl.backFlush <> memory2.flush
+  flushCtrl.recover   <> memory1.flush
+  flushCtrl.recover   <> memory2.flush
 
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     flushCtrl.backFlush <> writeback(i).flush
   }
-
-  flushCtrl.backFlush <> commit.flush
 
   // flush control: branch
   flushCtrl.flushInfo   <> commit.flushInfo

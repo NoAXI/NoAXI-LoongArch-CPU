@@ -50,10 +50,14 @@ class FlushCtrl extends Module {
   // when(!flushReg) {
   //   addrReg := io.flushInfo.tar
   // }
+
+  val doFlush    = io.flushInfo.en
+  val delayFlush = RegNext(doFlush)
+
   io.flushTarget := io.flushInfo
   io.commitStall := false.B
 
-  io.frontFlush := io.flushInfo.en
-  io.backFlush  := RegNext(io.flushInfo.en)
-  io.recover    := RegNext(io.flushInfo.en)
+  io.frontFlush := doFlush
+  io.backFlush  := doFlush || delayFlush
+  io.recover    := delayFlush
 }

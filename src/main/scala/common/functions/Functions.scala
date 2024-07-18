@@ -31,26 +31,21 @@ object Functions {
       val singleInfo = WireDefault(info).asTypeOf(new SingleInfo)
       rbStore := singleInfo.actualStore
     }
-    val realFlush = WireDefault(false.B)
     when(!rbStore) {
       when(flush) {
         y.valid := false.B
         when(!stall) {
-          realFlush := true.B
+          info := info.getFlushInfo
         }.otherwise {
           wait := true.B
         }
       }
       when(wait && !stall) {
-        wait      := false.B
-        realFlush := true.B
+        wait := false.B
       }
       when(wait) {
         y.valid := false.B
       }
-    }
-    when(realFlush) {
-      info := info.getFlushInfo
     }
     (info, valid)
   }
