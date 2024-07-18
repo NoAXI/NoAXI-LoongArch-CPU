@@ -110,6 +110,26 @@ class PreDecodeTop extends Module {
     res.predict.en              := false.B
   }
 
+  val flushStop = RegInit(false.B)
+  val brStop    = RegInit(false.B)
+  when(io.flushapply) {
+    flushStop := true.B
+    brStop    := true.B
+  }
+
+  when(flushStop) {
+    io.flushapply := false.B
+  }
+
+  when(brStop) {
+    io.predictRes.br.en := false.B
+  }
+
+  when(io.from.fire) {
+    brStop    := false.B
+    flushStop := false.B
+  }
+
   io.to.bits         := 0.U.asTypeOf(new DualInfo)
   io.to.bits.bits(0) := res
 

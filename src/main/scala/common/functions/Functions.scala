@@ -33,6 +33,7 @@ object Functions {
     }
     when(!rbStore) {
       when(flush) {
+        y.valid := false.B
         when(!stall) {
           info := 0.U.asTypeOf(info)
         }.otherwise {
