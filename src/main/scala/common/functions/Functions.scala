@@ -13,7 +13,7 @@ import pipeline.ForwardInfoIO
 object Functions {
   // for pipelines---------------------------------------------------------------------------
   // dual connect
-  def stageConnect[T <: Data](x: DecoupledIO[T], y: DecoupledIO[T], stall: Bool, flush: Bool, hasRbStore: Boolean = false): (T, Bool) = {
+  def stageConnect[T <: BasicStageInfo](x: DecoupledIO[T], y: DecoupledIO[T], stall: Bool, flush: Bool, hasRbStore: Boolean = false): (T, Bool) = {
     val info  = RegInit(0.U.asTypeOf(x.bits))
     val valid = RegInit(false.B)
     val wait  = RegInit(false.B)
@@ -31,21 +31,26 @@ object Functions {
       val singleInfo = WireDefault(info).asTypeOf(new SingleInfo)
       rbStore := singleInfo.actualStore
     }
+    val realFlush = WireDefault(false.B)
     when(!rbStore) {
       when(flush) {
         y.valid := false.B
         when(!stall) {
-          info := 0.U.asTypeOf(info)
+          realFlush := true.B
         }.otherwise {
           wait := true.B
         }
       }
       when(wait && !stall) {
-        wait := false.B
+        wait      := false.B
+        realFlush := true.B
       }
       when(wait) {
         y.valid := false.B
       }
+    }
+    when(realFlush) {
+      info := info.getFlushInfo
     }
     (info, valid)
   }

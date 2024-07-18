@@ -40,7 +40,7 @@ class DispatchTop extends Module {
     info := io.from.bits
   }
   when(io.flush) {
-    info := 0.U.asTypeOf(new DualInfo)
+    info := info.getFlushInfo
   }
 
   // initial set valid = 0

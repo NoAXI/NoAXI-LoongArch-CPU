@@ -22,8 +22,12 @@ class RegInfo extends Bundle {
   val data = UInt(DATA_WIDTH.W)
 }
 
+abstract class BasicStageInfo extends Bundle {
+  def getFlushInfo: BasicStageInfo
+}
+
 // basic info for single pipeline
-class SingleInfo extends Bundle {
+class SingleInfo extends BasicStageInfo {
   val bubble = Bool()
 
   // basic
@@ -103,10 +107,24 @@ class SingleInfo extends Bundle {
   val storeBufferHit     = Bool()
   val storeBufferHitData = UInt(DATA_WIDTH.W)
   val storeBufferHitStrb = UInt((DATA_WIDTH / 8).W)
+
+  override def getFlushInfo: BasicStageInfo = {
+    val info = WireDefault(0.U.asTypeOf(new SingleInfo))
+    info.bubble := true.B
+    info
+  }
 }
 
-class DualInfo extends Bundle {
+class DualInfo extends BasicStageInfo {
   val bits = Vec(ISSUE_WIDTH, new SingleInfo)
+
+  override def getFlushInfo: BasicStageInfo = {
+    val info = WireDefault(0.U.asTypeOf(new DualInfo))
+    for(i <- 0 until ISSUE_WIDTH) {
+      info.bits(0).bubble := true.B
+    }
+    info
+  }
 }
 
 class BusyInfo extends Bundle {
