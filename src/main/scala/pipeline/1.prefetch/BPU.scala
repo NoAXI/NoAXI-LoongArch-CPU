@@ -16,8 +16,7 @@ ARAT中维护了寄存器映射表的有效位，可在分支预测失败时恢�
  */
 
 class BPUIO extends Bundle {
-  val preFetch    = Flipped(new PreFetchBPUIO)
-  val invalidInst = Output(Bool())
+  val preFetch = Flipped(new PreFetchBPUIO)
 }
 
 class BPU extends Module {
@@ -55,9 +54,8 @@ class BPU extends Module {
       }
     }
   }
-  val index               = VecInit.tabulate(FETCH_DEPTH)(i => BHT(i)(io.preFetch.pcGroup(i)(INDEX_LENGTH + 1, 2)))
-  val predictDirectionVec = VecInit.tabulate(FETCH_DEPTH)(i => PHT(i)(index(i))(1) && io.preFetch.pcValid(i))
-  val predictDirection    = ShiftRegister(predictDirectionVec, 1)
+  val index            = VecInit.tabulate(FETCH_DEPTH)(i => BHT(i)(io.preFetch.pcGroup(i)(INDEX_LENGTH + 1, 2)))
+  val predictDirection = VecInit.tabulate(FETCH_DEPTH)(i => PHT(i)(index(i))(1) && io.preFetch.pcValid(i))
 
   // BTB: pc-relative or call
   for (i <- 0 until FETCH_DEPTH) {
@@ -85,7 +83,9 @@ class BPU extends Module {
     VecInit.tabulate(FETCH_DEPTH)(i => BTB(i).doutb(BTB_INFO_LENGTH - BTB_TAG_LENGTH - 2, BTB_FLAG_LENGTH))
   val isCALLVec   = VecInit.tabulate(FETCH_DEPTH)(i => BTB(i).doutb(1))
   val isReturnVec = VecInit.tabulate(FETCH_DEPTH)(i => BTB(i).doutb(0))
-  val BTBHitVec   = VecInit.tabulate(FETCH_DEPTH)(i => validVec(i) && tagVec(i) === io.preFetch.pcGroup(i)(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH))
+  val BTBHitVec = VecInit.tabulate(FETCH_DEPTH)(i =>
+    validVec(i) && tagVec(i) === io.preFetch.pcGroup(i)(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH),
+  )
 
   // RAS: return
   val top         = RegInit(0.U(RAS_WIDTH.W))
@@ -106,7 +106,6 @@ class BPU extends Module {
   val sb2 = WireDefault(false.B)
 
   // predict
-  io.invalidInst         := false.B
   io.preFetch.nextPC.en  := true.B
   io.preFetch.nextPC.tar := 0.U
   when(predictDirection(0)) {
@@ -115,11 +114,9 @@ class BPU extends Module {
       dontTouch(sb1)
     }
     when(RASHitVec(0)) {
-      io.invalidInst         := true.B
       io.preFetch.nextPC.tar := RASTarVec(0)
       top                    := top_minus_1
     }.elsewhen(BTBHitVec(0)) {
-      io.invalidInst         := true.B
       io.preFetch.nextPC.tar := BTBTarVec(0)
     }.otherwise {
       io.preFetch.nextPC.en := false.B
@@ -130,11 +127,9 @@ class BPU extends Module {
       dontTouch(sb2)
     }
     when(RASHitVec(1)) {
-      io.invalidInst         := true.B
       io.preFetch.nextPC.tar := RASTarVec(1)
       top                    := top_minus_1
     }.elsewhen(BTBHitVec(1)) {
-      io.invalidInst         := true.B
       io.preFetch.nextPC.tar := BTBTarVec(1)
     }.otherwise {
       io.preFetch.nextPC.en := false.B
