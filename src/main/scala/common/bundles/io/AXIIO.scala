@@ -104,5 +104,6 @@ class Mem2DCacheIO extends Bundle {
   val answer    = Flipped(DecoupledIO(UInt(DATA_WIDTH.W)))
   val rwType    = Output(Bool())
   val prevAwake = Input(Bool())
+  val flush     = Output(Bool())
   // val cango   = Output(Bool())
 }

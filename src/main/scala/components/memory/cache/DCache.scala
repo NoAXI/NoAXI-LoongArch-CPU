@@ -10,6 +10,7 @@ import const.Parameters._
 import const.Config
 
 import pipeline._
+import os.stat
 
 class DCacheIO extends Bundle {
   val axi = new DCacheAXI
@@ -60,8 +61,8 @@ class DCache extends Module {
   val paddr = io.mem2.request.bits.addr
 
   // mem 2: act with D-Cache
-  //   0           1               2             3              4            5
-  val idle :: uncacheRead :: uncacheWrite :: checkdirty :: writeBack :: replaceLine :: Nil = Enum(6)
+  //   0           1               2             3              4            5              6
+  val idle :: uncacheRead :: uncacheWrite :: checkdirty :: writeBack0 :: writeBack1 :: replaceLine :: Nil = Enum(7)
 
   val state  = RegInit(idle)
   val cached = io.mem2.request.bits.cached
@@ -95,6 +96,7 @@ class DCache extends Module {
   val linedata       = RegInit(0.U((LINE_SIZE * 8).W))
   val wmask          = RegInit(1.U(4.W))
   val wmove          = Mux1H(((DATA_WIDTH / 8 - 1) to 0 by -1).map(i => wmask(i) -> (i * 32).U))
+  val w_data         = savedInfo.linedata(lru(savedInfo.index))
 
   switch(state) {
     is(idle) {
@@ -123,10 +125,10 @@ class DCache extends Module {
             savedInfo.linedata := Seq(data(0).doutb, data(1).doutb)
             savedInfo.op       := rwType
             savedInfo.addr     := pa
-            // savedInfo.linetag  := Seq(tag(0), tag(1)) // what?
-            savedInfo.wstrb := wstrb
-            savedInfo.wdata := wdata
-            state           := checkdirty
+            savedInfo.linetag  := Seq(tag(0), tag(1))
+            savedInfo.wstrb    := wstrb
+            savedInfo.wdata    := wdata
+            state              := checkdirty
           }
         }.otherwise {
           when(!rwType) {
@@ -182,7 +184,7 @@ class DCache extends Module {
       val lru_way = lru(savedInfo.index)
       val isDirty = dirty(savedInfo.index)(lru_way)
       when(isDirty) {
-        state := writeBack
+        state := writeBack0
       }.otherwise {
         arvalid  := true.B
         ar.addr  := savedInfo.addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
@@ -196,57 +198,49 @@ class DCache extends Module {
     }
 
     // TODO: mask merge
-    is(writeBack) {
-      val wdata = savedInfo.linedata(lru(savedInfo.index))
+    is(writeBack0) {
+      awvalid := true.B
+      aw.addr := savedInfo.linetag(lru(savedInfo.index)) ## savedInfo.index ## 0.U(4.W)
+      aw.size := 2.U
+      aw.len  := (BANK_WIDTH / 4 - 1).U
 
-      val _aw :: _w :: Nil = Enum(2)
-      val wstate           = RegInit(_aw)
-      switch(wstate) {
-        is(_aw) {
-          awvalid := true.B
-          aw.addr := savedInfo.addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
-          aw.size := 2.U
-          aw.len  := (BANK_WIDTH / 4 - 1).U
+      wvalid := true.B
+      w.data := w_data(31, 0)
+      w.strb := "b1111".U
+      w.last := false.B
+      count  := 1.U
+      state  := writeBack1
+    }
 
-          wvalid := true.B
-          w.data := wdata(31, 0)
+    is(writeBack1) {
+      when(io.axi.aw.fire) {
+        awvalid := false.B
+      }
+      when(io.axi.w.fire) {
+        when(w.last) {
+          wvalid := false.B
+        }.otherwise {
+          count := count << 1.U
+          w.data := Mux1H(
+            Seq(
+              count(0) -> w_data(63, 32),
+              count(1) -> w_data(95, 64),
+              count(2) -> w_data(127, 96),
+            ),
+          )
           w.strb := "b1111".U
-          w.last := false.B
-          count  := 1.U
-          wstate := _w
+          w.last := count(2).asBool
         }
-        is(_w) {
-          when(io.axi.aw.fire) {
-            awvalid := false.B
-          }
-          when(io.axi.w.fire) {
-            when(w.last) {
-              wvalid := false.B
-            }.otherwise {
-              count := count << 1.U
-              w.data := Mux1H(
-                Seq(
-                  count(0) -> wdata(63, 32),
-                  count(1) -> wdata(95, 64),
-                  count(2) -> wdata(127, 96),
-                ),
-              )
-              w.strb := "b1111".U
-              w.last := count(2).asBool
-            }
-          }
-          when(io.axi.b.fire) {
-            arvalid  := true.B
-            ar.addr  := savedInfo.addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
-            ar.size  := 2.U
-            ar.len   := (BANK_WIDTH / 4 - 1).U
-            rready   := false.B
-            linedata := 0.U
-            wmask    := 1.U
-            state    := replaceLine
-            wstate   := _aw
-          }
-        }
+      }
+      when(io.axi.b.fire) {
+        arvalid  := true.B
+        ar.addr  := savedInfo.addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
+        ar.size  := 2.U
+        ar.len   := (BANK_WIDTH / 4 - 1).U
+        rready   := false.B
+        linedata := 0.U
+        wmask    := 1.U
+        state    := replaceLine
       }
     }
 

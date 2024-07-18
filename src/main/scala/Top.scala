@@ -223,12 +223,12 @@ class Top extends Module {
   memorySel.to         <> memory1.from
 
   // front flush
-  prefetch.flush       := flushCtrl.frontFlush || predecode.flushapply
-  fetch.flush          := flushCtrl.frontFlush || predecode.flushapply
-  flushCtrl.frontFlush <> predecode.flush
-  flushCtrl.frontFlush <> ib.flush
-  flushCtrl.frontFlush <> decode.flush
-  flushCtrl.frontFlush <> rename.flush
+  prefetch.flush      := flushCtrl.frontFlush || predecode.flushapply
+  fetch.flush         := flushCtrl.frontFlush || predecode.flushapply
+  flushCtrl.backFlush <> predecode.flush
+  flushCtrl.backFlush <> ib.flush
+  flushCtrl.backFlush <> decode.flush
+  flushCtrl.backFlush <> rename.flush
 
   // recover flush
   flushCtrl.recover <> rob.flush
@@ -236,7 +236,7 @@ class Top extends Module {
   flushCtrl.recover <> storeBuffer.flush
 
   // stall
-  ib.stall          := false.B
+  ib.stall          := false.B // flushCtrl.backFlush
   issue.memoryStall := false.B
 
   // back flush
@@ -282,7 +282,7 @@ class Top extends Module {
   memory0.commitCsrWriteDone <> commit.csrWritePop
 
   // cnt
-  for(i <- 0 until ARITH_ISSUE_NUM) {
+  for (i <- 0 until ARITH_ISSUE_NUM) {
     stableCounter.counter <> arith(i).stableCounter
   }
 }

@@ -27,14 +27,19 @@ class FlushCtrl extends Module {
 
   // flush reg
   // when fetch got stall, keep flush state
-  val flushReg  = RegInit(false.B)
+  val flushReg = RegInit(false.B)
+  // val backFlush = RegInit(false.B)
   val flushNext = WireDefault(flushReg)
   when(!flushReg && io.flushInfo.en) {
     flushNext := true.B
+    // backFlush := true.B
   }
   when(flushReg && !io.fetchStall) {
     flushNext := false.B
   }
+  // when(backFlush) {
+  //   backFlush := false.B
+  // }
   flushReg   := flushNext
   frontFlush := flushReg
   recover    := flushReg
@@ -50,6 +55,6 @@ class FlushCtrl extends Module {
   io.commitStall     := flushReg
 
   io.frontFlush := frontFlush
-  io.backFlush  := recover
+  io.backFlush  := RegNext(io.flushInfo.en)
   io.recover    := recover
 }

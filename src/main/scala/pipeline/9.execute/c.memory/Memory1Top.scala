@@ -85,9 +85,9 @@ class Memory1Top extends Module {
   io.mem2.strb        := info.writeInfo.requestInfo.wstrb
 
   // D-Cache
-  io.dCache.addr := info.va
+  io.dCache.addr := Mux(info.actualStore, info.writeInfo.requestInfo.addr, info.va)
 
-  flushWhen(raw._1, io.flush && !info.actualStore)
+  flushWhen(res, io.flush && !info.actualStore)
   io.to.bits := res
 
   if (Config.debug_on) {

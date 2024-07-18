@@ -108,7 +108,7 @@ class TLB(
       io.stage1.cached := ShiftRegister(io.csr.crmd.datm(0), 1) // send cached info when at stage1
     }
     io.stage1.exception := ShiftRegister(0.U.asTypeOf(new ExcInfo), 1)
-  }.elsewhen(direct_hitted) {
+  }.elsewhen(ShiftRegister(direct_hitted, 1)) {
     // check if Direct mapping mode
     io.stage0.isDirect  := true.B
     io.stage0.directpa  := Cat(io.csr.dmw(direct_hittedway).pseg, io.stage0.va(28, 0))

@@ -51,6 +51,7 @@ class Memory2Top extends Module {
   io.dCache.request.bits.wdata  := info.wdata
   io.dCache.request.bits.wstrb  := info.wmask
   io.dCache.rwType              := isStore
+  io.dCache.flush               := io.flush
   io.dCache.answer.ready        := true.B
 
   // load
@@ -84,8 +85,16 @@ class Memory2Top extends Module {
   res.forwardStrb(0)           := io.mem1.strb
   res.forwardStrb(1)           := io.storeBufferRead.forwardStrb
 
+  val waitNextAnsValid = RegInit(false.B)
+  when(busy && io.flush && !info.actualStore && valid && !info.cached) {
+    waitNextAnsValid := true.B
+  }
+  when(io.dCache.answer.fire) {
+    waitNextAnsValid := false.B
+  }
+
   // ld but bufferhit, D-Cache dont care
-  busy := (!io.dCache.answer.fire && (info.actualStore || isLoad)) || (storeBufferFull && isStore && !info.actualStore)
+  busy := (!io.dCache.answer.fire && (info.actualStore || isLoad)) || (storeBufferFull && isStore && !info.actualStore) || (waitNextAnsValid && !io.dCache.answer.fire)
 
   io.awake.valid := valid && info.iswf && io.to.fire
   io.awake.preg  := info.rdInfo.preg
@@ -94,5 +103,8 @@ class Memory2Top extends Module {
   flushWhen(raw._1, io.flush && !info.actualStore)
   io.to.bits := res
 
-  if (Config.debug_on) {}
+  if (Config.debug_on) {
+    val sbvalid = valid
+    dontTouch(sbvalid)
+  }
 }
