@@ -54,9 +54,21 @@ class DispatchTop extends Module {
   val port  = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(0.U(log2Ceil(BACK_ISSUE_WIDTH).W))))
   when(bits(0).pipelineType === bits(1).pipelineType) {
     when(bits(0).pipelineType === PipelineType.arith) {
-      for (i <- 0 until ISSUE_WIDTH) {
-        cango(i) := true.B
-        port(i)  := i.U
+      when(io.to(0).ready && io.to(1).ready) {
+        for (i <- 0 until ISSUE_WIDTH) {
+          cango(i) := true.B
+          port(i)  := i.U
+        }
+      }.otherwise {
+        stall := true.B
+        when(io.to(0).ready || io.to(1).ready) {
+          for (i <- 0 until ISSUE_WIDTH) {
+            when(io.to(i).ready) {
+              cango(0) := true.B
+              port(0)  := i.U
+            }
+          }
+        }
       }
     }.elsewhen(bits(0).pipelineType =/= PipelineType.nop) {
       cango(0) := true.B
