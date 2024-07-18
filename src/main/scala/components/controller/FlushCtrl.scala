@@ -22,39 +22,38 @@ class FlushCtrlIO extends Bundle {
 class FlushCtrl extends Module {
   val io = IO(new FlushCtrlIO)
 
-  val frontFlush = WireDefault(false.B)
-  val recover    = WireDefault(false.B)
+  // val frontFlush = WireDefault(false.B)
+  // val recover    = WireDefault(false.B)
 
   // flush reg
   // when fetch got stall, keep flush state
-  val flushReg = RegInit(false.B)
-  // val backFlush = RegInit(false.B)
-  val flushNext = WireDefault(flushReg)
-  when(!flushReg && io.flushInfo.en) {
-    flushNext := true.B
-    // backFlush := true.B
-  }
-  when(flushReg && !io.fetchStall) {
-    flushNext := false.B
-  }
-  // when(backFlush) {
-  //   backFlush := false.B
+  // val flushReg = RegInit(false.B)
+  // // val backFlush = RegInit(false.B)
+  // val flushNext = WireDefault(flushReg)
+  // when(!flushReg && io.flushInfo.en) {
+  //   flushNext := true.B
+  //   // backFlush := true.B
   // }
-  flushReg   := flushNext
-  frontFlush := flushReg
-  recover    := flushReg
+  // when(flushReg && !io.fetchStall) {
+  //   flushNext := false.B
+  // }
+  // // when(backFlush) {
+  // //   backFlush := false.B
+  // // }
+  // flushReg   := flushNext
+  // frontFlush := flushReg
+  // recover    := flushReg
 
-  // branch reg
-  // when next clock flush signal removes, update the branch info
-  val addrReg = RegInit(0.U(ADDR_WIDTH.W))
-  when(!flushReg) {
-    addrReg := io.flushInfo.tar
-  }
-  io.flushTarget.tar := addrReg
-  io.flushTarget.en  := flushReg && !flushNext
-  io.commitStall     := flushReg
+  // // branch reg
+  // // when next clock flush signal removes, update the branch info
+  // val addrReg = RegInit(0.U(ADDR_WIDTH.W))
+  // when(!flushReg) {
+  //   addrReg := io.flushInfo.tar
+  // }
+  io.flushTarget := io.flushInfo
+  io.commitStall := false.B
 
-  io.frontFlush := frontFlush
+  io.frontFlush := io.flushInfo.en
   io.backFlush  := RegNext(io.flushInfo.en)
-  io.recover    := recover
+  io.recover    := RegNext(io.flushInfo.en)
 }

@@ -18,8 +18,8 @@ class PreDecodeTopIO extends StageBundle {
 // TODO: 逻辑有点混乱，到底要check哪些东西？两条指令之间的valid关系？
 class PreDecodeTop extends Module {
   val io   = IO(new PreDecodeTopIO)
-  val busy = WireDefault(0.U.asTypeOf(new BusyInfo))
-  val from = stageConnect(io.from, io.to, busy)
+  val busy = WireDefault(false.B)
+  val from = stageConnect(io.from, io.to, busy, io.flush)
 
   val info = WireDefault(from._1.bits(0))
   val res  = WireDefault(info)
@@ -110,8 +110,7 @@ class PreDecodeTop extends Module {
     res.predict.en              := false.B
   }
 
-  io.to.bits := 0.U.asTypeOf(new DualInfo)
-  flushWhen(from._1, io.flush)
+  io.to.bits         := 0.U.asTypeOf(new DualInfo)
   io.to.bits.bits(0) := res
 
   if (Config.debug_on) {

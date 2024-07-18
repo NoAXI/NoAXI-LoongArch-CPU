@@ -25,8 +25,7 @@ class Memory1TopIO extends SingleStageBundle {
 class Memory1Top extends Module {
   val io   = IO(new Memory1TopIO)
   val busy = WireDefault(false.B)
-  val raw  = stageConnect(io.from, io.to, busy)
-  flushWhen(raw._1, io.flush && !raw._1.actualStore)
+  val raw  = stageConnect(io.from, io.to, busy, io.flush, true)
 
   val info  = raw._1
   val valid = raw._2
@@ -87,7 +86,6 @@ class Memory1Top extends Module {
   // D-Cache
   io.dCache.addr := Mux(info.actualStore, info.writeInfo.requestInfo.addr, info.va)
 
-  flushWhen(res, io.flush && !info.actualStore)
   io.to.bits := res
 
   if (Config.debug_on) {

@@ -39,7 +39,9 @@ class DispatchTop extends Module {
   when(io.from.fire) {
     info := io.from.bits
   }
-  flushWhen(info, io.flush)
+  when(io.flush) {
+    info := 0.U.asTypeOf(new DualInfo)
+  }
 
   // initial set valid = 0
   for (i <- 0 until BACK_ISSUE_WIDTH) {

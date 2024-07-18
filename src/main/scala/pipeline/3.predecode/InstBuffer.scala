@@ -65,7 +65,7 @@ class InstBuffer extends Module {
 }
 // class InstBuffer extends Module {
 //   val io   = IO(new InstBufferIO)
-//   val busy = WireDefault(0.U.asTypeOf(new BusyInfo))
+//   val busy = WireDefault(false.B)
 //   val from = stageConnect(io.from, io.to, busy)
 
 //   val info = WireDefault(from._1.bits(0))

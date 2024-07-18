@@ -20,8 +20,7 @@ class ArithmeticTop(
   val io = IO(new ArithmeticTopIO)
 
   val busy = WireDefault(false.B)
-  val raw  = stageConnect(io.from, io.to, busy)
-  flushWhen(raw._1, io.flush)
+  val raw  = stageConnect(io.from, io.to, busy, io.flush)
 
   val info  = raw._1
   val valid = raw._2

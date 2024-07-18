@@ -13,10 +13,10 @@ import pipeline.ForwardInfoIO
 object Functions {
   // for pipelines---------------------------------------------------------------------------
   // dual connect
-  def stageConnect(x: DecoupledIO[DualInfo], y: DecoupledIO[DualInfo], busy: BusyInfo): (DualInfo, Bool) = {
-    val info  = RegInit(0.U.asTypeOf(new DualInfo))
+  def stageConnect[T <: Data](x: DecoupledIO[T], y: DecoupledIO[T], stall: Bool, flush: Bool, hasRbStore: Boolean = false): (T, Bool) = {
+    val info  = RegInit(0.U.asTypeOf(x.bits))
     val valid = RegInit(false.B)
-    val stall = busy.info.reduce(_ || _)
+    val wait  = RegInit(false.B)
     x.ready := !valid || (y.ready && !stall)
     y.valid := valid && !stall
     when(x.ready) {
@@ -24,58 +24,59 @@ object Functions {
     }
     when(x.fire) {
       info := x.bits
+    }
+    // flush keeps just a moment
+    val rbStore = WireDefault(false.B)
+    if (hasRbStore) {
+      val singleInfo = WireDefault(info).asTypeOf(new SingleInfo)
+      rbStore := singleInfo.actualStore
+    }
+    when(!rbStore) {
+      when(flush) {
+        when(!stall) {
+          info := 0.U.asTypeOf(info)
+        }.otherwise {
+          wait := true.B
+        }
+      }
+      when(wait && !stall) {
+        wait := false.B
+      }
+      when(wait) {
+        y.valid := false.B
+      }
     }
     (info, valid)
   }
   // single connect
-  def stageConnect(x: DecoupledIO[SingleInfo], y: DecoupledIO[SingleInfo], busy: Bool): (SingleInfo, Bool) = {
-    val info  = RegInit(0.U.asTypeOf(new SingleInfo))
-    val valid = RegInit(false.B)
-    val stall = busy
-    x.ready := !valid || (y.ready && !stall)
-    y.valid := valid && !stall
-    when(x.ready) {
-      valid := x.valid
-    }
-    when(x.fire) {
-      info := x.bits
-    }
-    (info, valid)
-  }
-  // dual flush
-  def flushWhen(infoReg: DualInfo, flush: Bool): Unit = {
-    when(flush) {
-      infoReg := 0.U.asTypeOf(infoReg)
-      for (i <- 0 until ISSUE_WIDTH) {
-        infoReg.bits(i).bubble := true.B
-      }
-    }
-  }
-  // waiting flush
-  def flushUntilValidWhen[T <: Data](infoReg: SingleInfo, flush: Bool, valid: Bool): Unit = {
-    val holdFlush = RegInit(false.B)
-    when(!valid && flush) {
-      holdFlush := true.B
-    }
-    when(valid) {
-      holdFlush := false.B
-    }
-    val isFlush = flush || holdFlush
-
-    when(isFlush) {
-      infoReg := 0.U.asTypeOf(infoReg)
-      for (i <- 0 until ISSUE_WIDTH) {
-        infoReg.bubble := true.B
-      }
-    }
-  }
-  // single flush
-  def flushWhen(infoReg: SingleInfo, flush: Bool): Unit = {
-    when(flush) {
-      infoReg        := 0.U.asTypeOf(infoReg)
-      infoReg.bubble := true.B
-    }
-  }
+  // def stageConnect(x: DecoupledIO[SingleInfo], y: DecoupledIO[SingleInfo], busy: Bool, flush: Bool, rbStore: Bool = false.B): (SingleInfo, Bool) = {
+  //   val info  = RegInit(0.U.asTypeOf(new SingleInfo))
+  //   val valid = RegInit(false.B)
+  //   val wait  = RegInit(false.B)
+  //   val empty = WireDefault(false.B)
+  //   val stall = busy
+  //   x.ready := !valid || (y.ready && !stall)
+  //   y.valid := valid && !stall
+  //   when(x.ready) {
+  //     valid := x.valid
+  //   }
+  //   when(x.fire) {
+  //     info := x.bits
+  //   }
+  //   // flush keeps just a moment
+  //   when(flush) {
+  //     when(!stall) {
+  //       info := 0.U.asTypeOf(new SingleInfo)
+  //     }.otherwise {
+  //       wait := true.B
+  //     }
+  //   }
+  //   when(wait && !stall) {
+  //     empty := true.B
+  //     wait  := false.B
+  //   }
+  //   (Mux(empty, 0.U.asTypeOf(new SingleInfo), info), valid)
+  // }
   // preFetch pc
   def nextPC(pc: UInt): UInt = {
     Mux(~pc(2), pc(ADDR_WIDTH - 1, 2) + 2.U, pc(ADDR_WIDTH - 1, 2) + 1.U) ## 0.U(2.W)

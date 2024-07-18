@@ -22,9 +22,8 @@ class RenameTopIO extends StageBundle {
 class RenameTop extends Module {
   val io = IO(new RenameTopIO)
 
-  val busy = WireDefault(0.U.asTypeOf(new BusyInfo))
-  val raw  = stageConnect(io.from, io.to, busy)
-  flushWhen(raw._1, io.flush)
+  val busy = WireDefault(false.B)
+  val raw  = stageConnect(io.from, io.to, busy, io.flush)
 
   val info  = raw._1
   val valid = raw._2
@@ -32,7 +31,7 @@ class RenameTop extends Module {
   io.to.bits := res
 
   when(io.ratFull || io.robStall) {
-    busy.info(0) := true.B
+    busy := true.B
   }
 
   for (i <- 0 until ISSUE_WIDTH) {

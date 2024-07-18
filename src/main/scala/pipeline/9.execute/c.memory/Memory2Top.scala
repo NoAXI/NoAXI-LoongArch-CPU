@@ -30,8 +30,7 @@ class Memory2Top extends Module {
   val io = IO(new Memory2TopIO)
 
   val busy = WireDefault(false.B)
-  val raw  = stageConnect(io.from, io.to, busy)
-  flushWhen(raw._1, io.flush && !raw._1.actualStore)
+  val raw  = stageConnect(io.from, io.to, busy, io.flush, true)
 
   val info  = raw._1
   val valid = raw._2
@@ -100,7 +99,6 @@ class Memory2Top extends Module {
   io.awake.preg  := info.rdInfo.preg
 
   doForward(io.forward, res, false.B)
-  flushWhen(raw._1, io.flush && !info.actualStore)
   io.to.bits := res
 
   if (Config.debug_on) {

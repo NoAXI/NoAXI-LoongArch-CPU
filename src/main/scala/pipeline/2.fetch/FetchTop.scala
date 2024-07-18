@@ -16,13 +16,12 @@ class FetchTopIO extends StageBundle {
 
 class FetchTop extends Module {
   val io   = IO(new FetchTopIO)
-  val busy = WireDefault(0.U.asTypeOf(new BusyInfo))
-  val from = stageConnect(io.from, io.to, busy)
-  io.busy := busy.info.reduce(_ || _)
+  val busy = WireDefault(false.B)
+  val from = stageConnect(io.from, io.to, busy, io.flush)
+  io.busy := busy
 
   val info = WireDefault(from._1.bits(0))
   // flushUntilValidWhen(from._1, io.flush, io.to.valid)
-  flushWhen(from._1, io.flush)
   val res = WireDefault(info)
 
   // tlb
@@ -41,7 +40,7 @@ class FetchTop extends Module {
   val wholeInstVec = io.iCache.answer.bits
   val instVec =
     Mux(info.pc(3), VecInit(wholeInstVec(2), wholeInstVec(3)), VecInit(wholeInstVec(0), wholeInstVec(1)))
-  busy.info(0) := !io.iCache.answer.fire && !exception.en
+  busy := !io.iCache.answer.fire && !exception.en
 
   // exception
   val isADEF  = info.pc(1, 0) =/= "b00".U
@@ -50,7 +49,6 @@ class FetchTop extends Module {
 
   res.instGroup := Mux(info.pc(2), VecInit(instVec(1), instVec(0)), instVec)
   res.fetchExc  := VecInit(excType, excType)
-  flushUntilValidWhen(res, io.flush, io.to.valid)
 
   io.to.bits         := 0.U.asTypeOf(new DualInfo)
   io.to.bits.bits(0) := res

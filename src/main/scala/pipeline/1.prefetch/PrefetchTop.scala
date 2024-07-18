@@ -19,12 +19,11 @@ class PrefetchTopIO extends StageBundle {
 
 class PrefetchTop extends Module {
   val io   = IO(new PrefetchTopIO)
-  val busy = WireDefault(0.U.asTypeOf(new BusyInfo))
-  val from = stageConnect(io.from, io.to, busy)
+  val busy = WireDefault(false.B)
+  val from = stageConnect(io.from, io.to, busy, io.flush)
 
   val info = WireDefault(from._1.bits(0))
-  flushWhen(from._1, io.flush)
-  val res = WireDefault(0.U.asTypeOf(new SingleInfo))
+  val res  = WireDefault(0.U.asTypeOf(new SingleInfo))
 
   val pc       = RegInit(START_ADDR.U(ADDR_WIDTH.W))
   val pc_add_4 = pc + 4.U
@@ -78,6 +77,5 @@ class PrefetchTop extends Module {
   res.pa             := directpa
   res.predict        := io.bpu.nextPC
   res.instGroupValid := VecInit(Seq(true.B, pc_add_4(2)))
-  flushWhen(from._1, io.flush)
   io.to.bits.bits(0) := res
 }
