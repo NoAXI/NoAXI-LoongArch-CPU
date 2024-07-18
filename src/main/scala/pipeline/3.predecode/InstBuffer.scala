@@ -42,6 +42,7 @@ class InstBuffer extends Module {
   val instGroup    = VecInit(io.from.bits.bits(0).instGroup(0), io.from.bits.bits(0).instGroup(1))
   val excGroup     = VecInit(io.from.bits.bits(0).fetchExc(0), io.from.bits.bits(0).fetchExc(1))
   val predictGroup = VecInit(io.from.bits.bits(0).predict, io.from.bits.bits(0).predict)
+  val validGroup   = VecInit(io.from.bits.bits(0).instGroupValid(0), io.from.bits.bits(0).instGroupValid(1))
 
   for (i <- 0 until FETCH_DEPTH) {
     fifo.push(i).valid        := io.from.valid && io.from.bits.bits(0).instGroupValid(i)
@@ -50,7 +51,7 @@ class InstBuffer extends Module {
     fifo.push(i).bits.excType := excGroup(i)
     fifo.push(i).bits.predict := predictGroup(i)
   }
-  io.from.ready := fifo.push(0).ready && fifo.push(1).ready
+  io.from.ready := (!validGroup(1) && (fifo.push(0).ready || fifo.push(1).ready)) || (fifo.push(0).ready && fifo.push(1).ready)
 
   for (i <- 0 until ISSUE_WIDTH) {
     fifo.pop(i).ready            := io.to.ready

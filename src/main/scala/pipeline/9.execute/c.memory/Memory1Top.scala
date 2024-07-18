@@ -17,9 +17,9 @@ class Mem1Mem2ForwardIO extends Bundle {
 }
 
 class Memory1TopIO extends SingleStageBundle {
-  val tlb     = new Stage1TLBIO
-  val dCache  = new Mem1DCacheIO
-  val mem2    = new Mem1Mem2ForwardIO
+  val tlb    = new Stage1TLBIO
+  val dCache = new Mem1DCacheIO
+  val mem2   = new Mem1Mem2ForwardIO
 }
 
 class Memory1Top extends Module {
@@ -36,9 +36,21 @@ class Memory1Top extends Module {
   // tlb
   io.tlb.va     := info.va
   io.tlb.hitVec := info.hitVec
-  val pa        = Mux(info.actualStore, info.writeInfo.requestInfo.addr, Mux(info.isDirect, info.pa, io.tlb.pa))
-  val cached    = Mux(info.actualStore, info.writeInfo.requestInfo.cached, io.tlb.cached)
-  val exception = io.tlb.exception
+  val stall       = !ShiftRegister(io.from.fire, 1)
+  val savedCached = RegInit(false.B)
+  val savedPa     = RegInit(0.U(ADDR_WIDTH.W))
+  val savedExc    = RegInit(0.U.asTypeOf(new ExcInfo))
+  when(ShiftRegister(io.from.fire, 1)) {
+    savedCached := io.tlb.cached
+    savedPa     := io.tlb.pa
+    savedExc    := io.tlb.exception
+  }
+  val tlbpa     = Mux(stall, savedPa, io.tlb.pa)
+  val tlbcached = Mux(stall, savedCached, io.tlb.cached)
+  val tlbexc    = Mux(stall, savedExc, io.tlb.exception)
+  val pa        = Mux(info.actualStore, info.writeInfo.requestInfo.addr, Mux(info.isDirect, info.pa, tlbpa))
+  val cached    = Mux(info.actualStore, info.writeInfo.requestInfo.cached, tlbcached)
+  val exception = tlbexc
   res.pa     := pa
   res.cached := cached
 
@@ -77,4 +89,8 @@ class Memory1Top extends Module {
 
   flushWhen(raw._1, io.flush && !info.actualStore)
   io.to.bits := res
+
+  if (Config.debug_on) {
+    dontTouch(valid)
+  }
 }

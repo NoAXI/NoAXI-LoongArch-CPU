@@ -12,7 +12,7 @@ import const.Config
 import pipeline._
 
 class DCacheIO extends Bundle {
-  val axi  = new DCacheAXI
+  val axi = new DCacheAXI
   // val mem0 = Flipped(new Mem0DCacheIO)
   val mem1 = Flipped(new Mem1DCacheIO)
   val mem2 = Flipped(new Mem2DCacheIO)
@@ -57,14 +57,10 @@ class DCache extends Module {
   }
 
   // mem 2: get hitVec
-  val paddr         = io.mem1.addr
-  val cacheHitVecor = VecInit.tabulate(WAY_WIDTH)(i => tag(i) === paddr(31, 12) && valid(i))
-  // io.mem1.hitVec := cacheHitVecor
-
-  for (i <- 0 until WAY_WIDTH)
-    data(i).addrb := paddr(11, 4)
+  val paddr = io.mem2.request.bits.addr
 
   // mem 2: act with D-Cache
+  //   0           1               2             3              4            5
   val idle :: uncacheRead :: uncacheWrite :: checkdirty :: writeBack :: replaceLine :: Nil = Enum(6)
 
   val state  = RegInit(idle)
@@ -73,7 +69,7 @@ class DCache extends Module {
   val wdata  = io.mem2.request.bits.wdata
   val wstrb  = io.mem2.request.bits.wstrb
   val rwType = io.mem2.rwType
-  val hitVec = ShiftRegister(cacheHitVecor, 1)
+  val hitVec = VecInit.tabulate(WAY_WIDTH)(i => tag(i) === paddr(31, 12) && valid(i))
 
   val cacheHit    = hitVec.reduce(_ || _)
   val cacheHitWay = PriorityEncoder(hitVec)
@@ -90,7 +86,7 @@ class DCache extends Module {
   )
 
   val imm_ansvalid   = WireDefault(false.B)
-  val imm_cached_ans = RegInit(0.U(DATA_WIDTH.W))
+  val imm_cached_ans = WireDefault(0.U(DATA_WIDTH.W))
   val ansvalid       = RegInit(false.B)
   val isUncachedans  = RegInit(false.B)
   val uncachedAns    = RegInit(0.U(DATA_WIDTH.W))
@@ -136,7 +132,7 @@ class DCache extends Module {
           when(!rwType) {
             arvalid := true.B
             rready  := false.B
-            ar.addr := pa
+            ar.addr := pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W) // pay attention
             ar.len  := 0.U
             state   := uncacheRead
           }.otherwise {
@@ -199,6 +195,7 @@ class DCache extends Module {
       } // is not dirty
     }
 
+    // TODO: mask merge
     is(writeBack) {
       val wdata = savedInfo.linedata(lru(savedInfo.index))
 
@@ -207,7 +204,7 @@ class DCache extends Module {
       switch(wstate) {
         is(_aw) {
           awvalid := true.B
-          aw.addr := savedInfo.addr
+          aw.addr := savedInfo.addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
           aw.size := 2.U
           aw.len  := (BANK_WIDTH / 4 - 1).U
 
@@ -323,4 +320,7 @@ class DCache extends Module {
   io.mem2.answer.bits   := Mux(imm_ansvalid, imm_cached_ans, uncachedAns)
   io.mem2.request.ready := true.B
 
+  if (Config.debug_on) {
+    dontTouch(hitdata)
+  }
 }
