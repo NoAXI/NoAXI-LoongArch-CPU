@@ -20,10 +20,11 @@ class SignedMul extends BlackBox with HasBlackBoxResource {
 }
 
 class MulIO extends Bundle {
-  val op_type = Input(MulOpType())
-  val src1    = Input(UInt(DATA_WIDTH.W))
-  val src2    = Input(UInt(DATA_WIDTH.W))
-  val result  = Output(UInt(DATA_WIDTH.W))
+  val op_type  = Input(MulOpType())
+  val op_type2 = Input(MulOpType())
+  val src1     = Input(UInt(DATA_WIDTH.W))
+  val src2     = Input(UInt(DATA_WIDTH.W))
+  val result   = Output(UInt(DATA_WIDTH.W))
 }
 
 // use xilinx ip
@@ -44,7 +45,7 @@ class Mul extends Module {
     }
 
     io.result := MateDefault(
-      io.op_type,
+      io.op_type2,
       0.U,
       List(
         MulOpType.shigh -> signed_mul.io.P(DATA_WIDTH * 2 - 1, DATA_WIDTH),
@@ -59,7 +60,7 @@ class Mul extends Module {
     val signed_result   = ShiftRegister(curSigned, 2)
     val unsigned_result = ShiftRegister(curUnsigned, 2)
     io.result := MateDefault(
-      io.op_type,
+      io.op_type2,
       0.U,
       List(
         MulOpType.shigh -> signed_result(DATA_WIDTH * 2 - 1, DATA_WIDTH),
@@ -69,13 +70,4 @@ class Mul extends Module {
       ),
     )
   }
-
-  // io.complete := true.B
-  // val running_lock = RegInit(false.B)
-  // val running      = WireDefault(io.running)
-  // running_lock := running // foolish
-  // when(running_lock) {
-  //   running := false.B
-  // }
-  // io.complete := !running
 }
