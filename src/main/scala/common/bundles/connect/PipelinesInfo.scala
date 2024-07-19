@@ -121,7 +121,7 @@ class DualInfo extends BasicStageInfo {
   override def getFlushInfo: BasicStageInfo = {
     val info = WireDefault(0.U.asTypeOf(new DualInfo))
     for(i <- 0 until ISSUE_WIDTH) {
-      info.bits(0).bubble := true.B
+      info.bits(i).bubble := true.B
     }
     info
   }

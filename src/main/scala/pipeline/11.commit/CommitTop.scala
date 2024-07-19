@@ -2,6 +2,7 @@ package pipeline
 
 import chisel3._
 import chisel3.util._
+import chisel3.util.experimental._
 
 import const._
 import bundles._
@@ -19,7 +20,6 @@ class CommitTopIO extends Bundle {
 
   // ctrl signal
   val flush         = Input(Bool())
-  val stall         = Input(Bool())
   val predictResult = Output(new PredictRes)
   val flushInfo     = Output(new BranchInfo)
 
@@ -63,7 +63,7 @@ class CommitTop extends Module {
 
   // when got flushed or detect exception,
   // then this inst shouldn't be committed
-  when(io.flush || io.stall) {
+  when(io.flush) {
     readyBit := 0.U.asTypeOf(readyBit)
   }
 
@@ -156,5 +156,15 @@ class CommitTop extends Module {
       io.csrWrite.wdata := info.csr_value
       io.csrWritePop    := true.B
     }
+  }
+
+  if(Config.debug_on) {
+    val instCounter = RegInit(0.U(DATA_WIDTH.W))
+    for(i <- 0 until ISSUE_WIDTH) {
+      when(io.rob(i).info.fire) {
+        instCounter := instCounter + 1.U
+      }
+    }
+    // BoringUtils.addSource(instCounter, "instCounter")
   }
 }

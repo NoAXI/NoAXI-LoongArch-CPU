@@ -18,18 +18,15 @@ class DecodeTop extends Module {
   val busy = WireDefault(false.B)
   val from = stageConnect(io.from, io.to, busy, io.flush)
 
-  val info         = from._1.bits
-  val valid_signal = from._2
+  val info = from._1
 
   val dec     = VecInit.fill(ISSUE_WIDTH)(Module(new Decoder).io)
-  val to_info = WireDefault(0.U.asTypeOf(new DualInfo))
+  val to_info = WireDefault(info)
 
   for (i <- 0 until ISSUE_WIDTH) {
-    dec(i).pc   := info(i).pc
-    dec(i).inst := info(i).inst
+    dec(i).pc   := info.bits(i).pc
+    dec(i).inst := info.bits(i).inst
 
-    to_info.bits(i).pc          := info(i).pc
-    to_info.bits(i).inst        := info(i).inst
     to_info.bits(i).func_type   := dec(i).func_type
     to_info.bits(i).op_type     := dec(i).op_type
     to_info.bits(i).imm         := dec(i).imm
@@ -40,23 +37,22 @@ class DecodeTop extends Module {
     to_info.bits(i).rjInfo.areg := dec(i).rj
     to_info.bits(i).rkInfo.areg := dec(i).rk
     to_info.bits(i).rdInfo.areg := dec(i).rd
-    to_info.bits(i).iswf        := dec(i).iswf && !info(i).bubble
+    to_info.bits(i).iswf        := dec(i).iswf && !info.bits(i).bubble
     to_info.bits(i).isReadCsr   := dec(i).isReadCsr
     to_info.bits(i).isWriteCsr  := dec(i).isWriteCsr
     to_info.bits(i).csr_addr    := dec(i).csrReg
     to_info.bits(i).isCALL      := dec(i).isCALL
     to_info.bits(i).isReturn    := dec(i).isReturn
-    to_info.bits(i).predict     := info(i).predict
     to_info.bits(i).exc_type := MuxCase(
       dec(i).exc_type,
       Seq(
-        io.intExc                          -> ECodes.INT,
-        (info(i).exc_type =/= ECodes.NONE) -> info(i).exc_type,
+        io.intExc                               -> ECodes.INT,
+        (info.bits(i).exc_type =/= ECodes.NONE) -> info.bits(i).exc_type,
       ),
     )
-    to_info.bits(i).exc_vaddr    := info(i).pc
-    to_info.bits(i).pipelineType := Mux(info(i).bubble, PipelineType.nop, dec(i).pipelineType)
+    to_info.bits(i).exc_vaddr    := info.bits(i).pc
+    to_info.bits(i).pipelineType := Mux(info.bits(i).bubble, PipelineType.nop, dec(i).pipelineType)
   }
 
-  io.to.bits := Mux(io.flush, 0.U.asTypeOf(new DualInfo), to_info)
+  io.to.bits := to_info
 }

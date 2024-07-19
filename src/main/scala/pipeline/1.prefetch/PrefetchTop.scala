@@ -72,7 +72,7 @@ class PrefetchTop extends Module {
   io.iCache.request.valid     := io.from.fire
   io.iCache.request.bits.addr := pc
 
-  io.to.bits         := 0.U.asTypeOf(new DualInfo)
+  io.to.bits         := from._1
   res.pc             := pc
   res.pc_add_4       := pc_add_4
   res.pc_add_8       := pc_add_8

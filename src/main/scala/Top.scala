@@ -2,6 +2,7 @@ package pipeline
 
 import chisel3._
 import chisel3.util._
+import chisel3.util.experimental._
 
 import const._
 import bundles._
@@ -20,10 +21,17 @@ class DebugIO extends Bundle {
   val wb_rf_wdata = Output(UInt(32.W))
 }
 
+class StatisticIO extends Bundle {
+  val cycles    = UInt(DATA_WIDTH.W)
+  val instCount = UInt(DATA_WIDTH.W)
+}
+
 class TopIO extends Bundle {
   val axi   = new AXIIO
   val debug = new DebugIO
+  // val sta   = if (Config.debug_on) Some(new StatisticIO) else None
 }
+
 class Top extends Module {
   val io = IO(new TopIO)
 
@@ -231,18 +239,19 @@ class Top extends Module {
   flushCtrl.backFlush  <> rename.flush
 
   // recover flush
-  flushCtrl.recover <> rob.flush
-  flushCtrl.recover <> rat.flush
-  flushCtrl.recover <> storeBuffer.flush
-  flushCtrl.recover <> commit.flush
-
-  // stall
-  ib.stall          := false.B // flushCtrl.backFlush
-  issue.memoryStall := false.B
+  flushCtrl.recover     <> rat.flush
+  flushCtrl.recover     <> storeBuffer.flush
+  flushCtrl.commitFlush <> commit.flush
+  flushCtrl.commitFlush <> rob.flush
+  flushCtrl.robFlush    <> rob.flush
 
   // back flush
   flushCtrl.backFlush <> dispatch.flush
   flushCtrl.backFlush <> issue.flush
+
+  // stall
+  ib.stall          := false.B // flushCtrl.backFlush
+  issue.memoryStall := false.B
 
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     flushCtrl.backFlush <> readreg(i).flush
@@ -267,7 +276,6 @@ class Top extends Module {
   // flush control: branch
   flushCtrl.flushInfo   <> commit.flushInfo
   flushCtrl.flushTarget <> prefetch.flushTarget
-  flushCtrl.commitStall <> commit.stall
   flushCtrl.fetchStall  <> fetch.busy
   commit.predictResult  <> prefetch.predictResFromBack
 
@@ -284,4 +292,10 @@ class Top extends Module {
   for (i <- 0 until ARITH_ISSUE_NUM) {
     stableCounter.counter <> arith(i).stableCounter
   }
+
+  // debug info
+  // if (Config.debug_on) {
+  //   io.sta.get.cycles := stableCounter.counter(DATA_WIDTH - 1, 0)
+  //   BoringUtils.addSink(io.sta.get.instCount, "innerSignal")
+  // }
 }

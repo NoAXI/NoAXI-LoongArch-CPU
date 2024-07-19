@@ -50,6 +50,6 @@ class FetchTop extends Module {
   res.instGroup := Mux(info.pc(2), VecInit(instVec(1), instVec(0)), instVec)
   res.fetchExc  := VecInit(excType, excType)
 
-  io.to.bits         := 0.U.asTypeOf(new DualInfo)
+  io.to.bits         := from._1
   io.to.bits.bits(0) := res
 }
