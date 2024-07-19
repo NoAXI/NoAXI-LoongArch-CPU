@@ -84,16 +84,9 @@ class Memory2Top extends Module {
   res.forwardStrb(0)           := io.mem1.strb
   res.forwardStrb(1)           := io.storeBufferRead.forwardStrb
 
-  val waitNextAnsValid = RegInit(false.B)
-  when(busy && io.flush && !info.actualStore && valid && !info.cached) {
-    waitNextAnsValid := true.B
-  }
-  when(io.dCache.answer.fire) {
-    waitNextAnsValid := false.B
-  }
-
   // ld but bufferhit, D-Cache dont care
-  busy := (!io.dCache.answer.fire && (info.actualStore || isLoad)) || (storeBufferFull && isStore && !info.actualStore) || (waitNextAnsValid && !io.dCache.answer.fire)
+  busy := ((!io.dCache.answer.fire && (info.actualStore || isLoad))
+    || (storeBufferFull && isStore && !info.actualStore) && info.exc_type === ECodes.NONE)
 
   io.awake.valid := valid && info.iswf && io.to.fire
   io.awake.preg  := info.rdInfo.preg

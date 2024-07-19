@@ -24,6 +24,9 @@ class RenameTop extends Module {
 
   val busy = WireDefault(false.B)
   val raw  = stageConnect(io.from, io.to, busy, io.flush)
+  when(io.flush) {
+    raw._1 := 0.U.asTypeOf(new DualInfo)
+  }
 
   val info  = raw._1
   val valid = raw._2
