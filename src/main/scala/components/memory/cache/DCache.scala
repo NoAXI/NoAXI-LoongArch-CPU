@@ -244,6 +244,7 @@ class DCache extends Module {
     is(replaceLine) {
       val lru_way         = lru(savedInfo.index)
       val replaceComplete = RegInit(false.B)
+      val writeComplete   = RegInit(false.B)
       when(io.axi.ar.valid) {
         when(io.axi.ar.ready) {
           arvalid := false.B
@@ -260,8 +261,6 @@ class DCache extends Module {
       }
 
       when(replaceComplete) {
-        state := idle
-
         for (i <- 0 until WAY_WIDTH) {
           data(i).addrb := savedInfo.addr(11, 4)
           tagV(i).addrb := savedInfo.addr(11, 4)
@@ -276,6 +275,13 @@ class DCache extends Module {
         dirty(savedInfo.index)(lru_way) := false.B
         replaceComplete                 := false.B
         io.mem2.prevAwake               := true.B
+
+        writeComplete := true.B
+      }
+
+      when(writeComplete) {
+        state         := idle
+        writeComplete := false.B
       }
     }
   }
