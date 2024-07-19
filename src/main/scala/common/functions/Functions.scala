@@ -26,16 +26,21 @@ object Functions {
       info := x.bits
     }
     // flush keeps just a moment
-    val rbStore = WireDefault(false.B)
+    val rbStore       = WireDefault(false.B)
+    val prevIsRbStore = WireDefault(false.B)
     if (hasRbStore) {
+      val bfInfo     = WireDefault(x.bits).asTypeOf(new SingleInfo)
       val singleInfo = WireDefault(info).asTypeOf(new SingleInfo)
-      rbStore := singleInfo.actualStore
+      prevIsRbStore := bfInfo.actualStore
+      rbStore       := singleInfo.actualStore
     }
     when(!rbStore) {
       when(flush) {
         y.valid := false.B
         when(!stall) {
-          info := info.getFlushInfo
+          when(!prevIsRbStore) {
+            info := info.getFlushInfo
+          }
         }.otherwise {
           wait := true.B
         }
