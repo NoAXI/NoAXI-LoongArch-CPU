@@ -97,15 +97,15 @@ class BPU extends Module {
   val top_add_1   = top + 1.U
   val top_minus_1 = top - 1.U
   val meetCALLVec = VecInit.tabulate(FETCH_DEPTH)(i => isCALLVec(i) && ShiftRegister(io.preFetch.pcValid(i), 1))
-  when(meetCALLVec(0) && io.preFetch.valid && predictDirection(0)) {
+  when(meetCALLVec(0) && ShiftRegister(io.preFetch.valid, 1) && predictDirection(0)) {
     top      := top_add_1
     RAS(top) := ShiftRegister(io.preFetch.npcGroup(0), 1)
-  }.elsewhen(meetCALLVec(1) && io.preFetch.valid && predictDirection(1)) {
+  }.elsewhen(meetCALLVec(1) && ShiftRegister(io.preFetch.valid, 1) && predictDirection(1)) {
     top      := top_add_1
     RAS(top) := ShiftRegister(io.preFetch.npcGroup(1), 1)
   }
   val RASHitVec = VecInit.tabulate(FETCH_DEPTH)(i => isReturnVec(i))
-  RASHitVec := VecInit(false.B, false.B)
+  // RASHitVec := VecInit(false.B, false.B)
 
   val sb1 = WireDefault(false.B)
   val sb2 = WireDefault(false.B)
@@ -119,7 +119,7 @@ class BPU extends Module {
       dontTouch(sb1)
     }
     when(RASHitVec(0) && ShiftRegister(io.preFetch.valid, 1)) {
-      io.fetch.predict.tar := RAS(top)
+      io.fetch.predict.tar := RAS(top_minus_1)
       top                  := top_minus_1
     }.elsewhen(BTBHitVec(0)) {
       io.fetch.predict.tar := BTBTarVec(0)
@@ -132,7 +132,7 @@ class BPU extends Module {
       dontTouch(sb2)
     }
     when(RASHitVec(1) && ShiftRegister(io.preFetch.valid, 1)) {
-      io.fetch.predict.tar := RAS(top)
+      io.fetch.predict.tar := RAS(top_minus_1)
       top                  := top_minus_1
     }.elsewhen(BTBHitVec(1)) {
       io.fetch.predict.tar := BTBTarVec(1)
