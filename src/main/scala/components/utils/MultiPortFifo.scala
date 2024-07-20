@@ -102,7 +102,7 @@ class MultiPortFifo[T <: Data](
 
   if (hasWritePort) {
     for (i <- 0 until BACK_ISSUE_WIDTH) {
-      when(io.write(i).valid) {
+      when(io.write(i).valid && !io.flush) {
         mem(io.write(i).index) := io.write(i).bits
       }
     }
@@ -116,6 +116,10 @@ class MultiPortFifo[T <: Data](
     pushPtr   := 0.U
     popPtr    := 0.U
     maybeFull := false.B
+    for (i <- 0 until ISSUE_WIDTH) {
+      io.pop(i).valid  := false.B
+      io.push(i).ready := false.B
+    }
     if (clearWhenFlush) {
       mem := 0.U.asTypeOf(mem)
     }

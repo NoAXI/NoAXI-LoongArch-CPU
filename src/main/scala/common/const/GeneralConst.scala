@@ -58,7 +58,8 @@ object Parameters {
   val MEMORY_QUEUE_SIZE  = 1 << MEMORY_QUEUE_WIDTH
 
   // others
-  val START_ADDR = 0x1bfffffc
-  val ALL_MASK   = "b1111_1111_1111_1111_1111_1111_1111_1111"
-  val COUNT_N    = 28
+  val START_ADDR  = 0x1bfffffc
+  val RETURN_ADDR = 0x4c000020
+  val ALL_MASK    = "b1111_1111_1111_1111_1111_1111_1111_1111"
+  val COUNT_N     = 28
 }

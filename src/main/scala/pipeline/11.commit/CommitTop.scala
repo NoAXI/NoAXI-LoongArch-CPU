@@ -76,6 +76,8 @@ class CommitTop extends Module {
       predictResult.realDirection := info.realBrDir
       predictResult.pc            := info.pc
       predictResult.isbr          := info.isbr
+      predictResult.isCALL        := info.isCALL
+      predictResult.isReturn      := info.isReturn
     }
   }
   io.predictResult := RegNext(predictResult)

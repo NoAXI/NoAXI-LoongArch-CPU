@@ -12,6 +12,7 @@ import controller._
 
 import memory.tlb._
 import memory.cache._
+import chisel3.util.experimental.BoringUtils
 
 class DebugIO extends Bundle {
   val wb_pc       = Output(UInt(32.W))
@@ -20,9 +21,15 @@ class DebugIO extends Bundle {
   val wb_rf_wdata = Output(UInt(32.W))
 }
 
+class StatisticIO extends Bundle {
+  val branch_succeed_time = Output(UInt(32.W))
+  val branch_total_time   = Output(UInt(32.W))
+}
+
 class TopIO extends Bundle {
-  val axi   = new AXIIO
-  val debug = new DebugIO
+  val axi       = new AXIIO
+  val debug     = new DebugIO
+  val statistic = if (Config.statistic_on) Some(new StatisticIO) else None
 }
 class Top extends Module {
   val io = IO(new TopIO)
@@ -89,10 +96,11 @@ class Top extends Module {
 
   // ==================== stage connect ====================
   // prefetch -> ... -> dispatch
-  prefetch.from.bits           := 0.U.asTypeOf(prefetch.from.bits)
-  prefetch.from.valid          := RegNext(!reset.asBool) & !reset.asBool
-  prefetch.predictResFromFront := predecode.predictRes
-  prefetch.flush               := flushCtrl.frontFlush || predecode.flushapply // TODO: 优先级
+  prefetch.from.bits               := 0.U.asTypeOf(prefetch.from.bits)
+  prefetch.from.valid              := RegNext(!reset.asBool) & !reset.asBool
+  prefetch.predictResFromFront     := predecode.predictRes
+  prefetch.predictResFromPredictor := fetch.predict
+  prefetch.flush                   := flushCtrl.frontFlush || predecode.flushapply // TODO: 优先级
 
   prefetch.to  <> fetch.from
   fetch.to     <> predecode.from
@@ -166,6 +174,7 @@ class Top extends Module {
 
   // bpu <> prefetch, fetch
   bpu.preFetch <> prefetch.bpu
+  bpu.fetch    <> fetch.bpu
 
   // rename <> rat
   rename.ratRename <> rat.rename
@@ -283,5 +292,10 @@ class Top extends Module {
   // cnt
   for (i <- 0 until ARITH_ISSUE_NUM) {
     stableCounter.counter <> arith(i).stableCounter
+  }
+
+  if (Config.statistic_on) {
+    io.statistic.get.branch_succeed_time := BoringUtils.bore(bpu.succeed_time.get)
+    io.statistic.get.branch_total_time   := BoringUtils.bore(bpu.total_time.get)
   }
 }

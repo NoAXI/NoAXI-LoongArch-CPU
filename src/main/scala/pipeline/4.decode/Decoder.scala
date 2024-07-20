@@ -152,5 +152,5 @@ class Decoder extends Module {
   // CALL:   BL 或链接返回地址到 $r1 的 JIRL 指令
   // Return: JIRL $r0,$r1,0 指令
   io.isCALL   := is_bl || is_jirl && io.rd === 1.U
-  io.isReturn := io.inst === "b010011_0000000000000000_00000_00001".U
+  io.isReturn := io.inst === RETURN_ADDR.U
 }

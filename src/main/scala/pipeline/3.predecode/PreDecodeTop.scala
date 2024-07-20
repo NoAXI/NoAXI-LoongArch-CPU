@@ -32,6 +32,8 @@ class PreDecodeTop extends Module {
   val isbr          = VecInit.tabulate(FETCH_DEPTH)(i => info.instGroup(i)(30))
   val isBBL         = VecInit.tabulate(FETCH_DEPTH)(i => info.instGroup(i)(28, 27) === "b10".U)
   val isJIRL        = VecInit.tabulate(FETCH_DEPTH)(i => info.instGroup(i)(29, 28) === "b00".U)
+  val isCALL        = VecInit.tabulate(FETCH_DEPTH)(i => info.instGroup(i)(28, 26) === "b101".U || isJIRL(i) && info.instGroup(i)(4, 0) === 1.U)
+  val isReturn      = VecInit.tabulate(FETCH_DEPTH)(i => info.instGroup(i) === RETURN_ADDR.U)
   val pcGroup       = VecInit(info.pc, info.pc_add_4)
   val immGroup      = VecInit.tabulate(FETCH_DEPTH)(i => Mux(info.instGroup(i)(28, 27) === "b10".U, imm26(i), imm16(i)))
   val tar           = VecInit.tabulate(FETCH_DEPTH)(i => pcGroup(i) + immGroup(i))
@@ -49,6 +51,8 @@ class PreDecodeTop extends Module {
       io.predictRes.br.tar        := tar(0)
       io.predictRes.realDirection := true.B
       io.predictRes.pc            := pcGroup(0)
+      io.predictRes.isCALL        := isCALL(0)
+      io.predictRes.isReturn      := isReturn(0)
       res.instGroupValid(1)       := false.B
       res.predict.en              := true.B
       res.predict.tar             := tar(0)
@@ -61,11 +65,13 @@ class PreDecodeTop extends Module {
     io.predictRes.br.tar        := tar(1)
     io.predictRes.realDirection := true.B
     io.predictRes.pc            := pcGroup(1)
+    io.predictRes.isCALL        := isCALL(1)
+    io.predictRes.isReturn      := isReturn(1)
     res.predict.en              := true.B
     res.predict.tar             := tar(1)
   }
 
-  when(isbr(0) && info.predict.en) {
+  when(isbr(0) && info.predict.en && info.instGroupValid(0)) {
     res.instGroupValid(1) := false.B
   }
 
@@ -117,11 +123,11 @@ class PreDecodeTop extends Module {
     brStop    := true.B
   }
 
-  when(flushStop) {
+  when(flushStop || info.bubble) {
     io.flushapply := false.B
   }
 
-  when(brStop) {
+  when(brStop || info.bubble) {
     io.predictRes.br.en := false.B
   }
 

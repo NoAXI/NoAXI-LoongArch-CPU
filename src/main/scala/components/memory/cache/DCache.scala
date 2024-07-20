@@ -88,6 +88,8 @@ class DCache extends Module {
 
   val imm_ansvalid   = WireDefault(false.B)
   val imm_cached_ans = WireDefault(0.U(DATA_WIDTH.W))
+  val uncachedAns    = RegInit(0.U(DATA_WIDTH.W))
+  val isUncached     = RegInit(false.B)
   val savedInfo      = RegInit(0.U.asTypeOf(new savedInfo))
   val count          = RegInit(1.U(4.W))
   val linedata       = RegInit(0.U((LINE_SIZE * 8).W))
@@ -97,8 +99,9 @@ class DCache extends Module {
 
   switch(state) {
     is(idle) {
+      isUncached   := false.B
       imm_ansvalid := true.B
-      when(io.mem2.request.fire) {
+      when(io.mem2.request.fire && !isUncached) {
         when(cached) {
           when(cacheHit) {
             lru(pa(11, 4)) := !cacheHitWay
@@ -157,9 +160,9 @@ class DCache extends Module {
           rready  := true.B
         }
       }.elsewhen(io.axi.r.fire) {
-        imm_ansvalid   := true.B
-        imm_cached_ans := io.axi.r.bits.data
-        state          := idle
+        isUncached  := true.B
+        uncachedAns := io.axi.r.bits.data
+        state       := idle
       }
     }
     is(uncacheWrite) {
@@ -170,9 +173,9 @@ class DCache extends Module {
         awvalid := false.B
       }
       when(io.axi.b.fire) {
-        imm_ansvalid   := true.B
-        imm_cached_ans := 0.U // stand for it is no mean
-        state          := idle
+        isUncached  := true.B
+        uncachedAns := 0.U // stand for it is no mean
+        state       := idle
       }
     }
 
@@ -308,7 +311,7 @@ class DCache extends Module {
   io.axi.r.ready        := rready
   io.axi.b.ready        := bready
   io.mem2.answer.valid  := imm_ansvalid
-  io.mem2.answer.bits   := imm_cached_ans
+  io.mem2.answer.bits   := Mux(isUncached, uncachedAns, imm_cached_ans)
   io.mem2.request.ready := true.B
 
   if (Config.debug_on) {

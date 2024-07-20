@@ -11,6 +11,12 @@ import const.Parameters._
 // valid  |    tag    | branchTarget |  type  |
 // ============================================
 
+// type
+// ======================
+// |1                0|
+// |isCALL   isReturn |
+// ======================
+
 object Predict {
   val INDEX_LENGTH   = 10
   val INDEX_WIDTH    = 1 << INDEX_LENGTH

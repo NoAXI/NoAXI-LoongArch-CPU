@@ -22,6 +22,8 @@ class RobInfo extends Bundle {
 
   val isbr      = Bool()
   val realBrDir = Bool()
+  val isCALL    = Bool()
+  val isReturn  = Bool()
   val bfail     = new BranchInfo
 
   val isStore = Bool()
@@ -31,7 +33,7 @@ class RobInfo extends Bundle {
   val exc_vaddr   = UInt(ADDR_WIDTH.W)
   val isPrivilege = Bool()
   val isException = Bool()
-  
+
   // csr write info
   val csr_iswf  = Bool()
   val csr_wmask = UInt(DATA_WIDTH.W)

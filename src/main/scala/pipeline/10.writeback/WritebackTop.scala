@@ -21,7 +21,7 @@ class WritebackTop(
   val io = IO(new WritebackTopIO)
 
   val busy = WireDefault(false.B)
-  val raw = stageConnect(io.from, io.to, busy, io.flush)
+  val raw  = stageConnect(io.from, io.to, busy, io.flush)
 
   val info  = raw._1
   val valid = io.to.fire && raw._2
@@ -76,6 +76,8 @@ class WritebackTop(
   io.rob.bits.bfail     := res.realBr
   io.rob.bits.isbr      := res.func_type === FuncType.bru
   io.rob.bits.realBrDir := res.realBrDir
+  io.rob.bits.isCALL    := res.isCALL
+  io.rob.bits.isReturn  := res.isReturn
 
   // exception & privilege
   val isExc = res.func_type === FuncType.exc

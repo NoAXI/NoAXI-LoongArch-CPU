@@ -9,6 +9,7 @@ import const.Predict._
 import const._
 import func.Functions._
 import memory.cache._
+import chisel3.util.experimental.BoringUtils
 
 /*
 ARAT中维护了寄存器映射表的有效位，可在分支预测失败时恢复到重命名单元中。
@@ -16,7 +17,10 @@ ARAT中维护了寄存器映射表的有效位，可在分支预测失败时恢�
  */
 
 class BPUIO extends Bundle {
-  val preFetch = Flipped(new PreFetchBPUIO)
+  val preFetch     = Flipped(new PreFetchBPUIO)
+  val fetch        = Flipped(new FetchBPUIO)
+  val succeed_time = if (Config.statistic_on) Some(Output(UInt(32.W))) else None
+  val total_time   = if (Config.statistic_on) Some(Output(UInt(32.W))) else None
 }
 
 class BPU extends Module {
@@ -55,7 +59,7 @@ class BPU extends Module {
     }
   }
   val index            = VecInit.tabulate(FETCH_DEPTH)(i => BHT(i)(io.preFetch.pcGroup(i)(INDEX_LENGTH + 1, 2)))
-  val predictDirection = VecInit.tabulate(FETCH_DEPTH)(i => PHT(i)(index(i))(1) && io.preFetch.pcValid(i))
+  val predictDirection = ShiftRegister(VecInit.tabulate(FETCH_DEPTH)(i => PHT(i)(index(i))(1) && io.preFetch.pcValid(i)), 1)
 
   // BTB: pc-relative or call
   for (i <- 0 until FETCH_DEPTH) {
@@ -72,7 +76,9 @@ class BPU extends Module {
       BTB(i).dina := Cat(
         true.B,
         io.preFetch.train.pc(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH),
-        io.preFetch.train.br.tar ## 0.U(2.W), // TODO: wrong! isCALL isReturn
+        io.preFetch.train.br.tar,
+        io.preFetch.train.isCALL,
+        io.preFetch.train.isReturn,
       )
     }
   }
@@ -83,82 +89,84 @@ class BPU extends Module {
     VecInit.tabulate(FETCH_DEPTH)(i => BTB(i).doutb(BTB_INFO_LENGTH - BTB_TAG_LENGTH - 2, BTB_FLAG_LENGTH))
   val isCALLVec   = VecInit.tabulate(FETCH_DEPTH)(i => BTB(i).doutb(1))
   val isReturnVec = VecInit.tabulate(FETCH_DEPTH)(i => BTB(i).doutb(0))
-  val BTBHitVec = VecInit.tabulate(FETCH_DEPTH)(i =>
-    validVec(i) && tagVec(i) === io.preFetch.pcGroup(i)(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH),
-  )
+  val BTBHitVec =
+    VecInit.tabulate(FETCH_DEPTH)(i => validVec(i) && tagVec(i) === ShiftRegister(io.preFetch.pcGroup(i)(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH), 1))
 
   // RAS: return
   val top         = RegInit(0.U(RAS_WIDTH.W))
   val top_add_1   = top + 1.U
   val top_minus_1 = top - 1.U
-  val meetCALLVec = VecInit.tabulate(FETCH_DEPTH)(i => isCALLVec(i) && io.preFetch.pcValid(i))
-  when(meetCALLVec(0)) {
+  val meetCALLVec = VecInit.tabulate(FETCH_DEPTH)(i => isCALLVec(i) && ShiftRegister(io.preFetch.pcValid(i), 1))
+  when(meetCALLVec(0) && io.preFetch.valid && predictDirection(0)) {
     top      := top_add_1
-    RAS(top) := io.preFetch.npcGroup(0)
-  }.elsewhen(meetCALLVec(1)) {
+    RAS(top) := ShiftRegister(io.preFetch.npcGroup(0), 1)
+  }.elsewhen(meetCALLVec(1) && io.preFetch.valid && predictDirection(1)) {
     top      := top_add_1
-    RAS(top) := io.preFetch.npcGroup(1)
+    RAS(top) := ShiftRegister(io.preFetch.npcGroup(1), 1)
   }
-  val RASTarVec = VecInit.tabulate(FETCH_DEPTH)(i => RAS(top))
   val RASHitVec = VecInit.tabulate(FETCH_DEPTH)(i => isReturnVec(i))
+  RASHitVec := VecInit(false.B, false.B)
 
   val sb1 = WireDefault(false.B)
   val sb2 = WireDefault(false.B)
 
   // predict
-  io.preFetch.nextPC.en  := true.B
-  io.preFetch.nextPC.tar := 0.U
+  io.fetch.predict.en  := true.B
+  io.fetch.predict.tar := 0.U
   when(predictDirection(0)) {
     if (Config.debug_on) {
       sb1 := true.B
       dontTouch(sb1)
     }
-    when(RASHitVec(0)) {
-      io.preFetch.nextPC.tar := RASTarVec(0)
-      top                    := top_minus_1
+    when(RASHitVec(0) && ShiftRegister(io.preFetch.valid, 1)) {
+      io.fetch.predict.tar := RAS(top)
+      top                  := top_minus_1
     }.elsewhen(BTBHitVec(0)) {
-      io.preFetch.nextPC.tar := BTBTarVec(0)
+      io.fetch.predict.tar := BTBTarVec(0)
     }.otherwise {
-      io.preFetch.nextPC.en := false.B
+      io.fetch.predict.en := false.B
     }
   }.elsewhen(predictDirection(1)) {
     if (Config.debug_on) {
       sb2 := true.B
       dontTouch(sb2)
     }
-    when(RASHitVec(1)) {
-      io.preFetch.nextPC.tar := RASTarVec(1)
-      top                    := top_minus_1
+    when(RASHitVec(1) && ShiftRegister(io.preFetch.valid, 1)) {
+      io.fetch.predict.tar := RAS(top)
+      top                  := top_minus_1
     }.elsewhen(BTBHitVec(1)) {
-      io.preFetch.nextPC.tar := BTBTarVec(1)
+      io.fetch.predict.tar := BTBTarVec(1)
     }.otherwise {
-      io.preFetch.nextPC.en := false.B
+      io.fetch.predict.en := false.B
     }
   }.otherwise {
-    io.preFetch.nextPC.en := false.B
+    io.fetch.predict.en := false.B
   }
 
   if (Config.staticPredict) {
-    io.preFetch.nextPC.en := false.B
+    io.fetch.predict.en := false.B
   }
 
   // count
   if (Config.statistic_on) {
     // not sure
-    val tot_time     = RegInit(0.U(20.W))
-    val succeed_time = RegInit(0.U(20.W))
+    val tot_time     = RegInit(0.U(32.W))
+    val succeed_time = RegInit(0.U(32.W))
     when(io.preFetch.train.isbr) {
       tot_time := tot_time + 1.U
       when(!io.preFetch.train.br.en) {
         succeed_time := succeed_time + 1.U
       }
     }
+    io.succeed_time.get := succeed_time
+    io.total_time.get   := tot_time
     dontTouch(tot_time)
     dontTouch(succeed_time)
     dontTouch(validVec)
     dontTouch(tagVec)
     dontTouch(BTBTarVec)
     dontTouch(isCALLVec)
+    dontTouch(meetCALLVec)
     dontTouch(isReturnVec)
     dontTouch(BTBHitVec)
     dontTouch(predictDirection)

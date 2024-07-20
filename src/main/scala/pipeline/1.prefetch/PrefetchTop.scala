@@ -9,12 +9,13 @@ import func.Functions._
 import const.Parameters._
 
 class PrefetchTopIO extends StageBundle {
-  val iCache              = new PreFetchICacheIO
-  val tlb                 = new Stage0TLBIO
-  val bpu                 = new PreFetchBPUIO
-  val predictResFromFront = Input(new PredictRes) // 预测结果
-  val predictResFromBack  = Input(new PredictRes) // 预测结果
-  val flushTarget         = Input(new BranchInfo)
+  val iCache                  = new PreFetchICacheIO
+  val tlb                     = new Stage0TLBIO
+  val bpu                     = new PreFetchBPUIO
+  val predictResFromFront     = Input(new PredictRes)
+  val predictResFromBack      = Input(new PredictRes)
+  val predictResFromPredictor = Input(new BranchInfo)
+  val flushTarget             = Input(new BranchInfo)
 }
 
 class PrefetchTop extends Module {
@@ -34,25 +35,26 @@ class PrefetchTop extends Module {
   val flushRes   = io.flushTarget
 
   // pc
-  val (flushHappen, flushPC)   = (flushRes.en, flushRes.tar)
-  val (predictFailed, exactPC) = (predictRes.br.en, predictRes.br.tar)
-  val (predictEn, predictPC)   = (io.bpu.nextPC.en, io.bpu.nextPC.tar)
-  when(io.from.fire) {
-    pc := MuxCase(
-      nextPC(pc),
-      Seq(
-        // excHappen     -> excPC,
-        // predictFailed -> exactPC,
-        predictEn -> predictPC,
-      ),
-    )
-  }
+  val (flushHappen, flushPC)     = (flushRes.en, flushRes.tar)
+  val (predictFailed, exactPC)   = (predictRes.br.en, predictRes.br.tar)
+  val (predictHappen, predictPC) = (io.predictResFromPredictor.en, io.predictResFromPredictor.tar)
 
+  val lastIsBranch = RegInit(false.B)
+
+  when(io.from.fire) {
+    pc           := nextPC(pc)
+    lastIsBranch := false.B
+  }
+  when(predictHappen && !lastIsBranch) {
+    pc := predictPC
+  }
   when(predictFailed) {
-    pc := exactPC
+    pc           := exactPC
+    lastIsBranch := true.B
   }
   when(flushHappen) {
-    pc := flushPC
+    pc           := flushPC
+    lastIsBranch := true.B
   }
 
   // bpu
@@ -60,6 +62,7 @@ class PrefetchTop extends Module {
   io.bpu.pcGroup  := VecInit(Seq(pc, pc_add_4))
   io.bpu.npcGroup := VecInit(Seq(pc_add_4, pc_add_8))
   io.bpu.train    := Mux(io.predictResFromBack.isbr, io.predictResFromBack, io.predictResFromFront)
+  io.bpu.valid    := io.to.fire
 
   // tlb
   io.tlb.va      := pc
@@ -79,7 +82,6 @@ class PrefetchTop extends Module {
   res.hitVec         := hitVec
   res.isDirect       := isDirect
   res.pa             := directpa
-  res.predict        := io.bpu.nextPC
   res.instGroupValid := VecInit(Seq(true.B, pc_add_4(2)))
-  io.to.bits.bits(0) := res
+  io.to.bits.bits(0) := Mux(predictHappen && !predictFailed && !flushHappen && !lastIsBranch, info.getFlushInfo, res)
 }
