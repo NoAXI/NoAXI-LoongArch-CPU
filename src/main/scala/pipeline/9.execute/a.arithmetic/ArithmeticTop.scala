@@ -69,7 +69,7 @@ class ArithmeticTop(
     )
   }
 
-  doForward(io.forward, res, valid)
+  doForward(io.forward, res, valid, busy)
 
   if (Config.debug_on) {
     dontTouch(info.rjInfo)

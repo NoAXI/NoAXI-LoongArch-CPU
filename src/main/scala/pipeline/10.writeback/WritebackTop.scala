@@ -91,5 +91,5 @@ class WritebackTop(
   io.rob.bits.csr_value := res.rkInfo.data // use rk to save data
 
   // writeback -> forward -> readreg
-  doForward(io.forward, res, valid)
+  doForward(io.forward, res, valid, busy)
 }

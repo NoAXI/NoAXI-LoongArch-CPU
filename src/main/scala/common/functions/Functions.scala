@@ -144,10 +144,11 @@ object Functions {
   }
 
   // for forwarder ---------------------------------------------------------------------------
-  def doForward(io: ForwardInfoIO, info: SingleInfo, validInst: Bool): Unit = {
+  def doForward(io: ForwardInfoIO, info: SingleInfo, validInst: Bool, busy: Bool): Unit = {
     io.valid := validInst && info.iswf && info.rdInfo.areg =/= 0.U
     io.data  := info.rdInfo.data
     io.preg  := info.rdInfo.preg
+    io.stall := busy
   }
 
   // for compressing queue ---------------------------------------------------------------------------

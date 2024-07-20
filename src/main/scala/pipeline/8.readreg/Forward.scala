@@ -15,14 +15,16 @@ class ForwardAtomicRequestIO extends Bundle {
 }
 
 class ForwardRequestIO extends Bundle {
-  val rj = new ForwardAtomicRequestIO
-  val rk = new ForwardAtomicRequestIO
+  val rj    = new ForwardAtomicRequestIO
+  val rk    = new ForwardAtomicRequestIO
+  val stall = Output(Bool())
 }
 
 class ForwardInfoIO extends Bundle {
   val valid = Input(Bool())
   val preg  = Input(UInt(PREG_WIDTH.W))
   val data  = Input(UInt(DATA_WIDTH.W))
+  val stall = Input(Bool())
 }
 
 class ForwardIO extends Bundle {
@@ -34,6 +36,7 @@ class ForwardIO extends Bundle {
 class Forward extends Module {
   val io = IO(new ForwardIO)
   for (i <- 0 until BACK_ISSUE_WIDTH) {
+    io.req(i).stall := WireDefault(false.B)
     for (regNum <- 0 until OPERAND_MAX) {
       val req = if (regNum == 0) io.req(i).rj else io.req(i).rk
       req.out := WireDefault(req.in)
@@ -41,6 +44,9 @@ class Forward extends Module {
         val exehit = io.exe(j).valid && req.preg === io.exe(j).preg
         val wbhit  = io.wb(j).valid && req.preg === io.wb(j).preg
         when(exehit) {
+          when(io.exe(j).stall) {
+            io.req(i).stall := true.B
+          }
           req.out := io.exe(j).data
         }.elsewhen(wbhit) {
           req.out := io.wb(j).data

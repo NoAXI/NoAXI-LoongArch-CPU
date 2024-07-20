@@ -35,5 +35,5 @@ class Muldiv2Top extends Module {
     res.rdInfo.data := io.mul.result
   }
 
-  doForward(io.forward, res, valid)
+  doForward(io.forward, res, valid, busy)
 }

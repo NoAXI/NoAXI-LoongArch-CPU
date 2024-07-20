@@ -24,7 +24,6 @@ class Memory2TopIO extends SingleStageBundle {
   val mem0             = Flipped(new ToMem2ForwardIO)
   val mem1             = Flipped(new ToMem2ForwardIO)
   val forward          = Flipped(new ForwardInfoIO)
-  val stall            = Output(Bool())
 }
 
 class Memory2Top extends Module {
@@ -114,9 +113,7 @@ class Memory2Top extends Module {
   busy := ((!io.dCache.answer.fire && (info.actualStore || isLoad))
     || (storeBufferFull && isStore && !info.actualStore) && info.exc_type === ECodes.NONE)
 
-  io.stall := busy
-
-  doForward(io.forward, res, valid)
+  doForward(io.forward, res, valid, busy)
   io.to.bits := res
 
   if (Config.debug_on) {
