@@ -9,7 +9,7 @@ import func.Functions._
 import const.Parameters._
 import isa.FuncType
 
-class Mem1Mem2ForwardIO extends Bundle {
+class ToMem2ForwardIO extends Bundle {
   val actualStore = Output(Bool())
   val addr        = Output(UInt(ADDR_WIDTH.W))
   val data        = Output(UInt(DATA_WIDTH.W))
@@ -19,7 +19,8 @@ class Mem1Mem2ForwardIO extends Bundle {
 class Memory1TopIO extends SingleStageBundle {
   val tlb    = new Stage1TLBIO
   val dCache = new Mem1DCacheIO
-  val mem2   = new Mem1Mem2ForwardIO
+  val mem2   = new ToMem2ForwardIO
+  val awake  = Output(new AwakeInfo)
 }
 
 class Memory1Top extends Module {
@@ -84,9 +85,13 @@ class Memory1Top extends Module {
   io.mem2.strb        := info.writeInfo.requestInfo.wstrb
 
   // D-Cache
-  io.dCache.addr := Mux(info.actualStore, info.writeInfo.requestInfo.addr, info.va)
+  io.dCache.addr   := Mux(info.actualStore, info.writeInfo.requestInfo.addr, info.va)
+  res.dcachehitVec := io.dCache.hitVec
 
   io.to.bits := res
+
+  io.awake.valid := valid && info.iswf && io.to.fire
+  io.awake.preg  := info.rdInfo.preg
 
   if (Config.debug_on) {
     dontTouch(valid)

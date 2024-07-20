@@ -164,9 +164,11 @@ class Top extends Module {
   fetch.iCache    <> iCache.fetch
 
   // dcache <> memory0, memory1, memory2
+  memory0.dCache <> dcache.mem0
   memory1.dCache <> dcache.mem1
   memory2.dCache <> dcache.mem2
   memory2.mem1   <> memory1.mem2
+  memory2.mem0   <> memory0.mem2
 
   // storeBuffer <> memory1, memory2
   storeBuffer.memory2 <> memory2.storeBufferRead
@@ -197,7 +199,7 @@ class Top extends Module {
     }
   }
   muldiv1.awake <> issue.awake(MULDIV_ISSUE_ID)
-  memory2.awake <> issue.awake(MEMORY_ISSUE_ID)
+  memory1.awake <> issue.awake(MEMORY_ISSUE_ID)
 
   // forward <> the last stage of execute
   for (i <- 0 until ARITH_ISSUE_NUM) {

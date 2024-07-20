@@ -29,7 +29,7 @@ class WritebackTop(
   io.to.bits := res
 
   // load merge
-  if (special == "memory") {
+  if (special == "memory2345") {
     val bitHit  = WireDefault(VecInit(Seq.fill(4)(0.U(8.W))))
     val bitStrb = WireDefault(VecInit(Seq.fill(4)(false.B)))
     for (i <- 0 until 2) {

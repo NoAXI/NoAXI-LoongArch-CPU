@@ -23,7 +23,8 @@ class FlushCtrlIO extends Bundle {
 class FlushCtrl extends Module {
   val io = IO(new FlushCtrlIO)
 
-  val doFlush    = io.flushInfo.en
+  val doFlush = io.flushInfo.en
+  // val doFlush    = RegNext(io.flushInfo.en)
   val delayFlush = RegNext(doFlush)
 
   io.flushTarget := io.flushInfo

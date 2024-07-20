@@ -13,8 +13,8 @@ import pipeline._
 import os.stat
 
 class DCacheIO extends Bundle {
-  val axi = new DCacheAXI
-  // val mem0 = Flipped(new Mem0DCacheIO)
+  val axi  = new DCacheAXI
+  val mem0 = Flipped(new Mem0DCacheIO)
   val mem1 = Flipped(new Mem1DCacheIO)
   val mem2 = Flipped(new Mem2DCacheIO)
 }
@@ -42,8 +42,8 @@ class DCache extends Module {
   val wvalid  = RegInit(false.B)
   val bready  = true.B
 
-  // mem 1: send va & exception
-  val vaddr = io.mem1.addr
+  // mem 0: send va
+  val vaddr = io.mem0.addr
   for (i <- 0 until WAY_WIDTH) {
     data(i).clka  := clock
     data(i).addra := 0.U
@@ -57,20 +57,26 @@ class DCache extends Module {
     tagV(i).dina  := 0.U
   }
 
-  // mem 2: get hitVec
-  val paddr = io.mem2.request.bits.addr
+  // mem 1: send va & exception
+  val mem1paddr     = io.mem1.addr
+  val cacheHitVecor = VecInit.tabulate(WAY_WIDTH)(i => tag(i) === mem1paddr(31, 12) && valid(i))
+  io.mem1.hitVec := cacheHitVecor
 
-  // mem 2: act with D-Cache
+  for (i <- 0 until WAY_WIDTH)
+    data(i).addrb := mem1paddr(11, 4)
+
+  // mem 2: get hitVec, act with D-Cache
   //   0           1               2             3              4            5              6
   val idle :: uncacheRead :: uncacheWrite :: checkdirty :: writeBack0 :: writeBack1 :: replaceLine :: Nil = Enum(7)
 
   val state  = RegInit(idle)
+  val paddr  = io.mem2.request.bits.addr
   val cached = io.mem2.request.bits.cached
   val pa     = io.mem2.request.bits.addr
   val wdata  = io.mem2.request.bits.wdata
   val wstrb  = io.mem2.request.bits.wstrb
   val rwType = io.mem2.rwType
-  val hitVec = VecInit.tabulate(WAY_WIDTH)(i => tag(i) === paddr(31, 12) && valid(i))
+  val hitVec = io.mem2.hitVec
 
   val cacheHit    = hitVec.reduce(_ || _)
   val cacheHitWay = PriorityEncoder(hitVec)
