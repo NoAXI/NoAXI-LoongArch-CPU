@@ -107,7 +107,7 @@ class Memory2Top extends Module {
   mem2.rdata      := mergeData
   mem2.addr       := info.pa
   mem2.op_type    := info.op_type
-  res.rdInfo.data := mem2.data
+  res.rdInfo.data := Mux(info.func_type === FuncType.mem, mem2.data, info.rdInfo.data)
 
   // ld but bufferhit, D-Cache dont care
   busy := ((!io.dCache.answer.fire && (info.actualStore || isLoad))
