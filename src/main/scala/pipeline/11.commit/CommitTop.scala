@@ -25,7 +25,6 @@ class CommitTopIO extends Bundle {
 
   // exception
   val excHappen   = Output(new ExcHappenInfo)
-  val csrWrite    = Output(new CSRWrite)
   val excJump     = Input(new BranchInfo)
   val csrWritePop = Output(Bool())
 
@@ -98,8 +97,7 @@ class CommitTop extends Module {
   }
 
   // send info
-  val writeStall = WireDefault(false.B)
-  val doStore    = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(false.B)))
+  val doStore = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(false.B)))
   for (i <- 0 until ISSUE_WIDTH) {
     val rob        = io.rob(i).info
     val writeValid = rob.fire && rob.bits.wen && !rob.bits.isException
@@ -122,13 +120,11 @@ class CommitTop extends Module {
 
   // store buffer
   val writeHappen = doStore.reduce(_ || _)
-  when(writeHappen && !io.bufferToReady) {
-    writeStall := true.B
-  }
   io.bufferPopValid := writeHappen
 
+  // val writeStall = writeHappen && !io.bufferToReady
   for (i <- 0 until ISSUE_WIDTH) {
-    io.rob(i).info.ready := readyBit(i) && !writeStall
+    io.rob(i).info.ready := readyBit(i) // && !writeStall
   }
 
   // exception & csr
@@ -147,16 +143,25 @@ class CommitTop extends Module {
       io.excHappen.info.pc_add_4 := info.pc + 4.U
     }
   }
-  io.csrWrite    := 0.U.asTypeOf(io.csrWrite)
-  io.csrWritePop := false.B
+  val csrCurPop = WireDefault(false.B)
+  val csrPopReg = RegInit(csrCurPop)
+  io.csrWritePop := csrPopReg
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rob(i).info.bits
     when(io.rob(i).info.ready && info.csr_iswf) {
-      io.csrWrite.we    := info.csr_iswf
-      io.csrWrite.wmask := info.csr_wmask
-      io.csrWrite.waddr := info.csr_addr
-      io.csrWrite.wdata := info.csr_value
-      io.csrWritePop    := true.B
+      csrCurPop := true.B
     }
   }
+  // io.csrWrite    := 0.U.asTypeOf(io.csrWrite)
+  // io.csrWritePop := false.B
+  // for (i <- 0 until ISSUE_WIDTH) {
+  //   val info = io.rob(i).info.bits
+  //   when(io.rob(i).info.ready && info.csr_iswf) {
+  //     io.csrWrite.we    := info.csr_iswf
+  //     io.csrWrite.wmask := info.csr_wmask
+  //     io.csrWrite.waddr := info.csr_addr
+  //     io.csrWrite.wdata := info.csr_value
+  //     io.csrWritePop    := true.B
+  //   }
+  // }
 }

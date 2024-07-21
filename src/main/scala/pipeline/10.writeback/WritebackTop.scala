@@ -13,6 +13,7 @@ class WritebackTopIO extends SingleStageBundle {
   val preg    = Flipped(new PRegWriteIO)
   val rob     = Flipped(new RobWriteIO)
   val forward = Flipped(new ForwardInfoIO)
+  val awake   = Output(new AwakeInfo)
 }
 
 class WritebackTop(
@@ -51,6 +52,13 @@ class WritebackTop(
     mem2.op_type    := info.op_type
     res.rdInfo.data := Mux(info.func_type === FuncType.mem, mem2.data, info.rdInfo.data)
     dontTouch(bitHit)
+
+    io.awake.valid := valid && info.iswf && io.to.fire
+    io.awake.preg  := info.rdInfo.preg
+    doForward(io.forward, res, false.B)
+  } else {
+    io.awake := DontCare
+    doForward(io.forward, res, valid)
   }
 
   // writeback -> preg
@@ -59,7 +67,7 @@ class WritebackTop(
   io.preg.data  := res.rdInfo.data
 
   // writeback -> rob
-  io.rob.valid := valid && !res.writeInfo.valid && !res.bubble
+  io.rob.valid := valid && !res.writeInfo.valid && !res.bubble && !res.actualStore
   io.rob.index := res.robId
 
   // basic rob info
@@ -91,7 +99,4 @@ class WritebackTop(
   io.rob.bits.csr_wmask := res.csr_wmask
   io.rob.bits.csr_addr  := res.csr_addr
   io.rob.bits.csr_value := res.rkInfo.data // use rk to save data
-
-  // writeback -> forward -> readreg
-  doForward(io.forward, res, valid)
 }

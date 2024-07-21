@@ -30,10 +30,15 @@ class StoreBuffer(
   val io = IO(new StoreBufferIO)
 
   // use compressive queue
+  val validReg = RegInit(VecInit(Seq.fill(entries)(false.B)))
+  val validTop = RegInit(0.U(log2Ceil(entries).W))
+
   val mem = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(new BufferInfo))))
   val hit = WireDefault(false.B)
+
   io.memory2.forwardData := WireDefault(0.U.asTypeOf(io.memory2.forwardData))
   io.memory2.forwardStrb := WireDefault(0.U.asTypeOf(io.memory2.forwardStrb))
+
   // for (i <- 0 until entries) {
   //   when(io.memory1.forwardpa === mem(i).requestInfo.addr && mem(i).valid) {
   //     hit                    := true.B
@@ -41,6 +46,7 @@ class StoreBuffer(
   //     io.memory1.forwardStrb := mem(i).requestInfo.wstrb
   //   }
   // }
+
   val bitHit  = WireDefault(VecInit(Seq.fill(4)(0.U(8.W))))
   val bitStrb = WireDefault(VecInit(Seq.fill(4)(false.B)))
   for (i <- 0 until entries) {
@@ -68,20 +74,20 @@ class StoreBuffer(
   for (i <- 0 until entries) {
     when(io.to.fire) {
       if (i < (entries - 1)) {
-        mem(i) := mem(i + 1)
+        mem(i)      := mem(i + 1)
+        validReg(i) := validReg(i + 1)
       } else {
-        mem(i) := 0.U.asTypeOf(mem(i))
+        mem(i)      := 0.U.asTypeOf(mem(i))
+        validReg(i) := false.B
       }
     }
   }
 
   // ptr update
   when(io.from.fire) {
-    when(io.to.fire) {
-      mem(topPtr - 1.U) := io.from.bits
-    }.otherwise {
-      mem(topPtr) := io.from.bits
-    }
+    val pushPos = Mux(io.to.fire, topPtr - 1.U, topPtr)
+    mem(pushPos)      := io.from.bits
+    validReg(pushPos) := false.B
   }
   when(io.from.fire =/= io.to.fire) {
     when(io.from.fire) {
@@ -92,14 +98,31 @@ class StoreBuffer(
       maybeFull := false.B
     }
   }
-  when(io.flush) {
-    topPtr    := 0.U
-    maybeFull := false.B
-    mem       := 0.U.asTypeOf(mem)
+
+  // committed valid reg update
+  when(io.popValid) {
+    val pushPos = Mux(io.to.fire, validTop - 1.U, validTop)
+    validReg(pushPos) := true.B
+  }
+  when(io.popValid =/= io.to.fire) {
+    when(io.popValid) {
+      validTop := validTop + 1.U
+    }.otherwise {
+      validTop := validTop - 1.U
+    }
   }
 
+  when(io.flush) {
+    topPtr    := validTop
+    maybeFull := false.B
+    for (i <- 0 until entries) {
+      when(!validReg(i)) {
+        mem(i) := 0.U.asTypeOf(mem(i))
+      }
+    }
+  }
   // handshake
-  io.from.ready := !full || (io.from.valid && io.popValid)
-  io.to.valid   := !empty && io.popValid
+  io.from.ready := !full || (io.from.valid && io.to.valid)
+  io.to.valid   := !empty && validReg(0)
   io.to.bits    := mem(0)
 }

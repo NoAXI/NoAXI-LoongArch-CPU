@@ -13,6 +13,7 @@ class Memory0TopIO extends SingleStageBundle {
   val tlb                = new Stage0TLBIO
   val csrRead            = Flipped(new CsrReadIO)
   val commitCsrWriteDone = Input(Bool())
+  val csrWrite           = Output(new CSRWrite)
 }
 
 class Memory0Top extends Module {
@@ -35,19 +36,23 @@ class Memory0Top extends Module {
   // csr hazard
   // TODO: tlb指令也需要在这里加入判断
   val csrWriteCount = RegInit(false.B)
-  val csrPushSignal = info.isWriteCsr && io.to.fire && valid
+  val csrWriteInfo  = RegInit(0.U.asTypeOf(new CSRWrite))
+  val csrPushSignal = info.isWriteCsr && io.to.fire && valid && !info.bubble
   val csrPopSignal  = io.commitCsrWriteDone
-  when(csrPushSignal =/= csrPopSignal) {
-    when(csrPushSignal) {
-      csrWriteCount := true.B
-    }.otherwise {
-      csrWriteCount := false.B
-    }
+  when(csrPushSignal) {
+    csrWriteInfo.we    := info.isWriteCsr
+    csrWriteInfo.waddr := info.csr_addr
+    csrWriteInfo.wdata := info.csr_value
+    csrWriteInfo.wmask := info.csr_wmask
   }
+  when(csrPushSignal =/= csrPopSignal) {
+    csrWriteCount := csrPushSignal
+  }
+  io.csrWrite := Mux(io.commitCsrWriteDone, csrWriteInfo, 0.U.asTypeOf(io.csrWrite))
   when(io.flush) {
     csrWriteCount := false.B
   }
-  when(csrWriteCount =/= false.B && info.isReadCsr) {
+  when(csrWriteCount && info.isReadCsr) {
     busy := true.B
   }
 
@@ -63,7 +68,7 @@ class Memory0Top extends Module {
   res.hitVec   := hitVec
   res.isDirect := isDirect
   res.pa       := directpa
-  io.to.bits := res
+  io.to.bits   := res
 
   if (Config.debug_on) {
     dontTouch(info.rjInfo.data)

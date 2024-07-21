@@ -22,14 +22,14 @@ class DecodeTop extends Module {
   val valid_signal = from._2
 
   val dec     = VecInit.fill(ISSUE_WIDTH)(Module(new Decoder).io)
-  val to_info = WireDefault(0.U.asTypeOf(new DualInfo))
+  val to_info = WireDefault(from._1)
 
   for (i <- 0 until ISSUE_WIDTH) {
     dec(i).pc   := info(i).pc
     dec(i).inst := info(i).inst
 
-    to_info.bits(i).pc          := info(i).pc
-    to_info.bits(i).inst        := info(i).inst
+    // to_info.bits(i).pc          := info(i).pc
+    // to_info.bits(i).inst        := info(i).inst
     to_info.bits(i).func_type   := dec(i).func_type
     to_info.bits(i).op_type     := dec(i).op_type
     to_info.bits(i).imm         := dec(i).imm
@@ -46,7 +46,7 @@ class DecodeTop extends Module {
     to_info.bits(i).csr_addr    := dec(i).csrReg
     to_info.bits(i).isCALL      := dec(i).isCALL
     to_info.bits(i).isReturn    := dec(i).isReturn
-    to_info.bits(i).predict     := info(i).predict
+    // to_info.bits(i).predict     := info(i).predict
     to_info.bits(i).exc_type := MuxCase(
       dec(i).exc_type,
       Seq(
@@ -58,5 +58,8 @@ class DecodeTop extends Module {
     to_info.bits(i).pipelineType := Mux(info(i).bubble, PipelineType.nop, dec(i).pipelineType)
   }
 
-  io.to.bits := Mux(io.flush, 0.U.asTypeOf(new DualInfo), to_info)
+  io.to.bits := to_info
+  if(Config.debug_on) {
+    dontTouch(to_info)
+  }
 }
