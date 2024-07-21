@@ -147,16 +147,32 @@ class CommitTop extends Module {
       io.excHappen.info.pc_add_4 := info.pc + 4.U
     }
   }
-  io.csrWrite    := 0.U.asTypeOf(io.csrWrite)
-  io.csrWritePop := false.B
+  val csrCurPop   = WireDefault(false.B)
+  val csrCurWrite = WireDefault(0.U.asTypeOf(new CSRWrite))
+  val csrWriteReg = WireDefault(csrCurWrite)
+  val csrPopReg   = WireDefault(csrCurPop)
+  io.csrWrite    := csrWriteReg
+  io.csrWritePop := csrPopReg
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rob(i).info.bits
     when(io.rob(i).info.ready && info.csr_iswf) {
-      io.csrWrite.we    := info.csr_iswf
-      io.csrWrite.wmask := info.csr_wmask
-      io.csrWrite.waddr := info.csr_addr
-      io.csrWrite.wdata := info.csr_value
-      io.csrWritePop    := true.B
+      csrCurWrite.we    := info.csr_iswf
+      csrCurWrite.wmask := info.csr_wmask
+      csrCurWrite.waddr := info.csr_addr
+      csrCurWrite.wdata := info.csr_value
+      csrCurPop         := true.B
     }
   }
+  // io.csrWrite    := 0.U.asTypeOf(io.csrWrite)
+  // io.csrWritePop := false.B
+  // for (i <- 0 until ISSUE_WIDTH) {
+  //   val info = io.rob(i).info.bits
+  //   when(io.rob(i).info.ready && info.csr_iswf) {
+  //     io.csrWrite.we    := info.csr_iswf
+  //     io.csrWrite.wmask := info.csr_wmask
+  //     io.csrWrite.waddr := info.csr_addr
+  //     io.csrWrite.wdata := info.csr_value
+  //     io.csrWritePop    := true.B
+  //   }
+  // }
 }
