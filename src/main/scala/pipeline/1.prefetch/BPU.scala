@@ -58,8 +58,7 @@ class BPU extends Module {
       }
     }
   }
-  val index            = VecInit.tabulate(FETCH_DEPTH)(i => BHT(i)(io.preFetch.pcGroup(i)(INDEX_LENGTH + 1, 2)))
-  val predictDirection = ShiftRegister(VecInit.tabulate(FETCH_DEPTH)(i => PHT(i)(index(i))(1) && io.preFetch.pcValid(i)), 1)
+  val index = VecInit.tabulate(FETCH_DEPTH)(i => BHT(i)(io.preFetch.pcGroup(i)(INDEX_LENGTH + 1, 2)))
 
   // BTB: pc-relative or call
   for (i <- 0 until FETCH_DEPTH) {
@@ -97,10 +96,10 @@ class BPU extends Module {
   val top_add_1   = top + 1.U
   val top_minus_1 = top - 1.U
   val meetCALLVec = VecInit.tabulate(FETCH_DEPTH)(i => isCALLVec(i) && ShiftRegister(io.preFetch.pcValid(i), 1))
-  when(meetCALLVec(0) && ShiftRegister(io.preFetch.valid, 1) && predictDirection(0)) {
+  when(meetCALLVec(0) && ShiftRegister(io.preFetch.valid, 1)) {
     top      := top_add_1
     RAS(top) := ShiftRegister(io.preFetch.npcGroup(0), 1)
-  }.elsewhen(meetCALLVec(1) && ShiftRegister(io.preFetch.valid, 1) && predictDirection(1)) {
+  }.elsewhen(meetCALLVec(1) && ShiftRegister(io.preFetch.valid, 1)) {
     top      := top_add_1
     RAS(top) := ShiftRegister(io.preFetch.npcGroup(1), 1)
   }
@@ -109,6 +108,8 @@ class BPU extends Module {
 
   val sb1 = WireDefault(false.B)
   val sb2 = WireDefault(false.B)
+
+  val predictDirection = VecInit.tabulate(FETCH_DEPTH)(i => RegNext(PHT(i)(index(i))(1)) || isCALLVec(i) || isReturnVec(i) && RegNext(io.preFetch.pcValid(i)))
 
   // predict
   io.fetch.predict.en  := true.B
@@ -160,6 +161,12 @@ class BPU extends Module {
     }
     io.succeed_time.get := succeed_time
     io.total_time.get   := tot_time
+    val VALID = ShiftRegister(io.preFetch.valid, 1)
+    val PC    = ShiftRegister(io.preFetch.pcGroup, 1)
+    val nPC   = ShiftRegister(io.preFetch.npcGroup, 1)
+    dontTouch(VALID)
+    dontTouch(PC)
+    dontTouch(nPC)
     dontTouch(tot_time)
     dontTouch(succeed_time)
     dontTouch(validVec)

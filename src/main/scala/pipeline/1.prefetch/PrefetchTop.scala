@@ -57,12 +57,14 @@ class PrefetchTop extends Module {
     lastIsBranch := true.B
   }
 
+  val invalid = predictHappen && !predictFailed && !flushHappen && !lastIsBranch
+
   // bpu
   io.bpu.pcValid  := VecInit(Seq(true.B, pc_add_4(2)))
   io.bpu.pcGroup  := VecInit(Seq(pc, pc_add_4))
   io.bpu.npcGroup := VecInit(Seq(pc_add_4, pc_add_8))
   io.bpu.train    := Mux(io.predictResFromBack.isbr, io.predictResFromBack, io.predictResFromFront)
-  io.bpu.valid    := io.to.fire
+  io.bpu.valid    := io.to.fire && !invalid
 
   // tlb
   io.tlb.va      := pc
@@ -83,5 +85,5 @@ class PrefetchTop extends Module {
   res.isDirect       := isDirect
   res.pa             := directpa
   res.instGroupValid := VecInit(Seq(true.B, pc_add_4(2)))
-  io.to.bits.bits(0) := Mux(predictHappen && !predictFailed && !flushHappen && !lastIsBranch, info.getFlushInfo, res)
+  io.to.bits.bits(0) := Mux(invalid, info.getFlushInfo, res)
 }
