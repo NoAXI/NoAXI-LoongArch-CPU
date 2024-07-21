@@ -136,10 +136,11 @@ class PreDecodeTop extends Module {
     flushStop := false.B
   }
 
-  io.to.bits         := 0.U.asTypeOf(new DualInfo)
+  io.to.bits         := from._1
   io.to.bits.bits(0) := res
 
   if (Config.debug_on) {
+    dontTouch(res)
     dontTouch(predictFailed)
     dontTouch(isbr)
     dontTouch(instNotJumpVec)

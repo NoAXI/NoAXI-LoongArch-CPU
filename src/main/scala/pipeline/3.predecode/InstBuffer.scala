@@ -33,7 +33,7 @@ class InstBufferIO extends StageBundle {
 class InstBuffer extends Module {
   val io = IO(new InstBufferIO)
 
-  io.to.bits := 0.U.asTypeOf(new DualInfo)
+  io.to.bits := 0.U.asTypeOf((new DualInfo))
 
   val fifo = Module(new MultiPortFifo(IB_LENGTH, new InstBufferInfo, forIB = true)).io
   fifo.flush := io.flush
@@ -60,6 +60,7 @@ class InstBuffer extends Module {
     io.to.bits.bits(i).exc_type  := fifo.pop(i).bits.excType
     io.to.bits.bits(i).predict   := fifo.pop(i).bits.predict
     io.to.bits.bits(i).exc_vaddr := fifo.pop(i).bits.pc // 一定是pc
+    io.to.bits.bits(i).bubble    := false.B
   }
   io.to.valid := fifo.pop(0).valid && fifo.pop(1).valid && !io.stall
 }

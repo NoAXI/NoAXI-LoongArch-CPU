@@ -13,14 +13,12 @@ class FetchTopIO extends StageBundle {
   val iCache  = new FetchICacheIO
   val bpu     = new FetchBPUIO
   val predict = Output(new BranchInfo)
-  val busy    = Output(Bool())
 }
 
 class FetchTop extends Module {
   val io   = IO(new FetchTopIO)
   val busy = WireDefault(false.B)
   val from = stageConnect(io.from, io.to, busy, io.flush)
-  io.busy := busy
 
   val info = WireDefault(from._1.bits(0))
   // flushUntilValidWhen(from._1, io.flush, io.to.valid)
@@ -71,6 +69,6 @@ class FetchTop extends Module {
     io.predict.en := false.B
   }
 
-  io.to.bits         := 0.U.asTypeOf(new DualInfo)
+  io.to.bits         := from._1
   io.to.bits.bits(0) := res
 }

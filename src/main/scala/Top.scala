@@ -277,7 +277,6 @@ class Top extends Module {
   flushCtrl.flushInfo   <> commit.flushInfo
   flushCtrl.flushTarget <> prefetch.flushTarget
   flushCtrl.commitStall <> commit.stall
-  flushCtrl.fetchStall  <> fetch.busy
   commit.predictResult  <> prefetch.predictResFromBack
 
   // csr
