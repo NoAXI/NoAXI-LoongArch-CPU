@@ -23,7 +23,6 @@ class Memory2TopIO extends SingleStageBundle {
   val storeBufferRead  = new Mem2BufferIO
   val mem1             = Flipped(new Mem1Mem2ForwardIO)
   val forward          = Flipped(new ForwardInfoIO)
-  val awake            = Output(new AwakeInfo)
 }
 
 class Memory2Top extends Module {
@@ -87,9 +86,6 @@ class Memory2Top extends Module {
   // ld but bufferhit, D-Cache dont care
   busy := ((!io.dCache.answer.fire && (info.actualStore || isLoad))
     || (storeBufferFull && isStore && !info.actualStore) && info.exc_type === ECodes.NONE)
-
-  io.awake.valid := valid && info.iswf && io.to.fire
-  io.awake.preg  := info.rdInfo.preg
 
   doForward(io.forward, res, false.B)
   io.to.bits := res
