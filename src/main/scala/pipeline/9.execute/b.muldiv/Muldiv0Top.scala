@@ -54,7 +54,7 @@ class Muldiv0Top extends Module {
   when(is_div && div.complete) {
     div_complete := true.B
   }
-  when(div_complete) {
+  when(div_complete || div.complete) {
     div.running := false.B
     busy        := false.B
   }
