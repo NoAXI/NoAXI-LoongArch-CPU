@@ -8,8 +8,9 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 import isa.FuncType
+import isa.MemOpType
 
-class Mem1Mem2ForwardIO extends Bundle {
+class ToMem2ForwardIO extends Bundle {
   val actualStore = Output(Bool())
   val addr        = Output(UInt(ADDR_WIDTH.W))
   val data        = Output(UInt(DATA_WIDTH.W))
@@ -19,7 +20,8 @@ class Mem1Mem2ForwardIO extends Bundle {
 class Memory1TopIO extends SingleStageBundle {
   val tlb    = new Stage1TLBIO
   val dCache = new Mem1DCacheIO
-  val mem2   = new Mem1Mem2ForwardIO
+  val mem2   = new ToMem2ForwardIO
+  val awake  = Output(new AwakeInfo)
 }
 
 class Memory1Top extends Module {
@@ -47,8 +49,8 @@ class Memory1Top extends Module {
   val tlbpa     = Mux(stall, savedPa, io.tlb.pa)
   val tlbcached = Mux(stall, savedCached, io.tlb.cached)
   val tlbexc    = Mux(stall, savedExc, io.tlb.exception)
-  val pa        = Mux(info.actualStore, info.writeInfo.requestInfo.addr, Mux(info.isDirect, info.pa, tlbpa))
-  val cached    = Mux(info.actualStore, info.writeInfo.requestInfo.cached, tlbcached)
+  val pa        = Mux(info.rollback, info.writeInfo.requestInfo.addr, Mux(info.isDirect, info.pa, tlbpa))
+  val cached    = Mux(info.rollback, info.writeInfo.requestInfo.cached, tlbcached)
   val exception = tlbexc
   res.pa     := pa
   res.cached := cached
@@ -58,8 +60,8 @@ class Memory1Top extends Module {
   mem1.op_type  := info.op_type
   mem1.addr     := info.va
   mem1.rd_value := info.rkInfo.data
-  res.wdata     := Mux(info.actualStore, info.writeInfo.requestInfo.wdata, mem1.wdata)
-  res.wmask     := Mux(info.actualStore, info.writeInfo.requestInfo.wstrb, mem1.wmask)
+  res.wdata     := Mux(info.rollback, info.writeInfo.requestInfo.wdata, mem1.wdata)
+  res.wmask     := Mux(info.rollback, info.writeInfo.requestInfo.wstrb, mem1.wmask)
 
   // exception
   val hasExc   = info.exc_type =/= ECodes.NONE
@@ -71,22 +73,37 @@ class Memory1Top extends Module {
   res.exc_vaddr := Mux(hasExc, info.exc_vaddr, excVaddr)
   res.iswf      := Mux(excEn, false.B, info.iswf)
 
-  when(info.actualStore) {
+  when(!cached && !info.rollback && info.func_type === FuncType.mem && MemOpType.isread(info.op_type)) {
+    res.iswf := false.B
+  }
+
+  when(info.rollback && !info.writeInfo.requestInfo.rbType) {
+    res.iswf            := true.B
+    res.robId           := info.writeInfo.requestInfo.wdata(10 + ROB_WIDTH - 1, 10)
+    res.rdInfo.areg     := info.writeInfo.requestInfo.wdata(9, 5)
+    res.rdInfo.preg     := info.writeInfo.requestInfo.wdata(4, 0)
+    res.writeInfo.valid := info.writeInfo.requestInfo.rbType
+  }
+
+  when(info.rollback) {
     res.exc_type  := ECodes.NONE
     res.exc_vaddr := 0.U
-    res.iswf      := false.B
   }
 
   // forward
-  io.mem2.actualStore := info.actualStore
+  io.mem2.actualStore := info.rollback && info.writeInfo.requestInfo.rbType
   io.mem2.addr        := info.writeInfo.requestInfo.addr
   io.mem2.data        := info.writeInfo.requestInfo.wdata
   io.mem2.strb        := info.writeInfo.requestInfo.wstrb
 
   // D-Cache
-  io.dCache.addr := Mux(info.actualStore, info.writeInfo.requestInfo.addr, info.va)
+  io.dCache.addr   := Mux(info.rollback, info.writeInfo.requestInfo.addr, info.va)
+  res.dcachehitVec := io.dCache.hitVec
 
   io.to.bits := res
+
+  io.awake.valid := valid && info.iswf && io.to.fire
+  io.awake.preg  := info.rdInfo.preg
 
   if (Config.debug_on) {
     dontTouch(valid)

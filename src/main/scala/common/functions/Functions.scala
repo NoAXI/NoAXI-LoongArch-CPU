@@ -31,14 +31,14 @@ object Functions {
     if (hasRbStore) {
       val bfInfo     = WireDefault(x.bits).asTypeOf(new SingleInfo)
       val singleInfo = WireDefault(info).asTypeOf(new SingleInfo)
-      prevIsRbStore := bfInfo.actualStore
-      rbStore       := singleInfo.actualStore
+      prevIsRbStore := bfInfo.rollback
+      rbStore       := singleInfo.rollback
     }
     when(!rbStore) {
       when(flush) {
         y.valid := false.B
         when(!stall) {
-          when(!prevIsRbStore) {
+          when(!prevIsRbStore || !x.fire) {
             info := info.getFlushInfo
           }
         }.otherwise {

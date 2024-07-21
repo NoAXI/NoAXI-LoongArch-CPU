@@ -26,7 +26,8 @@ class RobInfo extends Bundle {
   val isReturn  = Bool()
   val bfail     = new BranchInfo
 
-  val isStore = Bool()
+  val isStore       = Bool()
+  val isUncacheLoad = Bool()
 
   // exception
   val exc_type    = ECodes()

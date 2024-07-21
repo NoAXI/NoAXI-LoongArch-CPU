@@ -121,7 +121,7 @@ class Top extends Module {
   readreg(0).to <> arith(0).from
   readreg(1).to <> arith(1).from
   readreg(2).to <> muldiv0.from
-  readreg(3).to <> memory0.from
+  readreg(3).to <> memorySel.fromMem0
 
   // arith
   arith(0).to <> writeback(0).from
@@ -134,7 +134,7 @@ class Top extends Module {
   muldiv2.mul <> muldiv0.mul // multiplier connect
 
   // memory
-  memory0.to <> memorySel.fromMem0
+  memory0.to <> memory1.from
   memory1.to <> memory2.from
   memory2.to <> writeback(3).from
 
@@ -164,9 +164,11 @@ class Top extends Module {
   fetch.iCache    <> iCache.fetch
 
   // dcache <> memory0, memory1, memory2
+  memory0.dCache <> dcache.mem0
   memory1.dCache <> dcache.mem1
   memory2.dCache <> dcache.mem2
   memory2.mem1   <> memory1.mem2
+  memory2.mem0   <> memory0.mem2
 
   // storeBuffer <> memory1, memory2
   storeBuffer.memory2 <> memory2.storeBufferRead
@@ -196,16 +198,20 @@ class Top extends Module {
     if (i < ARITH_ISSUE_NUM) {
       readreg(i).awake <> issue.awake(i)
     }
+    if (i != MEMORY_ISSUE_ID) {
+      readreg(i).csrRead            := DontCare
+      readreg(i).commitCsrWriteDone := DontCare
+    }
   }
-  muldiv1.awake <> issue.awake(MULDIV_ISSUE_ID)
-  memory2.awake <> issue.awake(MEMORY_ISSUE_ID)
+  muldiv1.awake      <> issue.awake(MULDIV_ISSUE_ID)
+  writeback(3).awake <> issue.awake(MEMORY_ISSUE_ID)
 
   // forward <> the last stage of execute
   for (i <- 0 until ARITH_ISSUE_NUM) {
     arith(i).forward <> forward.exe(i)
   }
-  muldiv2.forward <> forward.exe(MULDIV_ISSUE_ID)
-  memory2.forward <> forward.exe(MEMORY_ISSUE_ID)
+  muldiv2.forward              <> forward.exe(MULDIV_ISSUE_ID)
+  forward.exe(MEMORY_ISSUE_ID) := DontCare
   for (i <- 0 until BACK_ISSUE_WIDTH) {
     writeback(i).forward <> forward.wb(i)
   }
@@ -229,7 +235,7 @@ class Top extends Module {
   storeBuffer.popValid := commit.bufferPopValid
   commit.bufferToReady := storeBuffer.to.ready
   storeBuffer.to       <> memorySel.fromBuffer
-  memorySel.to         <> memory1.from
+  memorySel.to         <> memory0.from
 
   // front flush
   prefetch.flush       := flushCtrl.frontFlush || predecode.flushapply
@@ -281,13 +287,13 @@ class Top extends Module {
   commit.predictResult  <> prefetch.predictResFromBack
 
   // csr
-  csr.csrRead   <> memory0.csrRead
+  csr.csrRead   <> readreg(MEMORY_ISSUE_ID).csrRead
   csr.csrWrite  <> commit.csrWrite
   csr.excJump   <> commit.excJump
   csr.excHappen <> commit.excHappen
   csr.intExc    <> decode.intExc
 
-  memory0.commitCsrWriteDone <> commit.csrWritePop
+  readreg(MEMORY_ISSUE_ID).commitCsrWriteDone <> commit.csrWritePop
 
   // cnt
   for (i <- 0 until ARITH_ISSUE_NUM) {

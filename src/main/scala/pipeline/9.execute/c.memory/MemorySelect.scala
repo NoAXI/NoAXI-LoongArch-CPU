@@ -19,8 +19,8 @@ class MemorySelect extends Module {
   val io = IO(new MemorySelectIO)
 
   val toInfo = WireDefault(0.U.asTypeOf(new SingleInfo))
-  toInfo.writeInfo   := io.fromBuffer.bits
-  toInfo.actualStore := true.B
+  toInfo.writeInfo := io.fromBuffer.bits
+  toInfo.rollback  := true.B
 
   io.to.bits          := Mux(io.fromBuffer.fire, toInfo, io.fromMem0.bits)
   io.fromBuffer.ready := io.to.ready

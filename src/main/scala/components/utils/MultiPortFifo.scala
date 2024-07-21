@@ -25,16 +25,18 @@ class MultiPortFifo[T <: Data](
     forIB: Boolean = false,
     clearWhenPop: Boolean = false,
     clearWhenFlush: Boolean = false,
+    hasDoneResetPort: Boolean = false,
 ) extends Module {
   require(isPow2(entries))
   require((!hasWritePort && writePortNum == 0) || (hasWritePort && writePortNum != 0))
 
   val io = IO(new Bundle {
-    val push  = Vec(ISSUE_WIDTH, Flipped(Decoupled(gen)))
-    val pop   = Vec(ISSUE_WIDTH, Decoupled(gen))
-    val write = Vec(writePortNum, new MultiPortFifoWriteInfo(entries, gen))
-    val index = Output(UInt(log2Ceil(entries).W))
-    val flush = Input(Bool())
+    val push      = Vec(ISSUE_WIDTH, Flipped(Decoupled(gen)))
+    val pop       = Vec(ISSUE_WIDTH, Decoupled(gen))
+    val write     = Vec(writePortNum, new MultiPortFifoWriteInfo(entries, gen))
+    val index     = Output(UInt(log2Ceil(entries).W))
+    val flush     = Input(Bool())
+    val doneReset = Input(Bool())
   })
   val mem       = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(gen))))
   val pushPtr   = RegInit(0.U(log2Ceil(entries).W))
@@ -103,7 +105,10 @@ class MultiPortFifo[T <: Data](
   if (hasWritePort) {
     for (i <- 0 until BACK_ISSUE_WIDTH) {
       when(io.write(i).valid && !io.flush) {
-        mem(io.write(i).index) := io.write(i).bits
+        val raw  = WireDefault(mem(io.write(i).index).asTypeOf(new RobInfo))
+        val info = WireDefault(io.write(i).bits.asTypeOf(new RobInfo))
+        info.pc                := raw.pc
+        mem(io.write(i).index) := info.asTypeOf(gen)
       }
     }
     io.index := pushPtr
@@ -123,6 +128,14 @@ class MultiPortFifo[T <: Data](
     if (clearWhenFlush) {
       mem := 0.U.asTypeOf(mem)
     }
+  }
+
+  if (hasDoneResetPort) {
+    when(io.doneReset) {
+      
+    }
+  } else {
+    io.doneReset := DontCare
   }
 
   if (Config.debug_on) {

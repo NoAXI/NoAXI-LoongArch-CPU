@@ -42,8 +42,8 @@ class FetchTop extends Module {
   val tlbpa     = Mux(stall, savedPa, io.tlb.pa)
   val tlbcached = Mux(stall, savedCached, io.tlb.cached)
   val tlbexc    = Mux(stall, savedExc, io.tlb.exception)
-  val pa        = Mux(info.actualStore, info.writeInfo.requestInfo.addr, Mux(info.isDirect, info.pa, tlbpa))
-  val cached    = Mux(info.actualStore, info.writeInfo.requestInfo.cached, tlbcached)
+  val pa        = Mux(info.isDirect, info.pa, tlbpa)
+  val cached    = tlbcached
   val exception = tlbexc
 
   // exception

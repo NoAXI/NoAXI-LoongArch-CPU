@@ -93,12 +93,12 @@ class SingleInfo extends BasicStageInfo {
   val hitVec   = Vec(TLB_ENTRIES, Bool())
 
   // mem
-  val writeInfo = new BufferInfo
-  // val dcachehitVec = Vec(WAY_WIDTH, Bool())
+  val writeInfo     = new BufferInfo
+  val dcachehitVec  = Vec(WAY_WIDTH, Bool())
   val ldData        = UInt(DATA_WIDTH.W)
   val wdata         = UInt(DATA_WIDTH.W)
   val wmask         = UInt((DATA_WIDTH / 8).W)
-  val actualStore   = Bool()
+  val rollback      = Bool()
   val forwardHitVec = Vec(2, Bool())
   val forwardData   = Vec(2, UInt(DATA_WIDTH.W))
   val forwardStrb   = Vec(2, UInt((DATA_WIDTH / 8).W))
@@ -120,8 +120,8 @@ class DualInfo extends BasicStageInfo {
 
   override def getFlushInfo: BasicStageInfo = {
     val info = WireDefault(0.U.asTypeOf(new DualInfo))
-    for(i <- 0 until ISSUE_WIDTH) {
-      info.bits(0).bubble := true.B
+    for (i <- 0 until ISSUE_WIDTH) {
+      info.bits(i).bubble := true.B
     }
     info
   }

@@ -13,6 +13,7 @@ class WritebackTopIO extends SingleStageBundle {
   val preg    = Flipped(new PRegWriteIO)
   val rob     = Flipped(new RobWriteIO)
   val forward = Flipped(new ForwardInfoIO)
+  val awake   = Output(new AwakeInfo)
 }
 
 class WritebackTop(
@@ -28,8 +29,10 @@ class WritebackTop(
   val res   = WireDefault(info)
   io.to.bits := res
 
+  io.awake := DontCare
+
   // load merge
-  if (special == "memory") {
+  if (special == "memorysb") {
     val bitHit  = WireDefault(VecInit(Seq.fill(4)(0.U(8.W))))
     val bitStrb = WireDefault(VecInit(Seq.fill(4)(false.B)))
     for (i <- 0 until 2) {
@@ -53,6 +56,11 @@ class WritebackTop(
     dontTouch(bitHit)
   }
 
+  if (special == "memory") {
+    io.awake.valid := valid && info.iswf && io.to.fire
+    io.awake.preg  := info.rdInfo.preg
+  }
+
   // writeback -> preg
   io.preg.en    := valid && res.iswf
   io.preg.index := res.rdInfo.preg
@@ -63,14 +71,15 @@ class WritebackTop(
   io.rob.index := res.robId
 
   // basic rob info
-  io.rob.bits.done    := true.B
-  io.rob.bits.pc      := res.pc
-  io.rob.bits.wen     := res.iswf
-  io.rob.bits.areg    := res.rdInfo.areg
-  io.rob.bits.preg    := res.rdInfo.preg
-  io.rob.bits.opreg   := res.opreg
-  io.rob.bits.wdata   := res.rdInfo.data
-  io.rob.bits.isStore := res.func_type === FuncType.mem && !MemOpType.isread(res.op_type)
+  io.rob.bits.done          := true.B
+  io.rob.bits.pc            := res.pc
+  io.rob.bits.wen           := res.iswf
+  io.rob.bits.areg          := res.rdInfo.areg
+  io.rob.bits.preg          := res.rdInfo.preg
+  io.rob.bits.opreg         := res.opreg
+  io.rob.bits.wdata         := res.rdInfo.data
+  io.rob.bits.isStore       := res.func_type === FuncType.mem && (!MemOpType.isread(res.op_type) || (MemOpType.isread(res.op_type) && !info.cached))
+  io.rob.bits.isUncacheLoad := res.func_type === FuncType.mem && (MemOpType.isread(res.op_type) && !info.cached)
 
   // branch
   io.rob.bits.bfail     := res.realBr

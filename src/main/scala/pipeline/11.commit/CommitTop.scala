@@ -98,8 +98,9 @@ class CommitTop extends Module {
   }
 
   // send info
-  val writeStall = WireDefault(false.B)
-  val doStore    = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(false.B)))
+  val writeStall    = WireDefault(false.B)
+  val doStore       = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(false.B)))
+  val doUncacheLoad = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(false.B)))
   for (i <- 0 until ISSUE_WIDTH) {
     val rob        = io.rob(i).info
     val writeValid = rob.fire && rob.bits.wen && !rob.bits.isException
@@ -117,7 +118,8 @@ class CommitTop extends Module {
     io.rat(i).opreg := rob.bits.opreg
 
     // commit -> store buffer <> wb buffer
-    doStore(i) := readyBit(i) && rob.bits.isStore
+    doStore(i)       := readyBit(i) && rob.bits.isStore
+    doUncacheLoad(i) := readyBit(i) && rob.bits.isUncacheLoad
   }
 
   // store buffer
@@ -126,6 +128,9 @@ class CommitTop extends Module {
     writeStall := true.B
   }
   io.bufferPopValid := writeHappen
+  when(doUncacheLoad.reduce(_ || _)) {
+    writeStall := true.B
+  }
 
   for (i <- 0 until ISSUE_WIDTH) {
     io.rob(i).info.ready := readyBit(i) && !writeStall

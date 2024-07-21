@@ -21,9 +21,8 @@ class Memory2TopIO extends SingleStageBundle {
   val dCache           = new Mem2DCacheIO
   val storeBufferWrite = DecoupledIO(new BufferInfo)
   val storeBufferRead  = new Mem2BufferIO
-  val mem1             = Flipped(new Mem1Mem2ForwardIO)
-  val forward          = Flipped(new ForwardInfoIO)
-  val awake            = Output(new AwakeInfo)
+  val mem0             = Flipped(new ToMem2ForwardIO)
+  val mem1             = Flipped(new ToMem2ForwardIO)
 }
 
 class Memory2Top extends Module {
@@ -35,40 +34,37 @@ class Memory2Top extends Module {
   val info  = raw._1
   val valid = raw._2
   val res   = WireDefault(info)
-  // val mem2  = Module(new Memory2Access).io
+  val mem2  = Module(new Memory2Access).io
 
   val isMem   = info.func_type === FuncType.mem
-  val isStore = !MemOpType.isread(info.op_type) && isMem || info.actualStore
+  val isStore = !MemOpType.isread(info.op_type) && isMem || info.rollback
   val isLoad  = !isStore && isMem
 
   val storeBufferFull = !io.storeBufferWrite.ready
 
   // D-Cache
-  io.dCache.request.valid       := valid && (info.actualStore || isLoad) && !info.bubble
+  io.dCache.request.valid       := valid && (info.rollback || isLoad && info.cached) && !info.bubble
   io.dCache.request.bits.addr   := info.pa
   io.dCache.request.bits.cached := info.cached
   io.dCache.request.bits.wdata  := info.wdata
   io.dCache.request.bits.wstrb  := info.wmask
-  io.dCache.rwType              := isStore
+  io.dCache.request.bits.rbType := DontCare
+  io.dCache.rwType              := Mux(info.rollback, info.writeInfo.requestInfo.rbType, isStore)
   io.dCache.flush               := io.flush
+  io.dCache.hitVec              := info.dcachehitVec
   io.dCache.answer.ready        := true.B
-
-  // load
-  // mem2.rdata      := loadData
-  // mem2.addr       := info.pa
-  // mem2.op_type    := info.op_type
-  // res.rdInfo.data := mem2.data
 
   // storebuffer write
   io.storeBufferWrite.valid := false.B
   io.storeBufferWrite.bits  := 0.U.asTypeOf(new BufferInfo)
-  when(isStore && !info.actualStore) {
+  when((isStore || !info.cached && isLoad) && !info.rollback) {
     io.storeBufferWrite.valid                   := valid && !info.bubble
     io.storeBufferWrite.bits.valid              := true.B
     io.storeBufferWrite.bits.requestInfo.cached := info.cached
     io.storeBufferWrite.bits.requestInfo.addr   := info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
-    io.storeBufferWrite.bits.requestInfo.wdata  := info.wdata
-    io.storeBufferWrite.bits.requestInfo.wstrb  := info.wmask
+    io.storeBufferWrite.bits.requestInfo.wdata  := Mux(isStore, info.wdata, 0.U((22 - ROB_WIDTH).W) ## info.robId ## info.rdInfo.areg ## info.rdInfo.preg)
+    io.storeBufferWrite.bits.requestInfo.wstrb  := Mux(isStore, info.wmask, info.op_type)
+    io.storeBufferWrite.bits.requestInfo.rbType := isStore
   }
   when(io.flush) {
     io.storeBufferWrite.valid := false.B
@@ -76,22 +72,48 @@ class Memory2Top extends Module {
 
   // get forward
   io.storeBufferRead.forwardpa := info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
-  res.ldData                   := io.dCache.answer.bits
-  res.forwardHitVec(0)         := io.mem1.actualStore && io.mem1.addr === info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
-  res.forwardHitVec(1)         := io.storeBufferRead.forwardHit
-  res.forwardData(0)           := io.mem1.data
-  res.forwardData(1)           := io.storeBufferRead.forwardData
-  res.forwardStrb(0)           := io.mem1.strb
-  res.forwardStrb(1)           := io.storeBufferRead.forwardStrb
+  val ldData = io.dCache.answer.bits
+  val forwardHitVec = VecInit(
+    io.mem1.actualStore && io.mem1.addr === info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W),
+    io.mem0.actualStore && io.mem0.addr === info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W),
+    io.storeBufferRead.forwardHit,
+  )
+  val forwardData = VecInit(
+    io.mem1.data,
+    io.mem0.data,
+    io.storeBufferRead.forwardData,
+  )
+  val forwardStrb = VecInit(
+    io.mem1.strb,
+    io.mem0.strb,
+    io.storeBufferRead.forwardStrb,
+  )
+  // merge data
+  val bitHit  = WireDefault(VecInit(Seq.fill(4)(0.U(8.W))))
+  val bitStrb = WireDefault(VecInit(Seq.fill(4)(false.B)))
+  for (i <- 0 until 3) {
+    when(forwardHitVec(i)) {
+      for (j <- 0 to 3) {
+        when(forwardStrb(i)(j)) {
+          bitStrb(j) := true.B
+          bitHit(j)  := forwardData(i)(j * 8 + 7, j * 8)
+        }
+      }
+    }
+  }
+  val bitMask   = Cat((3 to 0 by -1).map(i => Fill(8, bitStrb(i))))
+  val mergeData = writeMask(bitMask, ldData, bitHit.asUInt)
+
+  // load
+  mem2.rdata      := Mux(info.rollback, ldData, mergeData)
+  mem2.addr       := info.pa
+  mem2.op_type    := Mux(info.rollback, info.writeInfo.requestInfo.wstrb, info.op_type)
+  res.rdInfo.data := Mux(info.func_type === FuncType.mem, mem2.data, info.rdInfo.data)
 
   // ld but bufferhit, D-Cache dont care
-  busy := ((!io.dCache.answer.fire && (info.actualStore || isLoad))
-    || (storeBufferFull && isStore && !info.actualStore) && info.exc_type === ECodes.NONE)
+  busy := ((!io.dCache.answer.fire && (info.rollback || isLoad && info.cached))
+    || (storeBufferFull && isStore && !info.rollback) && info.exc_type === ECodes.NONE)
 
-  io.awake.valid := valid && info.iswf && io.to.fire
-  io.awake.preg  := info.rdInfo.preg
-
-  doForward(io.forward, res, false.B)
   io.to.bits := res
 
   if (Config.debug_on) {

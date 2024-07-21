@@ -9,9 +9,11 @@ import func.Functions._
 import const.Parameters._
 
 class ReadRegTopIO extends SingleStageBundle {
-  val forwardReq = Flipped(new ForwardRequestIO)
-  val pregRead   = Flipped(new PRegReadIO)
-  val awake      = Output(new AwakeInfo)
+  val forwardReq         = Flipped(new ForwardRequestIO)
+  val pregRead           = Flipped(new PRegReadIO)
+  val awake              = Output(new AwakeInfo)
+  val csrRead            = Flipped(new CsrReadIO)
+  val commitCsrWriteDone = Input(Bool())
 }
 
 class ReadRegTop(
@@ -22,7 +24,7 @@ class ReadRegTop(
   val io = IO(new ReadRegTopIO)
 
   val busy = WireDefault(false.B)
-  val raw = stageConnect(io.from, io.to, busy, io.flush)
+  val raw  = stageConnect(io.from, io.to, busy, io.flush)
 
   val info  = raw._1
   val valid = raw._2
@@ -66,5 +68,32 @@ class ReadRegTop(
     io.awake.preg  := info.rdInfo.preg
   } else {
     io.awake := DontCare
+  }
+
+  if (unitType == "memory") {
+    // csr read
+    io.csrRead.addr := info.csr_addr
+    res.rdInfo.data := io.csrRead.data
+
+    // csr hazard
+    // TODO: tlb指令也需要在这里加入判断
+    val csrWriteCount = RegInit(false.B)
+    val csrPushSignal = info.isWriteCsr && io.to.fire && valid
+    val csrPopSignal  = io.commitCsrWriteDone
+    when(csrPushSignal =/= csrPopSignal) {
+      when(csrPushSignal) {
+        csrWriteCount := true.B
+      }.otherwise {
+        csrWriteCount := false.B
+      }
+    }
+    when(io.flush) {
+      csrWriteCount := false.B
+    }
+    when(csrWriteCount && info.isReadCsr) {
+      busy := true.B
+    }
+  } else {
+    io.csrRead.addr := DontCare
   }
 }
