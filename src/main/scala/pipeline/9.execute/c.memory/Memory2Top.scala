@@ -39,10 +39,13 @@ class Memory2Top extends Module {
   val isStore = !MemOpType.isread(info.op_type) && isMem || info.actualStore
   val isLoad  = !isStore && isMem
 
+  val dcacheEn      = info.actualStore || isLoad && info.cached
+  val storebufferEn = isStore || isLoad && !info.cached
+
   val storeBufferFull = !io.storeBufferWrite.ready
 
   // D-Cache
-  io.dCache.request.valid       := valid && (info.actualStore || isLoad && info.cached) && !info.bubble
+  io.dCache.request.valid       := valid && dcacheEn && !info.bubble
   io.dCache.request.bits.addr   := info.pa
   io.dCache.request.bits.cached := info.cached
   io.dCache.request.bits.wdata  := info.wdata
@@ -55,11 +58,11 @@ class Memory2Top extends Module {
   // storebuffer write
   io.storeBufferWrite.valid := false.B
   io.storeBufferWrite.bits  := 0.U.asTypeOf(new BufferInfo)
-  when((isStore || !info.cached && isLoad) && !info.actualStore) {
+  when(storebufferEn && !info.actualStore) {
     io.storeBufferWrite.valid                   := valid && !info.bubble
     io.storeBufferWrite.bits.valid              := true.B
     io.storeBufferWrite.bits.requestInfo.cached := info.cached
-    io.storeBufferWrite.bits.requestInfo.addr   := info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
+    io.storeBufferWrite.bits.requestInfo.addr   := Mux(isStore, info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W), info.pa)
     io.storeBufferWrite.bits.requestInfo.wdata  := Mux(isStore, info.wdata, 0.U((22 - ROB_WIDTH).W) ## info.robId ## info.rdInfo.areg ## info.rdInfo.preg)
     io.storeBufferWrite.bits.requestInfo.wstrb  := Mux(isStore, info.wmask, info.op_type)
     io.storeBufferWrite.bits.requestInfo.rbType := isStore
@@ -79,8 +82,8 @@ class Memory2Top extends Module {
   res.forwardStrb(1)           := io.storeBufferRead.forwardStrb
 
   // ld but bufferhit, D-Cache dont care
-  busy := ((!io.dCache.answer.fire && (info.actualStore || isLoad))
-    || (storeBufferFull && isStore && !info.actualStore) && info.exc_type === ECodes.NONE)
+  busy := ((!io.dCache.answer.fire && dcacheEn)
+    || (storeBufferFull && storebufferEn && !info.actualStore) && info.exc_type === ECodes.NONE)
 
   doForward(io.forward, res, false.B)
   io.to.bits := res

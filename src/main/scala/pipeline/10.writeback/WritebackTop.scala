@@ -22,7 +22,7 @@ class WritebackTop(
   val io = IO(new WritebackTopIO)
 
   val busy = WireDefault(false.B)
-  val raw  = stageConnect(io.from, io.to, busy, io.flush)
+  val raw  = stageConnect(io.from, io.to, busy, io.flush, special == "memory")
 
   val info  = raw._1
   val valid = io.to.fire && raw._2
@@ -47,10 +47,10 @@ class WritebackTop(
     val result  = writeMask(bitMask, info.ldData, bitHit.asUInt)
 
     val mem2 = Module(new MemoryLoadAccess).io
-    mem2.rdata      := result
-    mem2.addr       := info.pa
-    mem2.op_type    := info.op_type
-    res.rdInfo.data := Mux(info.func_type === FuncType.mem, mem2.data, info.ldData)
+    mem2.rdata      := Mux(info.actualStore, info.ldData, result)
+    mem2.addr       := Mux(info.actualStore, info.writeInfo.requestInfo.addr, info.pa)
+    mem2.op_type    := Mux(info.actualStore, info.writeInfo.requestInfo.wstrb, info.op_type)
+    res.rdInfo.data := mem2.data
     dontTouch(bitHit)
 
     io.awake.valid := valid && info.iswf && io.to.fire

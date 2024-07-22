@@ -123,6 +123,6 @@ class StoreBuffer(
   }
   // handshake
   io.from.ready := !full || (io.from.valid && io.to.valid)
-  io.to.valid   := !empty && validReg(0)
+  io.to.valid   := !empty && validReg(0) && !io.flush
   io.to.bits    := mem(0)
 }
