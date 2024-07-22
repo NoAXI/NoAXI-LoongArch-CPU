@@ -65,7 +65,8 @@ class ICache extends Module {
 
   val hitdatalineVec = VecInit.tabulate(4)(i => hitdataline((i + 1) * 32 - 1, i * 32))
 
-  val state = RegInit(idle)
+  val state  = RegInit(idle)
+  val lruway = Mux(state === idle, lru(io.fetch.request.bits(11, 4)), lru(saved_info.index))
   switch(state) {
     is(idle) {
       ans_valid := false.B
@@ -77,8 +78,7 @@ class ICache extends Module {
           if (Config.statistic_on) {
             hitted_times := hitted_times + 1.U
           }
-          val lru_index = io.fetch.request.bits(11, 4)
-          lru(lru_index) := !hitdataline
+          lru(io.fetch.request.bits(11, 4)) := !hitdataline
 
           state          := Mux(io.fetch.cango, idle, waiting)
           i_ans_valid    := true.B
@@ -98,7 +98,7 @@ class ICache extends Module {
       }
     }
     is(replace) {
-      val getline_complete = WireDefault(false.B)
+      val getline_complete = RegInit(false.B)
       when(io.axi.ar.valid) {
         when(io.axi.ar.ready) {
           arvalid := false.B
@@ -114,25 +114,23 @@ class ICache extends Module {
         }
       }
 
-      // TODO: break it to two cycles
-      val final_linedata = linedata | (io.axi.r.bits.data << wmove)
-      val _ans_bits      = VecInit.tabulate(4)(i => final_linedata((i + 1) * 32 - 1, i * 32))
+      val _ans_bits = VecInit.tabulate(4)(i => linedata((i + 1) * 32 - 1, i * 32))
 
       // write sram
-      val lru_way = lru(saved_info.index)
       when(getline_complete) {
         // write to sram
-        datasram(lru_way).wea               := true.B
-        datasram(lru_way).addra             := saved_info.index
-        datasram(lru_way).dina              := final_linedata
-        tagsram(lru_way).wea                := true.B
-        tagsram(lru_way).addra              := saved_info.index
-        tagsram(lru_way).dina               := saved_info.tag
-        validreg(saved_info.index)(lru_way) := true.B
-        state                               := Mux(io.fetch.cango, idle, waiting)
-        ans_valid                           := true.B
-        ans_bits                            := _ans_bits
-        saved_ans_bits                      := _ans_bits
+        getline_complete                   := false.B
+        datasram(lruway).wea               := true.B
+        datasram(lruway).addra             := saved_info.index
+        datasram(lruway).dina              := linedata
+        tagsram(lruway).wea                := true.B
+        tagsram(lruway).addra              := saved_info.index
+        tagsram(lruway).dina               := saved_info.tag
+        validreg(saved_info.index)(lruway) := true.B
+        state                              := Mux(io.fetch.cango, idle, waiting)
+        ans_valid                          := true.B
+        ans_bits                           := _ans_bits
+        saved_ans_bits                     := _ans_bits
       }
     }
     is(waiting) {
