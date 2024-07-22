@@ -89,14 +89,19 @@ class WritebackTop(
 
   // exception & privilege
   val isExc = res.func_type === FuncType.exc
+  val isPri = FuncType.isPrivilege(res.func_type)
   io.rob.bits.exc_type    := res.exc_type
   io.rob.bits.exc_vaddr   := res.exc_vaddr
-  io.rob.bits.isPrivilege := FuncType.isPrivilege(res.func_type)
+  io.rob.bits.isPrivilege := isPri
   io.rob.bits.isException := res.exc_type =/= ECodes.NONE
 
+  when(isPri) {
+    io.rob.bits.bfail.tar := res.pc + 4.U
+  }
+
   // csr write
-  io.rob.bits.csr_iswf  := res.isWriteCsr
-  io.rob.bits.csr_wmask := res.csr_wmask
-  io.rob.bits.csr_addr  := res.csr_addr
-  io.rob.bits.csr_value := res.rkInfo.data // use rk to save data
+  io.rob.bits.csr_iswf := res.isWriteCsr
+  // io.rob.bits.csr_wmask := res.csr_wmask
+  // io.rob.bits.csr_addr  := res.csr_addr
+  // io.rob.bits.csr_value := res.rkInfo.data // use rk to save data
 }

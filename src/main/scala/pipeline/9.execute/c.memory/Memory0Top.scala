@@ -11,9 +11,6 @@ import const.Parameters._
 
 class Memory0TopIO extends SingleStageBundle {
   val tlb                = new Stage0TLBIO
-  val csrRead            = Flipped(new CsrReadIO)
-  val commitCsrWriteDone = Input(Bool())
-  val csrWrite           = Output(new CSRWrite)
 }
 
 class Memory0Top extends Module {
@@ -24,37 +21,6 @@ class Memory0Top extends Module {
   val info  = raw._1
   val valid = raw._2
   val res   = WireDefault(info)
-
-  // calculate csr_wmask
-  val is_xchg = info.func_type === FuncType.csr && info.op_type === CsrOpType.xchg
-  res.csr_wmask := Mux(is_xchg, info.rjInfo.data, ALL_MASK.U)
-
-  // csr read
-  io.csrRead.addr := info.csr_addr
-  res.rdInfo.data := io.csrRead.data
-
-  // csr hazard
-  // TODO: tlb指令也需要在这里加入判断
-  val csrWriteCount = RegInit(false.B)
-  val csrWriteInfo  = RegInit(0.U.asTypeOf(new CSRWrite))
-  val csrPushSignal = info.isWriteCsr && io.to.fire && valid && !info.bubble
-  val csrPopSignal  = io.commitCsrWriteDone
-  when(csrPushSignal) {
-    csrWriteInfo.we    := info.isWriteCsr
-    csrWriteInfo.waddr := info.csr_addr
-    csrWriteInfo.wdata := info.csr_value
-    csrWriteInfo.wmask := info.csr_wmask
-  }
-  when(csrPushSignal =/= csrPopSignal) {
-    csrWriteCount := csrPushSignal
-  }
-  io.csrWrite := Mux(io.commitCsrWriteDone, csrWriteInfo, 0.U.asTypeOf(io.csrWrite))
-  when(io.flush) {
-    csrWriteCount := false.B
-  }
-  when(csrWriteCount && info.isReadCsr) {
-    busy := true.B
-  }
 
   val va = Mux(info.actualStore, info.writeInfo.requestInfo.addr, info.rjInfo.data + info.imm)
 

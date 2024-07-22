@@ -280,13 +280,13 @@ class Top extends Module {
   commit.predictResult  <> prefetch.predictResFromBack
 
   // csr
-  csr.csrRead   <> memory0.csrRead
-  csr.csrWrite  <> memory0.csrWrite
+  csr.csrRead   <> muldiv0.csrRead
+  csr.csrWrite  <> muldiv0.csrWrite
   csr.excJump   <> commit.excJump
   csr.excHappen <> commit.excHappen
   csr.intExc    <> decode.intExc
 
-  memory0.commitCsrWriteDone <> commit.csrWritePop
+  muldiv0.commitCsrWriteDone <> commit.csrWritePop
 
   // cnt
   for (i <- 0 until ARITH_ISSUE_NUM) {

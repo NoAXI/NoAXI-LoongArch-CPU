@@ -50,7 +50,7 @@ class CommitTop extends Module {
     // when detect write / csr / brfail, set next inst stall
     when(info.done && (info.isPrivilege || info.isStore || info.isbr || info.isException)) {
       if (i != 0) {
-        when(info.isStore || info.isException) {
+        when(info.isStore || info.isException || info.isPrivilege) {
           readyBit(i) := false.B
         }
       }
@@ -86,8 +86,7 @@ class CommitTop extends Module {
   for (i <- 0 until ISSUE_WIDTH) {
     val info    = io.rob(i).info.bits
     val isBfail = info.bfail.en && info.isbr
-    val isEx    = info.isException
-    when(io.rob(i).info.ready && isBfail) {
+    when(io.rob(i).info.ready && (isBfail || info.isPrivilege)) {
       io.flushInfo.en  := true.B
       io.flushInfo.tar := info.bfail.tar
     }

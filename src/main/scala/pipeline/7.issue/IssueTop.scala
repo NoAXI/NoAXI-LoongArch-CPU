@@ -45,7 +45,7 @@ class IssueTop extends Module {
     ).io,
   )
   val muldiv = Module(
-    new UnorderedIssue(
+    new OrderedIssue(
       entries = MULDIV_QUEUE_SIZE,
       isArithmetic = false,
     ),

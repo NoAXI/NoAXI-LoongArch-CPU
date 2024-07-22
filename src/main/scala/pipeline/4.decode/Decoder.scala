@@ -145,7 +145,7 @@ class Decoder extends Module {
     PipelineType.memory,
     List(
       (func_type === FuncType.alu || func_type === FuncType.alu_imm || func_type === FuncType.bru || func_type === FuncType.cnt) -> PipelineType.arith,
-      (func_type === FuncType.mul || func_type === FuncType.div)                                                                 -> PipelineType.muldiv,
+      (func_type === FuncType.mul || func_type === FuncType.div || FuncType.isPrivilege(func_type))                              -> PipelineType.muldiv,
     ),
   )
 
