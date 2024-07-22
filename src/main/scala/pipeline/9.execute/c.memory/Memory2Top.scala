@@ -34,7 +34,6 @@ class Memory2Top extends Module {
   val info  = raw._1
   val valid = raw._2
   val res   = WireDefault(info)
-  // val mem2  = Module(new Memory2Access).io
 
   val isMem   = info.func_type === FuncType.mem
   val isStore = !MemOpType.isread(info.op_type) && isMem || info.actualStore
@@ -43,31 +42,27 @@ class Memory2Top extends Module {
   val storeBufferFull = !io.storeBufferWrite.ready
 
   // D-Cache
-  io.dCache.request.valid       := valid && (info.actualStore || isLoad) && !info.bubble
+  io.dCache.request.valid       := valid && (info.actualStore || isLoad && info.cached) && !info.bubble
   io.dCache.request.bits.addr   := info.pa
   io.dCache.request.bits.cached := info.cached
   io.dCache.request.bits.wdata  := info.wdata
   io.dCache.request.bits.wstrb  := info.wmask
-  io.dCache.rwType              := isStore
+  io.dCache.request.bits.rbType := DontCare
+  io.dCache.rwType              := Mux(info.actualStore, info.writeInfo.requestInfo.rbType, isStore)
   io.dCache.flush               := io.flush
   io.dCache.answer.ready        := true.B
-
-  // load
-  // mem2.rdata      := loadData
-  // mem2.addr       := info.pa
-  // mem2.op_type    := info.op_type
-  // res.rdInfo.data := mem2.data
 
   // storebuffer write
   io.storeBufferWrite.valid := false.B
   io.storeBufferWrite.bits  := 0.U.asTypeOf(new BufferInfo)
-  when(isStore && !info.actualStore) {
+  when((isStore || !info.cached && isLoad) && !info.actualStore) {
     io.storeBufferWrite.valid                   := valid && !info.bubble
     io.storeBufferWrite.bits.valid              := true.B
     io.storeBufferWrite.bits.requestInfo.cached := info.cached
     io.storeBufferWrite.bits.requestInfo.addr   := info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
-    io.storeBufferWrite.bits.requestInfo.wdata  := info.wdata
-    io.storeBufferWrite.bits.requestInfo.wstrb  := info.wmask
+    io.storeBufferWrite.bits.requestInfo.wdata  := Mux(isStore, info.wdata, 0.U((22 - ROB_WIDTH).W) ## info.robId ## info.rdInfo.areg ## info.rdInfo.preg)
+    io.storeBufferWrite.bits.requestInfo.wstrb  := Mux(isStore, info.wmask, info.op_type)
+    io.storeBufferWrite.bits.requestInfo.rbType := isStore
   }
   when(io.flush) {
     io.storeBufferWrite.valid := false.B

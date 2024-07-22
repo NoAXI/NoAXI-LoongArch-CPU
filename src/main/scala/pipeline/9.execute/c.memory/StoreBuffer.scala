@@ -50,7 +50,7 @@ class StoreBuffer(
   val bitHit  = WireDefault(VecInit(Seq.fill(4)(0.U(8.W))))
   val bitStrb = WireDefault(VecInit(Seq.fill(4)(false.B)))
   for (i <- 0 until entries) {
-    when(io.memory2.forwardpa === mem(i).requestInfo.addr && mem(i).valid) {
+    when(io.memory2.forwardpa === mem(i).requestInfo.addr && mem(i).valid && mem(i).requestInfo.rbType) {
       hit := true.B
       for (j <- 0 to 3) {
         when(mem(i).requestInfo.wstrb(j)) {

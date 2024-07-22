@@ -90,10 +90,11 @@ class RequestInfo extends Bundle {
   val addr   = UInt(ADDR_WIDTH.W)
   val wdata  = UInt(DATA_WIDTH.W)
   val wstrb  = UInt(4.W)
+  val rbType = Bool()
 }
 
 class Mem1DCacheIO extends Bundle {
-  val addr   = Output(UInt(ADDR_WIDTH.W))
+  val addr = Output(UInt(ADDR_WIDTH.W))
   // val answer  = Flipped(DecoupledIO())
   // val request = DecoupledIO(new RequestInfo)
   // val cango   = Output(Bool())

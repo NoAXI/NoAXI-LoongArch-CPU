@@ -50,7 +50,7 @@ class WritebackTop(
     mem2.rdata      := result
     mem2.addr       := info.pa
     mem2.op_type    := info.op_type
-    res.rdInfo.data := Mux(info.func_type === FuncType.mem, mem2.data, info.rdInfo.data)
+    res.rdInfo.data := Mux(info.func_type === FuncType.mem, mem2.data, info.ldData)
     dontTouch(bitHit)
 
     io.awake.valid := valid && info.iswf && io.to.fire
@@ -73,12 +73,12 @@ class WritebackTop(
   // basic rob info
   io.rob.bits.done    := true.B
   io.rob.bits.pc      := res.pc
-  io.rob.bits.wen     := res.iswf
+  io.rob.bits.wen     := res.iswf || info.uncachedLoad
   io.rob.bits.areg    := res.rdInfo.areg
   io.rob.bits.preg    := res.rdInfo.preg
   io.rob.bits.opreg   := res.opreg
   io.rob.bits.wdata   := res.rdInfo.data
-  io.rob.bits.isStore := res.func_type === FuncType.mem && !MemOpType.isread(res.op_type)
+  io.rob.bits.isStore := res.func_type === FuncType.mem && (!MemOpType.isread(res.op_type) || (MemOpType.isread(res.op_type) && !info.cached))
 
   // branch
   io.rob.bits.bfail     := res.realBr

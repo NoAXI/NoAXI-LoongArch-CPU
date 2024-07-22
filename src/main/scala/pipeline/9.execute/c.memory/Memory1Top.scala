@@ -8,6 +8,7 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 import isa.FuncType
+import isa.MemOpType
 
 class Mem1Mem2ForwardIO extends Bundle {
   val actualStore = Output(Bool())
@@ -71,10 +72,28 @@ class Memory1Top extends Module {
   res.exc_vaddr := Mux(hasExc, info.exc_vaddr, excVaddr)
   res.iswf      := Mux(excEn, false.B, info.iswf)
 
+  // when(info.actualStore) {
+  //   res.exc_type  := ECodes.NONE
+  //   res.exc_vaddr := 0.U
+  //   res.iswf      := false.B
+  // }
+
+  when(!info.actualStore && !cached && info.func_type === FuncType.mem && MemOpType.isread(info.op_type)) {
+    res.uncachedLoad := true.B
+    res.iswf         := false.B
+  }
+
+  when(info.actualStore && !info.writeInfo.requestInfo.rbType) {
+    res.iswf  := true.B
+    res.robId := info.writeInfo.requestInfo.wdata(12 + ROB_WIDTH - 1, 12)
+    // res.rdInfo.areg     := info.writeInfo.requestInfo.wdata(11, 6)
+    res.rdInfo.preg     := info.writeInfo.requestInfo.wdata(5, 0)
+    res.writeInfo.valid := info.writeInfo.requestInfo.rbType
+  }
+
   when(info.actualStore) {
     res.exc_type  := ECodes.NONE
     res.exc_vaddr := 0.U
-    res.iswf      := false.B
   }
 
   // forward
