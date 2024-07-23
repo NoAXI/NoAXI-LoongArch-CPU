@@ -36,28 +36,35 @@ class BPU extends Module {
   )
   val RAS = RegInit(VecInit(Seq.fill(RAS_DEPTH)(0x1c000000.U(ADDR_WIDTH.W))))
 
+  val trainDirection = io.preFetch.train.realDirection
+  val trainIndex     = io.preFetch.train.index
+  val BHR            = WireDefault(0.U(HISTORY_LENGTH.W))
+
   // BHT and PHT train
   when(io.preFetch.train.isbr) {
+    BHR := Cat(BHT(0)(trainIndex)(HISTORY_LENGTH - 2, 0), trainDirection)
+  }
+
+  when(RegNext(io.preFetch.train.isbr)) {
     for (i <- 0 until FETCH_DEPTH) {
-      val direction = io.preFetch.train.realDirection
-      val index     = Cat(BHT(i)(io.preFetch.train.index)(HISTORY_LENGTH - 2, 0), direction)
-      BHT(i)(io.preFetch.train.index) := index
-      switch(PHT(i)(index)) {
+      BHT(i)(RegNext(trainIndex)) := RegNext(BHR)
+      switch(PHT(i)(RegNext(BHR))) {
         is(pFF) {
-          PHT(i)(index) := Mux(direction, pF, pFF)
+          PHT(i)(RegNext(BHR)) := Mux(RegNext(trainDirection), pF, pFF)
         }
         is(pF) {
-          PHT(i)(index) := Mux(direction, pT, pFF)
+          PHT(i)(RegNext(BHR)) := Mux(RegNext(trainDirection), pT, pFF)
         }
         is(pT) {
-          PHT(i)(index) := Mux(direction, pTT, pF)
+          PHT(i)(RegNext(BHR)) := Mux(RegNext(trainDirection), pTT, pF)
         }
         is(pTT) {
-          PHT(i)(index) := Mux(direction, pTT, pT)
+          PHT(i)(RegNext(BHR)) := Mux(RegNext(trainDirection), pTT, pT)
         }
       }
     }
   }
+
   val index            = VecInit.tabulate(FETCH_DEPTH)(i => BHT(i)(io.preFetch.pcGroup(i)(INDEX_LENGTH + 1, 2)))
   val predictDirection = ShiftRegister(VecInit.tabulate(FETCH_DEPTH)(i => PHT(i)(index(i))(1) && io.preFetch.pcValid(i)), 1)
 
