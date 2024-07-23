@@ -23,13 +23,14 @@ class IssueQueueIO extends SingleStageBundle {
 }
 
 class IssueTopIO extends Bundle {
-  val flush       = Input(Bool())
-  val from        = Vec(BACK_ISSUE_WIDTH, Flipped(DecoupledIO(new SingleInfo)))
-  val to          = Vec(BACK_ISSUE_WIDTH, DecoupledIO(new SingleInfo))
-  val awake       = Vec(AWAKE_NUM, Input(new AwakeInfo))
-  val memoryStall = Input(Bool())
-  val arithSize   = Vec(ARITH_ISSUE_NUM, Output(UInt((ARITH_QUEUE_WIDTH + 1).W)))
-  val busyInfo    = Vec(ISSUE_WIDTH, Input(new BusyRegUpdateInfo))
+  val flush         = Input(Bool())
+  val from          = Vec(BACK_ISSUE_WIDTH, Flipped(DecoupledIO(new SingleInfo)))
+  val to            = Vec(BACK_ISSUE_WIDTH, DecoupledIO(new SingleInfo))
+  val awake         = Vec(AWAKE_NUM, Input(new AwakeInfo))
+  val memoryStall   = Input(Bool())
+  val arithSize     = Vec(ARITH_ISSUE_NUM, Output(UInt((ARITH_QUEUE_WIDTH + 1).W)))
+  val busyInfo      = Vec(ISSUE_WIDTH, Input(new BusyRegUpdateInfo))
+  val committedBusy = Input(new BusyRegUpdateInfo)
 }
 
 class IssueTop extends Module {
@@ -67,19 +68,25 @@ class IssueTop extends Module {
       awakeInfo(i).valid := false.B
     }
   }
-  val busyReg = RegInit(VecInit(Seq.fill(PREG_NUM)(false.B)))
-  for (i <- 0 until AWAKE_NUM) {
-    when(awakeInfo(i).valid) {
-      busyReg(awakeInfo(i).preg) := false.B
-    }
-  }
+
+  val busyReg      = RegInit(VecInit(Seq.fill(PREG_NUM)(false.B)))
+  val committedReg = RegInit(VecInit(Seq.fill(PREG_NUM)(false.B)))
   for (i <- 0 until ISSUE_WIDTH) {
     when(io.busyInfo(i).valid) {
       busyReg(io.busyInfo(i).preg) := true.B
     }
   }
+  when(io.committedBusy.valid) {
+    committedReg(io.committedBusy.preg) := true.B
+  }
   when(io.flush) {
-    busyReg := 0.U.asTypeOf(busyReg)
+    busyReg := committedReg
+  }
+  for (i <- 0 until AWAKE_NUM) {
+    when(awakeInfo(i).valid) {
+      busyReg(awakeInfo(i).preg)      := false.B
+      committedReg(awakeInfo(i).preg) := false.B
+    }
   }
 
   // pipe <> queue

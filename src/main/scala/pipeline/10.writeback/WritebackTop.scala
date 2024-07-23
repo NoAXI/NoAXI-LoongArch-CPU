@@ -114,7 +114,7 @@ class WritebackTop(
         io.debug_uncached.get.wb_rf_we    := true.B
         io.debug_uncached.get.wb_rf_wnum  := res.rdInfo.areg
         io.debug_uncached.get.wb_rf_wdata := res.rdInfo.data
-      } .otherwise {
+      }.otherwise {
         io.debug_uncached.get := 0.U.asTypeOf(new DebugIO)
       }
     } else {

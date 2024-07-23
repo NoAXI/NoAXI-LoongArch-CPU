@@ -14,11 +14,12 @@ class BufferInfo extends Bundle {
 }
 
 class StoreBufferIO extends Bundle {
-  val memory2  = Flipped(new Mem2BufferIO)
-  val from     = Flipped(DecoupledIO(new BufferInfo)) // memory2
-  val to       = DecoupledIO(new BufferInfo)
-  val popValid = Input(Bool())
-  val flush    = Input(Bool())
+  val memory2       = Flipped(new Mem2BufferIO)
+  val from          = Flipped(DecoupledIO(new BufferInfo)) // memory2
+  val to            = DecoupledIO(new BufferInfo)
+  val popValid      = Input(Bool())
+  val flush         = Input(Bool())
+  val committedBusy = Output(new BusyRegUpdateInfo)
 }
 
 class StoreBuffer(
@@ -100,9 +101,12 @@ class StoreBuffer(
   }
 
   // committed valid reg update
+  io.committedBusy := 0.U.asTypeOf(io.committedBusy)
   when(io.popValid) {
     val pushPos = Mux(io.to.fire, validTop - 1.U, validTop)
-    validReg(pushPos) := true.B
+    validReg(pushPos)      := true.B
+    io.committedBusy.preg  := mem(pushPos).requestInfo.wdata(PREG_WIDTH - 1, 0)
+    io.committedBusy.valid := !mem(pushPos).requestInfo.rbType
   }
   when(io.popValid =/= io.to.fire) {
     when(io.popValid) {

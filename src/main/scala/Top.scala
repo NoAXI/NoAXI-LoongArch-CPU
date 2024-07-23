@@ -187,8 +187,9 @@ class Top extends Module {
   rename.robStall <> rob.renameStall
 
   // issue
-  issue.arithSize <> dispatch.arithSize
-  issue.busyInfo  <> dispatch.busyInfo
+  issue.arithSize     <> dispatch.arithSize
+  issue.busyInfo      <> dispatch.busyInfo
+  issue.committedBusy <> storeBuffer.committedBusy
 
   // readreg <> forward, preg, issue
   for (i <- 0 until BACK_ISSUE_WIDTH) {
@@ -298,7 +299,7 @@ class Top extends Module {
     io.statistic.get.branch_succeed_time := BoringUtils.bore(bpu.succeed_time.get)
     io.statistic.get.branch_total_time   := BoringUtils.bore(bpu.total_time.get)
   }
-  if(Config.debug_on) {
+  if (Config.debug_on) {
     io.debug_uncached.get := writeback(MEMORY_ISSUE_ID).debug_uncached.get
   }
 }
