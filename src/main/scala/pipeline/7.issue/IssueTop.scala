@@ -76,11 +76,12 @@ class IssueTop extends Module {
       busyReg(io.busyInfo(i).preg) := true.B
     }
   }
-  when(io.committedBusy.valid) {
-    committedReg(io.committedBusy.preg) := true.B
-  }
   when(io.flush) {
     busyReg := committedReg
+  }
+  when(io.committedBusy.valid) {
+    committedReg(io.committedBusy.preg) := true.B
+    busyReg(io.committedBusy.preg)      := true.B
   }
   for (i <- 0 until AWAKE_NUM) {
     when(awakeInfo(i).valid) {

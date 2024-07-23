@@ -102,11 +102,15 @@ class StoreBuffer(
 
   // committed valid reg update
   io.committedBusy := 0.U.asTypeOf(io.committedBusy)
+  val validPos       = Mux(io.to.fire, validTop - 1.U, validTop)
+  val validPosReg    = RegNext(validPos)
+  val validHappenReg = RegNext(io.popValid)
   when(io.popValid) {
-    val pushPos = Mux(io.to.fire, validTop - 1.U, validTop)
-    validReg(pushPos)      := true.B
-    io.committedBusy.preg  := mem(pushPos).requestInfo.wdata(PREG_WIDTH - 1, 0)
-    io.committedBusy.valid := !mem(pushPos).requestInfo.rbType
+    validReg(validPos) := true.B
+  }
+  when(validHappenReg) {
+    io.committedBusy.preg  := mem(validPosReg).requestInfo.wdata(PREG_WIDTH - 1, 0)
+    io.committedBusy.valid := !mem(validPosReg).requestInfo.rbType && io.committedBusy.preg =/= 0.U
   }
   when(io.popValid =/= io.to.fire) {
     when(io.popValid) {
