@@ -27,9 +27,10 @@ class StatisticIO extends Bundle {
 }
 
 class TopIO extends Bundle {
-  val axi       = new AXIIO
-  val debug     = new DebugIO
-  val statistic = if (Config.statistic_on) Some(new StatisticIO) else None
+  val axi            = new AXIIO
+  val debug          = new DebugIO
+  val statistic      = if (Config.statistic_on) Some(new StatisticIO) else None
+  val debug_uncached = if (Config.debug_on) Some(new DebugIO) else None
 }
 class Top extends Module {
   val io = IO(new TopIO)
@@ -296,5 +297,8 @@ class Top extends Module {
   if (Config.statistic_on) {
     io.statistic.get.branch_succeed_time := BoringUtils.bore(bpu.succeed_time.get)
     io.statistic.get.branch_total_time   := BoringUtils.bore(bpu.total_time.get)
+  }
+  if(Config.debug_on) {
+    io.debug_uncached.get := writeback(MEMORY_ISSUE_ID).debug_uncached.get
   }
 }

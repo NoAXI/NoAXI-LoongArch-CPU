@@ -14,6 +14,8 @@ class WritebackTopIO extends SingleStageBundle {
   val rob     = Flipped(new RobWriteIO)
   val forward = Flipped(new ForwardInfoIO)
   val awake   = Output(new AwakeInfo)
+
+  val debug_uncached = if (Config.debug_on) Some(new DebugIO) else None
 }
 
 class WritebackTop(
@@ -104,4 +106,19 @@ class WritebackTop(
   // io.rob.bits.csr_wmask := res.csr_wmask
   // io.rob.bits.csr_addr  := res.csr_addr
   // io.rob.bits.csr_value := res.rkInfo.data // use rk to save data
+
+  if (Config.debug_on) {
+    if (special == "memory") {
+      when(info.actualStore && !info.writeInfo.requestInfo.rbType && valid) {
+        io.debug_uncached.get.wb_pc       := 0.U
+        io.debug_uncached.get.wb_rf_we    := true.B
+        io.debug_uncached.get.wb_rf_wnum  := res.rdInfo.areg
+        io.debug_uncached.get.wb_rf_wdata := res.rdInfo.data
+      } .otherwise {
+        io.debug_uncached.get := 0.U.asTypeOf(new DebugIO)
+      }
+    } else {
+      io.debug_uncached.get := DontCare
+    }
+  }
 }
