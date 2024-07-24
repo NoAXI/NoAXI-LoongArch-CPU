@@ -35,12 +35,12 @@ class Memory2Top extends Module {
   val valid = raw._2
   val res   = WireDefault(info)
 
-  val isMem   = info.func_type === FuncType.mem
-  val isStore = !MemOpType.isread(info.op_type) && isMem || info.actualStore
-  val isLoad  = !isStore && isMem
+  val isMem        = info.func_type === FuncType.mem
+  val isFirstStore = isMem && !MemOpType.isread(info.op_type)
+  val isFirstLoad  = isMem && MemOpType.isread(info.op_type)
 
-  val dcacheEn      = info.actualStore || isLoad && info.cached
-  val storebufferEn = isStore || isLoad && !info.cached
+  val dcacheEn      = info.actualStore || isFirstLoad && info.cached
+  val storebufferEn = isFirstStore || isFirstLoad && !info.cached
 
   val storeBufferFull = !io.storeBufferWrite.ready
 
@@ -51,7 +51,7 @@ class Memory2Top extends Module {
   io.dCache.request.bits.wdata  := info.wdata
   io.dCache.request.bits.wstrb  := info.wmask
   io.dCache.request.bits.rbType := DontCare
-  io.dCache.rwType              := Mux(info.actualStore, info.writeInfo.requestInfo.rbType, isStore)
+  io.dCache.rwType              := Mux(info.actualStore, info.writeInfo.requestInfo.rbType, isFirstStore)
   io.dCache.flush               := io.flush
   io.dCache.answer.ready        := true.B
 
@@ -62,10 +62,10 @@ class Memory2Top extends Module {
     io.storeBufferWrite.valid                   := valid && !info.bubble
     io.storeBufferWrite.bits.valid              := true.B
     io.storeBufferWrite.bits.requestInfo.cached := info.cached
-    io.storeBufferWrite.bits.requestInfo.addr   := Mux(isStore, info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W), info.pa)
-    io.storeBufferWrite.bits.requestInfo.wdata  := Mux(isStore, info.wdata, 0.U((22 - ROB_WIDTH).W) ## info.robId ## info.rdInfo.areg ## info.rdInfo.preg)
-    io.storeBufferWrite.bits.requestInfo.wstrb  := Mux(isStore, info.wmask, info.op_type)
-    io.storeBufferWrite.bits.requestInfo.rbType := isStore
+    io.storeBufferWrite.bits.requestInfo.addr   := Mux(isFirstStore, info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W), info.pa)
+    io.storeBufferWrite.bits.requestInfo.wdata  := Mux(isFirstStore, info.wdata, 0.U((22 - ROB_WIDTH).W) ## info.robId ## info.rdInfo.areg ## info.rdInfo.preg)
+    io.storeBufferWrite.bits.requestInfo.wstrb  := Mux(isFirstStore, info.wmask, info.op_type)
+    io.storeBufferWrite.bits.requestInfo.rbType := isFirstStore
   }
   when(io.flush) {
     io.storeBufferWrite.valid := false.B
