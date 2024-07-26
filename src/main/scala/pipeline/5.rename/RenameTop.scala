@@ -25,7 +25,7 @@ class RenameTop extends Module {
   val busy = WireDefault(false.B)
   val raw  = stageConnect(io.from, io.to, busy, io.flush)
   when(io.flush) {
-    raw._1 := 0.U.asTypeOf(new DualInfo)
+    raw._1 := raw._1.getFlushInfo
   }
 
   val info  = raw._1
@@ -44,7 +44,7 @@ class RenameTop extends Module {
     val writeZero = from.rdInfo.areg === 0.U
 
     // rename -> rat
-    io.ratRename(i).valid := valid && io.to.ready && from.iswf && !writeZero && !io.robStall
+    io.ratRename(i).valid := valid && io.to.ready && from.iswf && !writeZero && !io.robStall && from.pipelineType =/= 0.U
     io.ratRename(i).areg  := from.rdInfo.areg
     io.ratRead(i).areg.rj := to.rjInfo.areg
     io.ratRead(i).areg.rk := to.rkInfo.areg
@@ -72,7 +72,7 @@ class RenameTop extends Module {
     }
 
     // rob
-    io.rob(i).valid := io.to.ready && valid && from.pipelineType =/= 0.U
+    io.rob(i).valid := io.to.ready && valid && from.pipelineType =/= 0.U && !io.ratFull
     to.robId        := io.rob(i).index
 
     // debug

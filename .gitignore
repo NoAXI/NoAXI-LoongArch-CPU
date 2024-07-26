@@ -16,3 +16,4 @@ trashbin/
 soc-simulator-axi
 Makefile
 documentResources
+*.bkp

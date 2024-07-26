@@ -84,8 +84,8 @@ class Rat extends Module {
 
   val maxPush    = popPtr - pushPtr
   val maxPop     = pushPtr - popPtr
-  val pushOffset = WireDefault(0.U(2.W))
-  val popOffset  = WireDefault(0.U(2.W))
+  val pushOffset = WireDefault(0.U(AREG_WIDTH.W))
+  val popOffset  = WireDefault(0.U(AREG_WIDTH.W))
   val pushStall  = WireDefault(false.B)
   val popStall   = WireDefault(false.B)
 
@@ -127,16 +127,18 @@ class Rat extends Module {
   when(!empty && pushOffset > maxPush) {
     pushStall := true.B
   }
-  when(!full && popOffset > maxPop) {
+  when(!full && maxPop < 2.U) {
     popStall := true.B
   }
   io.empty := popStall
 
   // when recover, set freelist full
   when(io.flush) {
-    pushPtr   := popPtr
-    maybeFull := true.B
-    sRat      := aRat
+    pushPtr    := popPtr
+    maybeFull  := true.B
+    sRat       := aRat
+    pushOffset := 0.U
+    popOffset  := 0.U
   }.otherwise {
     when(!pushStall) { pushPtr := pushPtr + pushOffset }
     when(!popStall) { popPtr := popPtr + popOffset }

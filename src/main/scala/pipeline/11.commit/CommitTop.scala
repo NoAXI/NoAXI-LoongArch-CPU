@@ -70,7 +70,7 @@ class CommitTop extends Module {
   val predictResult = WireDefault(0.U.asTypeOf(new PredictRes))
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rob(i).info.bits
-    when(io.rob(i).info.ready && info.isbr) {
+    when(io.rob(i).info.fire && info.isbr) {
       predictResult.br            := info.bfail
       predictResult.realDirection := info.realBrDir
       predictResult.pc            := info.pc
@@ -86,7 +86,7 @@ class CommitTop extends Module {
   for (i <- 0 until ISSUE_WIDTH) {
     val info    = io.rob(i).info.bits
     val isBfail = info.bfail.en && info.isbr
-    when(io.rob(i).info.ready && (isBfail || info.isPrivilege)) {
+    when(io.rob(i).info.fire && (isBfail || info.isPrivilege)) {
       io.flushInfo.en  := true.B
       io.flushInfo.tar := info.bfail.tar
     }
@@ -114,7 +114,7 @@ class CommitTop extends Module {
     io.rat(i).opreg := rob.bits.opreg
 
     // commit -> store buffer <> wb buffer
-    doStore(i) := readyBit(i) && rob.bits.isStore
+    doStore(i) := io.rob(i).info.fire && rob.bits.isStore
   }
 
   // store buffer
@@ -130,7 +130,7 @@ class CommitTop extends Module {
   io.excHappen := 0.U.asTypeOf(io.excHappen)
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rob(i).info.bits
-    when(io.rob(i).info.ready && info.isException) {
+    when(io.rob(i).info.fire && info.isException) {
       when(info.exc_type === ECodes.ertn) {
         io.excHappen.end := true.B
       }.otherwise {
@@ -147,20 +147,8 @@ class CommitTop extends Module {
   io.csrWritePop := csrPopReg
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rob(i).info.bits
-    when(io.rob(i).info.ready && info.csr_iswf) {
+    when(io.rob(i).info.fire && info.csr_iswf) {
       csrCurPop := true.B
     }
   }
-  // io.csrWrite    := 0.U.asTypeOf(io.csrWrite)
-  // io.csrWritePop := false.B
-  // for (i <- 0 until ISSUE_WIDTH) {
-  //   val info = io.rob(i).info.bits
-  //   when(io.rob(i).info.ready && info.csr_iswf) {
-  //     io.csrWrite.we    := info.csr_iswf
-  //     io.csrWrite.wmask := info.csr_wmask
-  //     io.csrWrite.waddr := info.csr_addr
-  //     io.csrWrite.wdata := info.csr_value
-  //     io.csrWritePop    := true.B
-  //   }
-  // }
 }
