@@ -80,7 +80,6 @@ class PrefetchTop extends Module {
   io.to.bits         := 0.U.asTypeOf(new DualInfo)
   res.pc             := pc
   res.pc_add_4       := pc_add_4
-  res.pc_add_8       := pc_add_8
   res.hitVec         := hitVec
   res.isDirect       := isDirect
   res.pa             := directpa

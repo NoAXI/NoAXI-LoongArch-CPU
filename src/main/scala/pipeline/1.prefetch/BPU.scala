@@ -19,8 +19,8 @@ ARAT中维护了寄存器映射表的有效位，可在分支预测失败时恢�
 class BPUIO extends Bundle {
   val preFetch     = Flipped(new PreFetchBPUIO)
   val fetch        = Flipped(new FetchBPUIO)
-  val succeed_time = if (Config.statistic_on) Some(Output(UInt(32.W))) else None
-  val total_time   = if (Config.statistic_on) Some(Output(UInt(32.W))) else None
+  val succeed_time = if (Config.statistic_on) Some(Output(UInt(DATA_WIDTH.W))) else None
+  val total_time   = if (Config.statistic_on) Some(Output(UInt(DATA_WIDTH.W))) else None
 }
 
 class BPU extends Module {
@@ -65,8 +65,7 @@ class BPU extends Module {
     }
   }
 
-  val index            = VecInit.tabulate(FETCH_DEPTH)(i => BHT(i)(io.preFetch.pcGroup(i)(INDEX_LENGTH + 1, 2)))
-  val predictDirection = ShiftRegister(VecInit.tabulate(FETCH_DEPTH)(i => PHT(i)(index(i))(1) && io.preFetch.pcValid(i)), 1)
+  val index = VecInit.tabulate(FETCH_DEPTH)(i => BHT(i)(io.preFetch.pcGroup(i)(INDEX_LENGTH + 1, 2)))
 
   // BTB: pc-relative or call
   for (i <- 0 until FETCH_DEPTH) {
@@ -99,6 +98,8 @@ class BPU extends Module {
   val BTBHitVec =
     VecInit.tabulate(FETCH_DEPTH)(i => validVec(i) && tagVec(i) === ShiftRegister(io.preFetch.pcGroup(i)(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH), 1))
 
+  val predictDirection = VecInit.tabulate(FETCH_DEPTH)(i => PHT(i)(RegNext(index(i)))(1) && RegNext(io.preFetch.pcValid(i)) && BTBHitVec(i))
+
   // RAS: return
   val top         = RegInit(0.U(RAS_WIDTH.W))
   val top_add_1   = top + 1.U
@@ -120,16 +121,19 @@ class BPU extends Module {
   // predict
   io.fetch.predict.en  := true.B
   io.fetch.predict.tar := 0.U
+  io.fetch.firstInstJump := false.B
   when(predictDirection(0)) {
     if (Config.debug_on) {
       sb1 := true.B
       dontTouch(sb1)
     }
     when(RASHitVec(0) && ShiftRegister(io.preFetch.valid, 1)) {
-      io.fetch.predict.tar := RAS(top_minus_1)
-      top                  := top_minus_1
+      io.fetch.firstInstJump := true.B
+      io.fetch.predict.tar   := RAS(top_minus_1)
+      top                    := top_minus_1
     }.elsewhen(BTBHitVec(0)) {
-      io.fetch.predict.tar := BTBTarVec(0)
+      io.fetch.firstInstJump := true.B
+      io.fetch.predict.tar   := BTBTarVec(0)
     }.otherwise {
       io.fetch.predict.en := false.B
     }

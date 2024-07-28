@@ -15,7 +15,8 @@ class PreFetchBPUIO extends Bundle {
 }
 
 class FetchBPUIO extends Bundle {
-  val predict = Input(new BranchInfo)
+  val firstInstJump = Input(Bool())
+  val predict       = Input(new BranchInfo)
 }
 
 // 不是跳转指令br.en = false.B

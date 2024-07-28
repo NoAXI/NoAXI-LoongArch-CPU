@@ -38,7 +38,7 @@ object Functions {
       when(flush) {
         y.valid := false.B
         when(!stall) {
-          when(!prevIsRbStore) {
+          when(!prevIsRbStore || !x.fire) {
             info := info.getFlushInfo
           }
         }.otherwise {

@@ -49,7 +49,7 @@ class InstBuffer extends Module {
     fifo.push(i).bits.pc      := pcGroup(i)
     fifo.push(i).bits.inst    := instGroup(i)
     fifo.push(i).bits.excType := excGroup(i)
-    fifo.push(i).bits.predict := predictGroup(i)
+    fifo.push(i).bits.predict := Mux(i.U.asBool === io.from.bits.bits(0).jumpInst, predictGroup(i), 0.U.asTypeOf(new BranchInfo))
   }
   io.from.ready := (!validGroup(1) && (fifo.push(0).ready || fifo.push(1).ready)) || (fifo.push(0).ready && fifo.push(1).ready)
 

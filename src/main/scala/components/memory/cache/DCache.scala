@@ -10,13 +10,15 @@ import const.Parameters._
 import const.Config
 
 import pipeline._
-import os.stat
 
 class DCacheIO extends Bundle {
   val axi = new DCacheAXI
   // val mem0 = Flipped(new Mem0DCacheIO)
   val mem1 = Flipped(new Mem1DCacheIO)
   val mem2 = Flipped(new Mem2DCacheIO)
+
+  val succeed_time = if (Config.statistic_on) Some(Output(UInt(DATA_WIDTH.W))) else None
+  val total_time   = if (Config.statistic_on) Some(Output(UInt(DATA_WIDTH.W))) else None
 }
 
 class DCache extends Module {
@@ -42,6 +44,9 @@ class DCache extends Module {
   val wvalid  = RegInit(false.B)
   val bready  = true.B
 
+  val total_requests = RegInit(0.U(32.W))
+  val hitted_times   = RegInit(0.U(32.W))
+
   // mem 1: send va & exception
   val vaddr = io.mem1.addr
   for (i <- 0 until WAY_WIDTH) {
@@ -57,9 +62,6 @@ class DCache extends Module {
     tagV(i).dina  := 0.U
   }
 
-  // mem 2: get hitVec
-  val paddr = io.mem2.request.bits.addr
-
   // mem 2: act with D-Cache
   //   0           1               2             3              4            5              6
   val idle :: uncacheRead :: uncacheWrite :: checkdirty :: writeBack0 :: writeBack1 :: replaceLine :: Nil = Enum(7)
@@ -70,7 +72,7 @@ class DCache extends Module {
   val wdata  = io.mem2.request.bits.wdata
   val wstrb  = io.mem2.request.bits.wstrb
   val rwType = io.mem2.rwType
-  val hitVec = VecInit.tabulate(WAY_WIDTH)(i => tag(i) === paddr(31, 12) && valid(i))
+  val hitVec = VecInit.tabulate(WAY_WIDTH)(i => tag(i) === pa(31, 12) && valid(i))
 
   val cacheHit    = hitVec.reduce(_ || _)
   val cacheHitWay = PriorityEncoder(hitVec)
@@ -86,26 +88,28 @@ class DCache extends Module {
     ),
   )
 
-  val imm_ansvalid   = WireDefault(false.B)
-  val imm_cached_ans = WireDefault(0.U(DATA_WIDTH.W))
-  val uncachedAns    = RegInit(0.U(DATA_WIDTH.W))
-  val isUncached     = RegInit(false.B)
-  val savedInfo      = RegInit(0.U.asTypeOf(new savedInfo))
-  val count          = RegInit(1.U(4.W))
-  val linedata       = RegInit(0.U((LINE_SIZE * 8).W))
-  val wmask          = RegInit(1.U(4.W))
-  val wmove          = Mux1H(((DATA_WIDTH / 8 - 1) to 0 by -1).map(i => wmask(i) -> (i * 32).U))
-  val w_data         = savedInfo.linedata(lru(savedInfo.index))
+  val imm_ansvalid = WireDefault(false.B)
+  val imm_ans      = WireDefault(0.U(DATA_WIDTH.W))
+  val savedInfo    = RegInit(0.U.asTypeOf(new savedInfo))
+  val count        = RegInit(1.U(3.W))
+  val linedata     = RegInit(0.U((LINE_SIZE * 8).W))
+  val wmask        = RegInit(1.U(4.W))
+  val wmove        = Mux1H(((DATA_WIDTH / 8 - 1) to 0 by -1).map(i => wmask(i) -> (i * 32).U))
+  val w_data       = savedInfo.linedata(lru(savedInfo.index))
 
   switch(state) {
     is(idle) {
-      isUncached   := false.B
       imm_ansvalid := true.B
-      when(io.mem2.request.fire && !isUncached) {
+      when(io.mem2.request.fire) {
+        if (Config.statistic_on) {
+          total_requests := total_requests + 1.U
+        }
         when(cached) {
           when(cacheHit) {
+            if (Config.statistic_on) {
+              hitted_times := hitted_times + 1.U
+            }
             lru(pa(11, 4)) := !cacheHitWay
-            imm_ansvalid   := true.B
             when(io.mem2.rwType) {
               // write
               data(cacheHitWay).wea   := true.B
@@ -119,14 +123,14 @@ class DCache extends Module {
               dirty(pa(11, 4))(cacheHitWay) := true.B
             }.otherwise {
               // read
-              imm_cached_ans := hitdata
+              imm_ans := hitdata
             }
           }.otherwise {
             imm_ansvalid       := false.B
-            savedInfo.linedata := Seq(data(0).doutb, data(1).doutb)
+            savedInfo.linedata := VecInit(data(0).doutb, data(1).doutb)
             savedInfo.op       := rwType
             savedInfo.addr     := pa
-            savedInfo.linetag  := Seq(tag(0), tag(1))
+            savedInfo.linetag  := VecInit(tag(0), tag(1))
             savedInfo.wstrb    := wstrb
             savedInfo.wdata    := wdata
             state              := checkdirty
@@ -160,9 +164,9 @@ class DCache extends Module {
           rready  := true.B
         }
       }.elsewhen(io.axi.r.fire) {
-        isUncached  := true.B
-        uncachedAns := io.axi.r.bits.data
-        state       := idle
+        imm_ansvalid := true.B
+        imm_ans      := io.axi.r.bits.data
+        state        := idle
       }
     }
     is(uncacheWrite) {
@@ -173,16 +177,15 @@ class DCache extends Module {
         awvalid := false.B
       }
       when(io.axi.b.fire) {
-        isUncached  := true.B
-        uncachedAns := 0.U // stand for it is no mean
-        state       := idle
+        imm_ansvalid := true.B
+        imm_ans      := 0.U // stand for it is no mean
+        state        := idle
       }
     }
 
     is(checkdirty) {
       // when the line is dirty, send to writebuffer
-      val lru_way = lru(savedInfo.index)
-      val isDirty = dirty(savedInfo.index)(lru_way)
+      val isDirty = dirty(savedInfo.index)(lru(savedInfo.index))
       when(isDirty) {
         state := writeBack0
       }.otherwise {
@@ -197,7 +200,6 @@ class DCache extends Module {
       } // is not dirty
     }
 
-    // TODO: mask merge
     is(writeBack0) {
       awvalid := true.B
       aw.addr := savedInfo.linetag(lru(savedInfo.index)) ## savedInfo.index ## 0.U(4.W)
@@ -266,8 +268,8 @@ class DCache extends Module {
         state := idle
 
         for (i <- 0 until WAY_WIDTH) {
-          data(i).addrb := savedInfo.addr(11, 4)
-          tagV(i).addrb := savedInfo.addr(11, 4)
+          data(i).addrb := savedInfo.index
+          tagV(i).addrb := savedInfo.index
         }
 
         data(lru_way).wea               := true.B
@@ -311,10 +313,17 @@ class DCache extends Module {
   io.axi.r.ready        := rready
   io.axi.b.ready        := bready
   io.mem2.answer.valid  := imm_ansvalid
-  io.mem2.answer.bits   := Mux(isUncached, uncachedAns, imm_cached_ans)
+  io.mem2.answer.bits   := imm_ans
   io.mem2.request.ready := true.B
 
   if (Config.debug_on) {
     dontTouch(hitdata)
+  }
+
+  if (Config.statistic_on) {
+    dontTouch(total_requests)
+    dontTouch(hitted_times)
+    io.succeed_time.get := hitted_times
+    io.total_time.get   := total_requests
   }
 }

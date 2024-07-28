@@ -24,6 +24,10 @@ class DebugIO extends Bundle {
 class StatisticIO extends Bundle {
   val branch_succeed_time = Output(UInt(32.W))
   val branch_total_time   = Output(UInt(32.W))
+  val iCache_succeed_time = Output(UInt(32.W))
+  val iCache_total_time   = Output(UInt(32.W))
+  val dCache_succeed_time = Output(UInt(32.W))
+  val dCache_total_time   = Output(UInt(32.W))
 }
 
 class TopIO extends Bundle {
@@ -298,6 +302,10 @@ class Top extends Module {
   if (Config.statistic_on) {
     io.statistic.get.branch_succeed_time := BoringUtils.bore(bpu.succeed_time.get)
     io.statistic.get.branch_total_time   := BoringUtils.bore(bpu.total_time.get)
+    io.statistic.get.iCache_succeed_time := BoringUtils.bore(iCache.succeed_time.get)
+    io.statistic.get.iCache_total_time   := BoringUtils.bore(iCache.total_time.get)
+    io.statistic.get.dCache_succeed_time := BoringUtils.bore(dcache.succeed_time.get)
+    io.statistic.get.dCache_total_time   := BoringUtils.bore(dcache.total_time.get)
   }
   if (Config.debug_on) {
     io.debug_uncached.get := writeback(MEMORY_ISSUE_ID).debug_uncached.get

@@ -43,7 +43,7 @@ class PreDecodeTop extends Module {
   io.flushapply := false.B
   // if B or BL, but predict not jump
   when(isbr(0) && isBBL(0) && info.instGroupValid(0)) {
-    when(!info.predict.en) {
+    when(!info.predict.en || info.predict.en && info.jumpInst) {
       predictFailed               := true.B
       io.flushapply               := true.B
       io.predictRes.isbr          := true.B
@@ -54,24 +54,28 @@ class PreDecodeTop extends Module {
       io.predictRes.isCALL        := isCALL(0)
       io.predictRes.isReturn      := isReturn(0)
       res.instGroupValid(1)       := false.B
+      res.jumpInst                := false.B
       res.predict.en              := true.B
       res.predict.tar             := tar(0)
     }
-  }.elsewhen(isbr(1) && isBBL(1) && !info.predict.en && info.instGroupValid(1)) {
-    predictFailed               := true.B
-    io.flushapply               := true.B
-    io.predictRes.isbr          := true.B
-    io.predictRes.br.en         := true.B
-    io.predictRes.br.tar        := tar(1)
-    io.predictRes.realDirection := true.B
-    io.predictRes.pc            := pcGroup(1)
-    io.predictRes.isCALL        := isCALL(1)
-    io.predictRes.isReturn      := isReturn(1)
-    res.predict.en              := true.B
-    res.predict.tar             := tar(1)
+  }.elsewhen(isbr(1) && isBBL(1) && info.instGroupValid(1)) {
+    when(!info.predict.en) {
+      predictFailed               := true.B
+      io.flushapply               := true.B
+      io.predictRes.isbr          := true.B
+      io.predictRes.br.en         := true.B
+      io.predictRes.br.tar        := tar(1)
+      io.predictRes.realDirection := true.B
+      io.predictRes.pc            := pcGroup(1)
+      io.predictRes.isCALL        := isCALL(1)
+      io.predictRes.isReturn      := isReturn(1)
+      res.predict.en              := true.B
+      res.predict.tar             := tar(1)
+      res.jumpInst                := true.B
+    }
   }
 
-  when(isbr(0) && info.predict.en && info.instGroupValid(0)) {
+  when(isbr(0) && info.instGroupValid(0) && info.predict.en && !info.jumpInst) {
     res.instGroupValid(1) := false.B
   }
 
@@ -104,17 +108,17 @@ class PreDecodeTop extends Module {
   // TODO: branch jump, first meet?
 
   // when not jump but predict jump
-  val instNotJumpVec = VecInit.tabulate(FETCH_DEPTH)(i => !isbr(i) && info.instGroupValid(i) || !info.instGroupValid(i))
-  when(instNotJumpVec.reduce(_ && _) && info.predict.en) {
-    predictFailed               := true.B
-    io.flushapply               := true.B
-    io.predictRes.isbr          := false.B
-    io.predictRes.br.en         := true.B
-    io.predictRes.br.tar        := notbrTar(0)
-    io.predictRes.realDirection := false.B
-    io.predictRes.pc            := pcGroup(0)
-    res.predict.en              := false.B
-  }
+  // val instNotJumpVec = VecInit.tabulate(FETCH_DEPTH)(i => !isbr(i) && info.instGroupValid(i) || !info.instGroupValid(i))
+  // when(instNotJumpVec.reduce(_ && _) && info.predict.en) {
+  //   predictFailed               := true.B
+  //   io.flushapply               := true.B
+  //   io.predictRes.isbr          := false.B
+  //   io.predictRes.br.en         := true.B
+  //   io.predictRes.br.tar        := notbrTar(0)
+  //   io.predictRes.realDirection := false.B
+  //   io.predictRes.pc            := pcGroup(0)
+  //   res.predict.en              := false.B
+  // }
 
   val flushStop = RegInit(false.B)
   val brStop    = RegInit(false.B)
@@ -143,6 +147,6 @@ class PreDecodeTop extends Module {
     dontTouch(res)
     dontTouch(predictFailed)
     dontTouch(isbr)
-    dontTouch(instNotJumpVec)
+    // dontTouch(instNotJumpVec)
   }
 }

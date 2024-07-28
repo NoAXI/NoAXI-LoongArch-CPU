@@ -13,11 +13,15 @@ class ICacheIO extends Bundle {
   val axi      = new ICacheAXI
   val preFetch = Flipped(new PreFetchICacheIO)
   val fetch    = Flipped(new FetchICacheIO)
+
+  val succeed_time = if (Config.statistic_on) Some(Output(UInt(DATA_WIDTH.W))) else None
+  val total_time   = if (Config.statistic_on) Some(Output(UInt(DATA_WIDTH.W))) else None
 }
 
 class ICache extends Module {
   val io = IO(new ICacheIO)
 
+  //   0        1           2
   val idle :: replace :: waiting :: Nil = Enum(3)
 
   val datasram = VecInit.fill(WAY_WIDTH)(Module(new xilinx_single_port_ram_read_first((LINE_SIZE * 8), LINE_WIDTH)).io)
@@ -161,6 +165,7 @@ class ICache extends Module {
   io.fetch.request.ready    := true.B
 
   if (Config.debug_on) {
+    dontTouch(i_ans_valid)
     dontTouch(hitted)
     dontTouch(hittedway)
     dontTouch(hitdataline)
@@ -170,5 +175,7 @@ class ICache extends Module {
   if (Config.statistic_on) {
     dontTouch(total_requests)
     dontTouch(hitted_times)
+    io.succeed_time.get := hitted_times
+    io.total_time.get   := total_requests
   }
 }

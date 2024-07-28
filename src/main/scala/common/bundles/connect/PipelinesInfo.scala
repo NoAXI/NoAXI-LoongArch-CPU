@@ -79,6 +79,7 @@ class SingleInfo extends BasicStageInfo {
   val exc_vaddr = UInt(ADDR_WIDTH.W)
 
   // branch predict
+  val jumpInst  = Bool()
   val predict   = new BranchInfo
   val realBr    = new BranchInfo
   val realBrDir = Bool()
