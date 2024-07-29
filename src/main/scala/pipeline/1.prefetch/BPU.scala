@@ -39,27 +39,28 @@ class BPU extends Module {
   val trainDirection = io.preFetch.train.realDirection
   val trainIndex     = io.preFetch.train.index
   val BHR            = WireDefault(0.U(HISTORY_LENGTH.W))
+  val oldBHR         = BHT(0)(trainIndex)
 
   // BHT and PHT train
   when(io.preFetch.train.isbr) {
-    BHR := Cat(BHT(0)(trainIndex)(HISTORY_LENGTH - 2, 0), trainDirection)
+    BHR := Cat(oldBHR(HISTORY_LENGTH - 2, 0), trainDirection)
   }
 
   when(RegNext(io.preFetch.train.isbr)) {
     for (i <- 0 until FETCH_DEPTH) {
       BHT(i)(RegNext(trainIndex)) := RegNext(BHR)
-      switch(PHT(i)(RegNext(BHR))) {
+      switch(PHT(i)(RegNext(oldBHR))) {
         is(pFF) {
-          PHT(i)(RegNext(BHR)) := Mux(RegNext(trainDirection), pF, pFF)
+          PHT(i)(RegNext(oldBHR)) := Mux(RegNext(trainDirection), pF, pFF)
         }
         is(pF) {
-          PHT(i)(RegNext(BHR)) := Mux(RegNext(trainDirection), pT, pFF)
+          PHT(i)(RegNext(oldBHR)) := Mux(RegNext(trainDirection), pT, pFF)
         }
         is(pT) {
-          PHT(i)(RegNext(BHR)) := Mux(RegNext(trainDirection), pTT, pF)
+          PHT(i)(RegNext(oldBHR)) := Mux(RegNext(trainDirection), pTT, pF)
         }
         is(pTT) {
-          PHT(i)(RegNext(BHR)) := Mux(RegNext(trainDirection), pTT, pT)
+          PHT(i)(RegNext(oldBHR)) := Mux(RegNext(trainDirection), pTT, pT)
         }
       }
     }
@@ -115,18 +116,11 @@ class BPU extends Module {
   val RASHitVec = VecInit.tabulate(FETCH_DEPTH)(i => isReturnVec(i))
   // RASHitVec := VecInit(false.B, false.B)
 
-  val sb1 = WireDefault(false.B)
-  val sb2 = WireDefault(false.B)
-
   // predict
-  io.fetch.predict.en  := true.B
-  io.fetch.predict.tar := 0.U
+  io.fetch.predict.en    := true.B
+  io.fetch.predict.tar   := 0.U
   io.fetch.firstInstJump := false.B
   when(predictDirection(0)) {
-    if (Config.debug_on) {
-      sb1 := true.B
-      dontTouch(sb1)
-    }
     when(RASHitVec(0) && ShiftRegister(io.preFetch.valid, 1)) {
       io.fetch.firstInstJump := true.B
       io.fetch.predict.tar   := RAS(top_minus_1)
@@ -138,10 +132,6 @@ class BPU extends Module {
       io.fetch.predict.en := false.B
     }
   }.elsewhen(predictDirection(1)) {
-    if (Config.debug_on) {
-      sb2 := true.B
-      dontTouch(sb2)
-    }
     when(RASHitVec(1) && ShiftRegister(io.preFetch.valid, 1)) {
       io.fetch.predict.tar := RAS(top_minus_1)
       top                  := top_minus_1
@@ -171,6 +161,7 @@ class BPU extends Module {
     }
     io.succeed_time.get := succeed_time
     io.total_time.get   := tot_time
+    dontTouch(trainDirection)
     dontTouch(tot_time)
     dontTouch(succeed_time)
     dontTouch(validVec)

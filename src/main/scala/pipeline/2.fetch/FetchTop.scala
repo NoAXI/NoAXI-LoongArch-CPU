@@ -30,6 +30,8 @@ class FetchTop extends Module {
       0x1c000108.U,
       0x1c00010c.U,
       0x1c000110.U,
+      0x1c000114.U,
+      0x1c000118.U,
     )
     when(pcend.contains(info.pc)) {
       force_stop_for_simulate := true.B
@@ -74,7 +76,7 @@ class FetchTop extends Module {
   val wholeInstVec = io.iCache.answer.bits
   val instVec =
     Mux(info.pc(3), VecInit(wholeInstVec(2), wholeInstVec(3)), VecInit(wholeInstVec(0), wholeInstVec(1)))
-  busy := !io.iCache.answer.fire && !excEn && !info.bubble
+  busy := !io.iCache.answer.fire && !excEn && !info.bubble && !force_stop_for_simulate
 
   res.instGroup := Mux(info.pc(2), VecInit(instVec(1), instVec(0)), instVec)
   res.fetchExc  := VecInit(excType, excType)

@@ -27,7 +27,7 @@ class ICache extends Module {
   val datasram = VecInit.fill(WAY_WIDTH)(Module(new xilinx_single_port_ram_read_first((LINE_SIZE * 8), LINE_WIDTH)).io)
   val tagsram  = VecInit.fill(WAY_WIDTH)(Module(new xilinx_single_port_ram_read_first(TAG_WIDTH, LINE_WIDTH)).io)
   val validreg = RegInit(VecInit(Seq.fill(LINE_WIDTH)(VecInit(Seq.fill(WAY_WIDTH)(false.B)))))
-  val lru      = RegInit(VecInit(Seq.fill(LINE_WIDTH)(false.B)))
+  val lru      = Module(new xilinx_single_port_ram_read_first(1, LINE_WIDTH)).io
 
   val ar             = RegInit(0.U.asTypeOf(new AR))
   val arvalid        = RegInit(false.B)
@@ -62,6 +62,13 @@ class ICache extends Module {
     tagsram(i).dina   := 0.U
   }
 
+  val state = RegInit(idle)
+
+  lru.clka  := clock
+  lru.addra := Mux(state === idle, io.fetch.request.bits(11, 4), saved_info.index)
+  lru.wea   := false.B
+  lru.dina  := 0.U
+
   hit         := VecInit.tabulate(2)(i => tagsram(i).douta === addr(31, 12) && validreg(addr(11, 4))(i))
   hittedway   := PriorityEncoder(hit)
   hitted      := hit.reduce(_ || _)
@@ -69,8 +76,7 @@ class ICache extends Module {
 
   val hitdatalineVec = VecInit.tabulate(4)(i => hitdataline((i + 1) * 32 - 1, i * 32))
 
-  val state  = RegInit(idle)
-  val lruway = Mux(state === idle, lru(io.fetch.request.bits(11, 4)), lru(saved_info.index))
+  val lruway = lru.douta
   switch(state) {
     is(idle) {
       ans_valid := false.B
@@ -82,7 +88,8 @@ class ICache extends Module {
           if (Config.statistic_on) {
             hitted_times := hitted_times + 1.U
           }
-          lru(io.fetch.request.bits(11, 4)) := !hitdataline
+          lru.wea  := true.B
+          lru.dina := !hitdataline
 
           state          := Mux(io.fetch.cango, idle, waiting)
           i_ans_valid    := true.B

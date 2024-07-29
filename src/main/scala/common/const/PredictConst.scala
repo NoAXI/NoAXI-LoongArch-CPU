@@ -20,13 +20,13 @@ import const.Parameters._
 object Predict {
   val INDEX_LENGTH   = 10
   val INDEX_WIDTH    = 1 << INDEX_LENGTH
-  val HISTORY_LENGTH = 3
+  val HISTORY_LENGTH = 10
   val HISTORY_WIDTH  = 1 << HISTORY_LENGTH
   val COUNTER_LENGTH = 2
   val COUNTER_WIDTH  = 1 << COUNTER_LENGTH
 
   // BTB
-  val BTB_INDEX_LENGTH = 10 // maybe 7
+  val BTB_INDEX_LENGTH = 10 // be equal to INDEX_WIDTH because of BHR should be the same length
   val BTB_INDEX_WIDTH  = 1 << BTB_INDEX_LENGTH
 
   val BTB_TAG_LENGTH  = ADDR_WIDTH - BTB_INDEX_LENGTH - 2                 // 20
