@@ -76,7 +76,7 @@ class ICache extends Module {
 
   val hitdatalineVec = VecInit.tabulate(4)(i => hitdataline((i + 1) * 32 - 1, i * 32))
 
-  val lruway = lru.douta
+  val lruway = RegNext(lru.douta)
   switch(state) {
     is(idle) {
       ans_valid := false.B
@@ -89,7 +89,7 @@ class ICache extends Module {
             hitted_times := hitted_times + 1.U
           }
           lru.wea  := true.B
-          lru.dina := !hitdataline
+          lru.dina := !hittedway
 
           state          := Mux(io.fetch.cango, idle, waiting)
           i_ans_valid    := true.B

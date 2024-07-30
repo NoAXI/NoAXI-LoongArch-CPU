@@ -16,4 +16,7 @@ trashbin/
 soc-simulator-axi
 Makefile
 documentResources
+calculate_ipc
 *.bkp
+*.c
+*.o

@@ -1,6 +1,10 @@
 # simulator home
 simulator_path = ./soc-simulator-axi
 
+CC = gcc
+CFLAGS = -Wall -Wextra -O2
+TARGET = calculate_ipc
+
 # verilog submit path
 top_name = Top.sv
 myCPU_path1 = /mnt/e/CPU/lab_Loongarch/mycpu_env/myCPU
@@ -73,3 +77,12 @@ compile:
 count:
 	@echo "count the lines"
 	@find ./src -name "*.scala" | xargs wc -l
+
+cal: $(TARGET)
+	@./$(TARGET)
+
+$(TARGET): $(TARGET).o
+	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).o -lm
+
+$(TARGET).o: $(TARGET).c
+	$(CC) $(CFLAGS) -c $(TARGET).c

@@ -29,49 +29,61 @@ class BPU extends Module {
   val pFF :: pF :: pTT :: pT :: Nil = Enum(COUNTER_WIDTH)
 
   // the two table are same COMPLETELY, just apply two read portals
-  val BHT = RegInit(VecInit.fill(FETCH_DEPTH)(VecInit(Seq.fill(INDEX_WIDTH)(0.U(HISTORY_LENGTH.W)))))
+  // val BHT = RegInit(VecInit.fill(FETCH_DEPTH)(VecInit(Seq.fill(INDEX_WIDTH)(0.U(HISTORY_LENGTH.W)))))
+  val BHT = VecInit.fill(FETCH_DEPTH + 1)(
+    Module(new xilinx_simple_dual_port_1_clock_ram_read_first(HISTORY_LENGTH, INDEX_WIDTH)).io,
+  )
   val PHT = RegInit(VecInit.fill(FETCH_DEPTH)(VecInit(Seq.fill(HISTORY_WIDTH)(pF))))
   val BTB = VecInit.fill(FETCH_DEPTH)(
     Module(new xilinx_simple_dual_port_1_clock_ram_read_first(BTB_INFO_LENGTH, BTB_INDEX_WIDTH)).io,
   )
   val RAS = RegInit(VecInit(Seq.fill(RAS_DEPTH)(0x1c000000.U(ADDR_WIDTH.W))))
 
-  val trainDirection = io.preFetch.train.realDirection
-  val trainIndex     = io.preFetch.train.index
-  val BHR            = WireDefault(0.U(HISTORY_LENGTH.W))
-  val oldBHR         = BHT(0)(trainIndex)
-
-  // BHT and PHT train
-  when(io.preFetch.train.isbr) {
-    BHR := Cat(oldBHR(HISTORY_LENGTH - 2, 0), trainDirection)
+  for (i <- 0 until FETCH_DEPTH + 1) {
+    BHT(i).clka := clock
+    if (i < 2) {
+      BHT(i).addrb := io.preFetch.pcGroup(i)(INDEX_LENGTH + 1, 2)
+    } else {
+      BHT(i).addrb := io.preFetch.train.index
+    }
+    BHT(i).wea   := false.B
+    BHT(i).addra := RegNext(io.preFetch.train.index)
+    BHT(i).dina  := 0.U
   }
 
+  val trainDirection = io.preFetch.train.realDirection
+  val oldBHR         = BHT(FETCH_DEPTH).doutb
+
+  // BHT and PHT train
   when(RegNext(io.preFetch.train.isbr)) {
-    for (i <- 0 until FETCH_DEPTH) {
-      BHT(i)(RegNext(trainIndex)) := RegNext(BHR)
-      switch(PHT(i)(RegNext(oldBHR))) {
-        is(pFF) {
-          PHT(i)(RegNext(oldBHR)) := Mux(RegNext(trainDirection), pF, pFF)
-        }
-        is(pF) {
-          PHT(i)(RegNext(oldBHR)) := Mux(RegNext(trainDirection), pT, pFF)
-        }
-        is(pT) {
-          PHT(i)(RegNext(oldBHR)) := Mux(RegNext(trainDirection), pTT, pF)
-        }
-        is(pTT) {
-          PHT(i)(RegNext(oldBHR)) := Mux(RegNext(trainDirection), pTT, pT)
+    for (i <- 0 until FETCH_DEPTH + 1) {
+      BHT(i).wea  := true.B
+      BHT(i).dina := Cat(oldBHR(HISTORY_LENGTH - 2, 0), RegNext(trainDirection))
+      if (i < 2) {
+        switch(PHT(i)(oldBHR)) {
+          is(pFF) {
+            PHT(i)(oldBHR) := Mux(RegNext(trainDirection), pF, pFF)
+          }
+          is(pF) {
+            PHT(i)(oldBHR) := Mux(RegNext(trainDirection), pT, pFF)
+          }
+          is(pT) {
+            PHT(i)(oldBHR) := Mux(RegNext(trainDirection), pTT, pF)
+          }
+          is(pTT) {
+            PHT(i)(oldBHR) := Mux(RegNext(trainDirection), pTT, pT)
+          }
         }
       }
     }
   }
 
-  val index = VecInit.tabulate(FETCH_DEPTH)(i => BHT(i)(io.preFetch.pcGroup(i)(INDEX_LENGTH + 1, 2)))
+  val index = VecInit.tabulate(FETCH_DEPTH)(i => BHT(i).doutb)
 
   // BTB: pc-relative or call
   for (i <- 0 until FETCH_DEPTH) {
     BTB(i).clka  := clock
-    BTB(i).addrb := io.preFetch.pcGroup(i)(INDEX_LENGTH + 1, 2)
+    BTB(i).addrb := io.preFetch.pcGroup(i)(BTB_INDEX_LENGTH + 1, 2)
     BTB(i).wea   := false.B
     BTB(i).addra := 0.U
     BTB(i).dina  := 0.U
@@ -79,7 +91,7 @@ class BPU extends Module {
   when(io.preFetch.train.isbr && io.preFetch.train.br.en) { // only when predict failed
     for (i <- 0 until FETCH_DEPTH) {
       BTB(i).wea   := true.B
-      BTB(i).addra := io.preFetch.train.pc(INDEX_LENGTH + 1, 2)
+      BTB(i).addra := io.preFetch.train.pc(BTB_INDEX_LENGTH + 1, 2)
       BTB(i).dina := Cat(
         true.B,
         io.preFetch.train.pc(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH),
@@ -99,7 +111,7 @@ class BPU extends Module {
   val BTBHitVec =
     VecInit.tabulate(FETCH_DEPTH)(i => validVec(i) && tagVec(i) === ShiftRegister(io.preFetch.pcGroup(i)(ADDR_WIDTH - 1, ADDR_WIDTH - BTB_TAG_LENGTH), 1))
 
-  val predictDirection = VecInit.tabulate(FETCH_DEPTH)(i => PHT(i)(RegNext(index(i)))(1) && RegNext(io.preFetch.pcValid(i)) && BTBHitVec(i))
+  val predictDirection = VecInit.tabulate(FETCH_DEPTH)(i => PHT(i)(index(i))(1) && RegNext(io.preFetch.pcValid(i)) && BTBHitVec(i))
 
   // RAS: return
   val top         = RegInit(0.U(RAS_WIDTH.W))
