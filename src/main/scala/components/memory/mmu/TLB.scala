@@ -21,7 +21,7 @@ class TLBIO extends Bundle {
   val stage1 = Vec(2, Flipped(new Stage1TLBIO))
 
   // tlb insts
-  val commit = Flipped(new commitTLBIO)
+  val commit = Input(new TlbBufferInfo)
 }
 
 class TLB extends Module {

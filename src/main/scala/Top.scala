@@ -292,6 +292,11 @@ class Top extends Module {
 
   muldiv0.commitCsrWriteDone <> commit.csrWritePop
 
+  // tlb
+  tlb.commit            <> muldiv0.tlbBufferInfo
+  tlb.csr               <> csr.tlb
+  muldiv0.commitTlbDone <> commit.tlbBufferPop
+
   // cnt
   for (i <- 0 until ARITH_ISSUE_NUM) {
     stableCounter.counter <> arith(i).stableCounter

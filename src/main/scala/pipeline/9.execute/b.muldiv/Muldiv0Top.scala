@@ -10,10 +10,16 @@ import func.Functions._
 import const.Parameters._
 
 class Muldiv0TopIO extends SingleStageBundle {
-  val mul                = Flipped(new Mul2Mul0IO)
+  val mul = Flipped(new Mul2Mul0IO)
+
+  // csr
   val commitCsrWriteDone = Input(Bool())
   val csrWrite           = Output(new CSRWrite)
   val csrRead            = Flipped(new CsrReadIO)
+
+  // tlb
+  val commitTlbDone = Input(Bool())
+  val tlbBufferInfo = Output(new TlbBufferInfo)
 }
 
 class Muldiv0Top extends Module {
@@ -57,9 +63,8 @@ class Muldiv0Top extends Module {
     res.rdInfo.data := io.csrRead.data
   }
 
-  // csr hazard
-  // TODO: tlb指令也需要在这里加入判断
-  val csrWriteCount = RegInit(false.B)
+  // csr buffer
+  val csrOccupied   = RegInit(false.B)
   val csrWriteInfo  = RegInit(0.U.asTypeOf(new CSRWrite))
   val csrPushSignal = info.isWriteCsr && io.to.fire && valid && !info.bubble
   val csrPopSignal  = io.commitCsrWriteDone
@@ -70,14 +75,32 @@ class Muldiv0Top extends Module {
     csrWriteInfo.wdata := res.rkInfo.data
   }
   when(csrPushSignal =/= csrPopSignal) {
-    csrWriteCount := csrPushSignal
+    csrOccupied := csrPushSignal
   }
   io.csrWrite := Mux(io.commitCsrWriteDone, csrWriteInfo, 0.U.asTypeOf(io.csrWrite))
   when(io.flush) {
-    csrWriteCount := false.B
+    csrOccupied := false.B
   }
 
-  busy := (div.running && !div.complete) || (csrWriteCount && info.isReadCsr)
+  // tlb buffer
+  val isTlb         = info.func_type === FuncType.tlb
+  val tlbOccupied   = RegInit(false.B)
+  val tlbBufferInfo = RegInit(0.U.asTypeOf(new TlbBufferInfo))
+  val tlbPushSignal = isTlb && io.to.fire && valid && !info.bubble
+  val tlbPopSignal  = io.commitTlbDone
+  when(tlbPushSignal) {
+    // TODO: add tlb info here
+  }
+  when(tlbPushSignal =/= tlbPopSignal) {
+    tlbOccupied := tlbPushSignal
+  }
+  io.tlbBufferInfo := Mux(io.commitTlbDone, tlbBufferInfo, 0.U.asTypeOf(io.tlbBufferInfo))
+  when(io.flush) {
+    tlbOccupied := false.B
+  }
+
+  // when has div / csr / tlb, set stall
+  busy := (div.running && !div.complete) || (csrOccupied && info.isReadCsr) || (tlbOccupied && isTlb)
 
   // avoid multi-request
   val div_complete = RegInit(false.B)

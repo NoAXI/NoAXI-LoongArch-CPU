@@ -35,7 +35,8 @@ class RobInfo extends Bundle {
   val isException = Bool()
 
   // csr write info
-  val csr_iswf  = Bool()
+  val csr_iswf = Bool()
+  val isTlb    = Bool()
   // val csr_wmask = UInt(DATA_WIDTH.W)
   // val csr_addr  = UInt(CSR_WIDTH.W)
   // val csr_value = UInt(DATA_WIDTH.W)

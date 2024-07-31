@@ -101,11 +101,9 @@ class WritebackTop(
     io.rob.bits.bfail.tar := res.pc + 4.U
   }
 
-  // csr write
+  // csr / tlb
   io.rob.bits.csr_iswf := res.isWriteCsr
-  // io.rob.bits.csr_wmask := res.csr_wmask
-  // io.rob.bits.csr_addr  := res.csr_addr
-  // io.rob.bits.csr_value := res.rkInfo.data // use rk to save data
+  io.rob.bits.isTlb    := res.func_type === FuncType.tlb
 
   if (Config.debug_on) {
     if (special == "memory") {

@@ -24,9 +24,10 @@ class CommitTopIO extends Bundle {
   val flushInfo     = Output(new BranchInfo)
 
   // exception
-  val excHappen   = Output(new ExcHappenInfo)
-  val excJump     = Input(new BranchInfo)
-  val csrWritePop = Output(Bool())
+  val excHappen    = Output(new ExcHappenInfo)
+  val excJump      = Input(new BranchInfo)
+  val csrWritePop  = Output(Bool())
+  val tlbBufferPop = Output(Bool())
 
   // debug info output
   val debug = Vec(ISSUE_WIDTH, new DebugIO)
@@ -86,7 +87,7 @@ class CommitTop extends Module {
   for (i <- 0 until ISSUE_WIDTH) {
     val info    = io.rob(i).info.bits
     val isBfail = info.bfail.en && info.isbr
-    when(io.rob(i).info.ready && (isBfail || info.isPrivilege)) {
+    when(io.rob(i).info.ready && (isBfail || info.isPrivilege || info.isTlb)) {
       io.flushInfo.en  := true.B
       io.flushInfo.tar := info.bfail.tar
     }
@@ -143,12 +144,23 @@ class CommitTop extends Module {
     }
   }
   val csrCurPop = WireDefault(false.B)
-  val csrPopReg = RegInit(csrCurPop)
+  val csrPopReg = RegNext(csrCurPop)
   io.csrWritePop := csrPopReg
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rob(i).info.bits
     when(io.rob(i).info.ready && info.csr_iswf) {
       csrCurPop := true.B
+    }
+  }
+
+  // tlb
+  val tlbCurPop = WireDefault(false.B)
+  val tlbPopReg = RegNext(tlbCurPop)
+  io.tlbBufferPop := tlbPopReg
+  for (i <- 0 until ISSUE_WIDTH) {
+    val info = io.rob(i).info.bits
+    when(io.rob(i).info.ready && info.isTlb) {
+      tlbCurPop := true.B
     }
   }
 }
