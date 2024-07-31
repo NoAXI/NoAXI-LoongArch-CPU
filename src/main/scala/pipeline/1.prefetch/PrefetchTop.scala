@@ -67,8 +67,9 @@ class PrefetchTop extends Module {
   io.bpu.valid    := io.to.fire && !invalid
 
   // tlb
-  io.tlb.va      := pc
-  io.tlb.memType := memType.fetch
+  io.tlb.va       := pc
+  io.tlb.memType  := memType.fetch
+  io.tlb.unitType := false.B
   val hitVec   = io.tlb.hitVec
   val isDirect = io.tlb.isDirect
   val directpa = io.tlb.directpa

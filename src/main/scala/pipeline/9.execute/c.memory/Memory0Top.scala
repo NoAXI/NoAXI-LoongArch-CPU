@@ -10,7 +10,7 @@ import func.Functions._
 import const.Parameters._
 
 class Memory0TopIO extends SingleStageBundle {
-  val tlb                = new Stage0TLBIO
+  val tlb = new Stage0TLBIO
 }
 
 class Memory0Top extends Module {
@@ -24,8 +24,9 @@ class Memory0Top extends Module {
 
   val va = Mux(info.actualStore, info.writeInfo.requestInfo.addr, info.rjInfo.data + info.imm)
 
-  io.tlb.va      := va
-  io.tlb.memType := Mux(MemOpType.isread(info.op_type), memType.load, memType.store)
+  io.tlb.va       := va
+  io.tlb.memType  := Mux(MemOpType.isread(info.op_type), memType.load, memType.store)
+  io.tlb.unitType := true.B
   val hitVec   = io.tlb.hitVec
   val isDirect = io.tlb.isDirect
   val directpa = io.tlb.directpa

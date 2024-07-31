@@ -30,7 +30,7 @@ sim:
 	@cd $(simulator_path) && make clean
 	@cd $(simulator_path) && make
 	@echo -e "\e[32mlab$(EXP) Simulating... \e[0m"
-	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -perfdiff -uart -prog $(x)
+	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -func -uart -prog $(x)
 #	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -perfdiff -uart 1000000000 -prog $(x)
 #	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -perfdiff -uart -prog 1 
 	@echo -e "\e[32mlab$(EXP) Simulate completed. \e[0m"
@@ -47,7 +47,7 @@ sim_trace:
 	@cd $(simulator_path) && make clean
 	@cd $(simulator_path) && make
 	@echo -e "\e[32mlab$(EXP) Simulating... \e[0m"
-	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -perfdiff -trace 1000000000 -uart -prog $(x)
+	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -func -trace 1000000000 -uart -prog $(x)
 #	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -perfdiff -uart 1000000000 -prog $(x)
 #	@cd $(simulator_path) && ./obj_dir/Vmycpu_top -perfdiff -uart -prog 1 
 	@echo -e "\e[32mlab$(EXP) Simulate completed. \e[0m"
@@ -60,8 +60,8 @@ generate:
 
 # make way x=N
 wav:
-	# @cd $(simulator_path) && gtkwave --start=1us --end=1.1us trace-perf-$(x).fst debugFST.gtkw
-	@cd $(simulator_path) && gtkwave trace-perf-$(x).fst debugFST.gtkw
+	@cd $(simulator_path) && gtkwave --start=2us trace.vcd debugFST.gtkw
+	# @cd $(simulator_path) && gtkwave trace-perf-$(x).fst debugFST.gtkw
 	# @cd $(simulator_path) && gtkwave trace.vcd debugFST.gtkw
 
 # make set EXP=N

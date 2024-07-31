@@ -31,6 +31,7 @@ class StatisticIO extends Bundle {
 }
 
 class TopIO extends Bundle {
+  val ext_int        = Input(UInt(8.W))
   val axi            = new AXIIO
   val debug          = new DebugIO
   val statistic      = if (Config.statistic_on) Some(new StatisticIO) else None
@@ -94,8 +95,7 @@ class Top extends Module {
   val axilayer    = Module(new AXILayer).io
   val iCache      = Module(new ICache).io
   val dcache      = Module(new DCache).io
-  val itlb        = Module(new TLB("fetch")).io
-  val dtlb        = Module(new TLB("memory")).io
+  val tlb         = Module(new TLB).io
   val storeBuffer = Module(new StoreBuffer(STORE_BUFFER_LENGTH)).io
   val memorySel   = Module(new MemorySelect).io
 
@@ -154,15 +154,12 @@ class Top extends Module {
   axilayer.dcache <> dcache.axi
   axilayer.to     <> io.axi
 
-  // itlb <> prefetch, fetch, memory0, memory1, csr
-  itlb.stage0 <> prefetch.tlb
-  itlb.stage1 <> fetch.tlb
-  itlb.csr    <> csr.tlb(0)
-
-  // dtlb <> memory0, memory1, memory2, csr
-  dtlb.stage0 <> memory0.tlb
-  dtlb.stage1 <> memory1.tlb
-  dtlb.csr    <> csr.tlb(1)
+  // tlb <> prefetch, fetch, memory0, memory1, csr
+  tlb.stage0(0) <> prefetch.tlb
+  tlb.stage1(0) <> fetch.tlb
+  tlb.csr       <> csr.tlb
+  tlb.stage0(1) <> memory0.tlb
+  tlb.stage1(1) <> memory1.tlb
 
   // icache <> fetch, prefetch
   prefetch.iCache <> iCache.preFetch
@@ -291,6 +288,7 @@ class Top extends Module {
   csr.excJump   <> commit.excJump
   csr.excHappen <> commit.excHappen
   csr.intExc    <> decode.intExc
+  csr.ext_int   <> io.ext_int
 
   muldiv0.commitCsrWriteDone <> commit.csrWritePop
 

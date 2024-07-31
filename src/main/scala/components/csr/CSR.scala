@@ -7,6 +7,7 @@ import const._
 import bundles._
 import func.Functions._
 import const.Parameters._
+import isa.TlbOpType
 
 class CSRIO extends Bundle {
   // memory2
@@ -18,10 +19,13 @@ class CSRIO extends Bundle {
   val excJump   = Output(new BranchInfo)
 
   // to tlb
-  val tlb = Vec(2, new CSRTLBIO)
+  val tlb = new CSRTLBIO
 
   // mark to dec
   val intExc = Output(Bool())
+
+  // hard interrupt
+  val ext_int = Input(UInt(8.W))
 }
 
 class CSR extends Module {
@@ -127,6 +131,50 @@ class CSR extends Module {
     }
   }
 
+  // tlb: tlbrd
+  val tlbe = io.tlb.tlbe
+  when(io.tlb.tlbwe) {
+    switch(io.tlb.opType) {
+      is(TlbOpType.rd) {
+        when(tlbe.e) {
+          TLBEHI.info.vppn := tlbe.vppn
+          TLBELO0.info.plv := tlbe.plv(0)
+          TLBELO0.info.mat := tlbe.mat(0)
+          TLBELO0.info.ppn := tlbe.ppn(0)
+          TLBELO0.info.g   := tlbe.g
+          TLBELO0.info.d   := tlbe.d(0)
+          TLBELO0.info.v   := tlbe.v(0)
+          TLBELO1.info.plv := tlbe.plv(1)
+          TLBELO1.info.mat := tlbe.mat(1)
+          TLBELO1.info.ppn := tlbe.ppn(1)
+          TLBELO1.info.g   := tlbe.g
+          TLBELO1.info.d   := tlbe.d(1)
+          TLBELO1.info.v   := tlbe.v(1)
+          TLBIDX.info.ps   := tlbe.ps
+          TLBIDX.info.ne   := false.B
+          ASID.info.asid   := tlbe.asid
+        }.otherwise {
+          TLBIDX.info.ne := true.B
+          ASID.info.asid := 0.U
+          TLBEHI.info    := 0.U.asTypeOf(TLBEHI.info)
+          TLBELO0.info   := 0.U.asTypeOf(TLBELO0.info)
+          TLBELO1.info   := 0.U.asTypeOf(TLBELO1.info)
+          TLBIDX.info.ps := 0.U
+        }
+      }
+
+      is(TlbOpType.srch) {
+        when(io.tlb.hitted) {
+          TLBIDX.info.ne    := false.B
+          TLBIDX.info.index := io.tlb.hitIndex
+        }.otherwise {
+          TLBIDX.info.ne := true.B
+        }
+      }
+    }
+  }
+
+  // timer
   when(TCFG.info.en) {
     when(TVAL.info.timeval === 0.U) {
       TVAL.info.timeval := Mux(TCFG.info.preiodic, TCFG.info.initval ## 3.U(2.W), 0.U)
@@ -140,6 +188,7 @@ class CSR extends Module {
     ESTAT.info.is_11 := true.B
   }
 
+  ESTAT.info.is_9_2 := io.ext_int
   val any_exc = Cat(ESTAT.info.is_12, ESTAT.info.is_11, ESTAT.info.is_9_2, ESTAT.info.is_1_0) &
     Cat(ECFG.info.lie_12_11, ECFG.info.lie_9_0)
   val is_tlb_exc    = ECodes.istlbException(info.excType)
@@ -201,11 +250,9 @@ class CSR extends Module {
     io.excJump.tar := ERA.info.pc
   }
 
-  for (i <- 0 until 2) {
-    io.tlb(i).is_direct := CRMD.info.da && !CRMD.info.pg
-    io.tlb(i).asid      := ASID.info
-    io.tlb(i).crmd      := CRMD.info
-    io.tlb(i).dmw(0)    := DMW0.info
-    io.tlb(i).dmw(1)    := DMW1.info
-  }
+  io.tlb.is_direct := CRMD.info.da && !CRMD.info.pg
+  io.tlb.asid      := ASID.info
+  io.tlb.crmd      := CRMD.info
+  io.tlb.dmw(0)    := DMW0.info
+  io.tlb.dmw(1)    := DMW1.info
 }
