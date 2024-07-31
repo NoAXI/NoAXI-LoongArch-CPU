@@ -49,14 +49,12 @@ class Stage1TLBIO extends Bundle {
 }
 
 class commitTLBIO extends Bundle {
-  val en = Output(Bool())
-  val op = Output(UInt(INV_OP_LENGTH.W))
+  val en = Output(Bool())                // isTLBInst
+  val op = Output(UInt(INV_OP_LENGTH.W)) // rd.areg
   val inv = Output(new Bundle {
-    val asid = UInt(10.W)
-    val va   = UInt(ADDR_WIDTH.W)
+    val asid = UInt(10.W)         // rj.data(9:0)
+    val va   = UInt(ADDR_WIDTH.W) // rk.data
   })
-  val opType = Output(TlbOpType())
-  val va     = Output(UInt(ADDR_WIDTH.W))
-
-  val exception = Input(new ExcInfo)
+  val opType = Output(TlbOpType())        // tlb inst optype
+  val va     = Output(UInt(ADDR_WIDTH.W)) // pc
 }

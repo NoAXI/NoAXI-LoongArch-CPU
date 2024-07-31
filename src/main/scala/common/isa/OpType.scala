@@ -76,6 +76,9 @@ object MemOpType {
   def writeh = "b0001".U
   def writeb = "b0010".U
 
+  def ll = "b0100".U
+  def sc = "b0101".U
+
   def isread(memOpType: UInt): Bool = memOpType(3)
   def ish(memOpType: UInt): Bool    = memOpType(2, 1) === h
   def isb(memOpType: UInt): Bool    = memOpType(2, 1) === b

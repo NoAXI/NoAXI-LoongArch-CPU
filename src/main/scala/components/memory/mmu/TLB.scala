@@ -174,18 +174,6 @@ class TLB extends Module {
               }
             }
           }
-
-          is(7.U) {
-            io.commit.exception.en       := true.B
-            io.commit.exception.excType  := ECodes.IPE
-            io.commit.exception.excVAddr := io.commit.va
-          }
-        }
-
-        when(io.commit.op(INV_OP_LENGTH - 1) || io.commit.op(INV_OP_LENGTH - 2)) {
-          io.commit.exception.en       := true.B
-          io.commit.exception.excType  := ECodes.IPE
-          io.commit.exception.excVAddr := io.commit.va
         }
       }
     }
