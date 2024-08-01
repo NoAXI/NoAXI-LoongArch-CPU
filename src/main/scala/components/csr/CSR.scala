@@ -131,6 +131,8 @@ class CSR extends Module {
     }
   }
 
+  ASID.info.asidbits := 10.U(8.W) // stupid setting for rubbish chisel bug
+
   // tlb: tlbrd
   val tlbe = io.tlb.tlbe
   when(io.tlb.tlbwe) {
@@ -223,9 +225,15 @@ class CSR extends Module {
       info.excType,
       BADV.info.vaddr,
       List(
+        ECodes.TLBR -> info.excVAddr,
         ECodes.ADEF -> info.excVAddr,
         ECodes.ADEM -> info.excVAddr,
         ECodes.ALE  -> info.excVAddr,
+        ECodes.PIL  -> info.excVAddr,
+        ECodes.PIS  -> info.excVAddr,
+        ECodes.PIF  -> info.excVAddr,
+        ECodes.PME  -> info.excVAddr,
+        ECodes.PPI  -> info.excVAddr,
       ),
     )
 
@@ -246,6 +254,19 @@ class CSR extends Module {
     CRMD.info.plv := PRMD.info.pplv
     CRMD.info.ie  := PRMD.info.pie
 
+    when(ESTAT.info.ecode === ECodes.TLBR) {
+      CRMD.info.da := false.B
+      CRMD.info.pg := true.B
+    }
+
+    /*
+    when(LLBCTL.info.klo) {
+      LLBCTL.info.klo := false.B
+    }.otherwise {
+      LLBCTL.info := 0.U.asTypeOf(LLBCTL.info)
+    }
+     */
+
     io.excJump.en  := true.B
     io.excJump.tar := ERA.info.pc
   }
@@ -255,4 +276,9 @@ class CSR extends Module {
   io.tlb.crmd      := CRMD.info
   io.tlb.dmw(0)    := DMW0.info
   io.tlb.dmw(1)    := DMW1.info
+  io.tlb.tlbehi    := TLBEHI.info
+  io.tlb.estat     := ESTAT.info
+  io.tlb.tlbelo0   := TLBELO0.info
+  io.tlb.tlbelo1   := TLBELO1.info
+  io.tlb.tlbidx    := TLBIDX.info
 }

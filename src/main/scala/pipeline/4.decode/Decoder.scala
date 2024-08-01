@@ -64,8 +64,7 @@ class Decoder extends Module {
   when(
     func_type === FuncType.cnt
       || func_type === FuncType.exc
-      || (func_type === FuncType.csr && op_type =/= CsrOpType.xchg && op_type =/= CsrOpType.cntrd)
-      || func_type === FuncType.tlb,
+      || (func_type === FuncType.csr && op_type =/= CsrOpType.xchg && op_type =/= CsrOpType.cntrd),
   ) {
     io.rj := 0.U
     io.rk := 0.U
@@ -143,7 +142,7 @@ class Decoder extends Module {
       (is_exc && op_type === ExcOpType.brk)  -> ECodes.BRK,
       (is_exc && op_type === ExcOpType.sys)  -> ECodes.SYS,
       (is_exc && op_type === ExcOpType.ertn) -> ECodes.ertn,
-      (is_invtlb && io.inst(4, 0) > 6.U)     -> ECodes.IPE,
+      (is_invtlb && io.inst(4, 0) > 6.U)     -> ECodes.INE, // IPE or INE ???
     ),
   )
 

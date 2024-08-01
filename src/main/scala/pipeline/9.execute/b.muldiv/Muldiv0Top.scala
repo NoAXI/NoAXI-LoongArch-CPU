@@ -89,7 +89,11 @@ class Muldiv0Top extends Module {
   val tlbPushSignal = isTlb && io.to.fire && valid && !info.bubble
   val tlbPopSignal  = io.commitTlbDone
   when(tlbPushSignal) {
-    // TODO: add tlb info here
+    tlbBufferInfo.en       := isTlb
+    tlbBufferInfo.op       := info.rdInfo.areg
+    tlbBufferInfo.inv.asid := info.rjInfo.data(9, 0)
+    tlbBufferInfo.inv.va   := info.rkInfo.data
+    tlbBufferInfo.opType   := info.op_type
   }
   when(tlbPushSignal =/= tlbPopSignal) {
     tlbOccupied := tlbPushSignal

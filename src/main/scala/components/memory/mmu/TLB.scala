@@ -21,7 +21,7 @@ class TLBIO extends Bundle {
   val stage1 = Vec(2, Flipped(new Stage1TLBIO))
 
   // tlb insts
-  val commit = Input(new TlbBufferInfo)
+  val exe = Input(new TlbBufferInfo)
 }
 
 class TLB extends Module {
@@ -52,17 +52,21 @@ class TLB extends Module {
   io.csr.hitIndex := 0.U
   io.csr.tlbe     := 0.U.asTypeOf(new TLBEntry)
 
-  when(io.commit.en) {
-    switch(io.commit.opType) {
+  when(io.exe.en) {
+    switch(io.exe.opType) {
       is(TlbOpType.srch) {
         for (i <- 0 until TLB_ENTRIES) {
           io.csr.tlbwe  := true.B
-          io.csr.opType := io.commit.opType
+          io.csr.opType := io.exe.opType
           // tlb.ps = 12 / 21
           // 12: 00 1100
           // 21: 01 0101
           val tlb_vppn = Mux(tlb(i).ps(3), tlb(i).vppn, tlb(i).vppn(18, 9))
-          val va_vppn  = Mux(tlb(i).ps(3), io.commit.va(31, 13), io.commit.va(31, 22))
+          val va_vppn  = Mux(tlb(i).ps(3), tlbehi.vppn, tlbehi.vppn(18, 9))
+          if (Config.debug_on) {
+            dontTouch(tlb_vppn)
+            dontTouch(va_vppn)
+          }
           when(
             (tlb(i).e) &&
               (tlb(i).g || tlb(i).asid === io.csr.asid.asid) &&
@@ -77,7 +81,7 @@ class TLB extends Module {
 
       is(TlbOpType.rd) {
         io.csr.tlbwe  := true.B
-        io.csr.opType := io.commit.opType
+        io.csr.opType := io.exe.opType
         io.csr.tlbe   := tlb(tlb_index)
       }
 
@@ -118,7 +122,7 @@ class TLB extends Module {
       }
 
       is(TlbOpType.inv) {
-        switch(io.commit.op) {
+        switch(io.exe.op) {
           is(0.U) {
             for (i <- 0 until TLB_ENTRIES) {
               tlb(i) := 0.U.asTypeOf(new TLBEntry)
@@ -149,7 +153,7 @@ class TLB extends Module {
 
           is(4.U) {
             for (i <- 0 until TLB_ENTRIES) {
-              when(!tlb(i).g && tlb(i).asid === io.commit.inv.asid) {
+              when(!tlb(i).g && tlb(i).asid === io.exe.inv.asid) {
                 tlb(i) := 0.U.asTypeOf(new TLBEntry)
               }
             }
@@ -158,8 +162,8 @@ class TLB extends Module {
           is(5.U) {
             for (i <- 0 until TLB_ENTRIES) {
               val tlb_vppn = Mux(tlb(i).ps(3), tlb(i).vppn, tlb(i).vppn(18, 9))
-              val va_vppn  = Mux(tlb(i).ps(3), io.commit.va(31, 13), io.commit.va(31, 22))
-              when(!tlb(i).g && tlb(i).asid === io.commit.inv.asid && tlb_vppn === va_vppn) {
+              val va_vppn  = Mux(tlb(i).ps(3), io.exe.inv.va(31, 13), io.exe.inv.va(31, 22))
+              when(!tlb(i).g && tlb(i).asid === io.exe.inv.asid && tlb_vppn === va_vppn) {
                 tlb(i) := 0.U.asTypeOf(new TLBEntry)
               }
             }
@@ -168,8 +172,8 @@ class TLB extends Module {
           is(6.U) {
             for (i <- 0 until TLB_ENTRIES) {
               val tlb_vppn = Mux(tlb(i).ps(3), tlb(i).vppn, tlb(i).vppn(18, 9))
-              val va_vppn  = Mux(tlb(i).ps(3), io.commit.va(31, 13), io.commit.va(31, 22))
-              when((tlb(i).g || tlb(i).asid === io.commit.inv.asid) && tlb_vppn === va_vppn) {
+              val va_vppn  = Mux(tlb(i).ps(3), io.exe.inv.va(31, 13), io.exe.inv.va(31, 22))
+              when((tlb(i).g || tlb(i).asid === io.exe.inv.asid) && tlb_vppn === va_vppn) {
                 tlb(i) := 0.U.asTypeOf(new TLBEntry)
               }
             }
@@ -224,16 +228,16 @@ class TLB extends Module {
       // tlb refill exception
       excEn(j)   := true.B
       excType(j) := ECodes.TLBR
-    }
-
-    when(!found(j).v) {
-      when(io.stage0(j).memType.orR) {
-        excEn(j)   := true.B
-        excType(j) := io.stage0(j).memType // PIL PIS or PIF
+    }.otherwise {
+      when(!found(j).v) {
+        when(RegNext(io.stage0(j).memType.orR)) {
+          excEn(j)   := true.B
+          excType(j) := RegNext(io.stage0(j).memType) // PIL PIS or PIF
+        }
       }.elsewhen(io.csr.crmd.plv > found(j).plv) { // TODO: > can be improved?
         excEn(j)   := true.B
         excType(j) := ECodes.PPI // page privilege illegal
-      }.elsewhen(io.stage0(j).memType === memType.store && !found(j).d) {
+      }.elsewhen(RegNext(io.stage0(j).memType) === memType.store && !found(j).d) {
         excEn(j)   := true.B
         excType(j) := ECodes.PME // page maintain exception
       }
@@ -258,7 +262,7 @@ class TLB extends Module {
         io.stage1(j).cached := ShiftRegister(io.csr.crmd.datm(0), 1) // send cached info when at stage1
       }
       io.stage1(j).exception := ShiftRegister(0.U.asTypeOf(new ExcInfo), 1)
-    }.elsewhen(ShiftRegister(direct_hitted, 1)) {
+    }.elsewhen(direct_hitted) {
       // check if Direct mapping mode
       io.stage0(j).isDirect  := true.B
       io.stage0(j).directpa  := Cat(io.csr.dmw(direct_hittedway).pseg, io.stage0(j).va(28, 0))
@@ -275,6 +279,9 @@ class TLB extends Module {
 
     if (Config.debug_on) {
       dontTouch(direct_hit)
+      dontTouch(direct_hitted)
+      dontTouch(found)
+      dontTouch(tlb_found)
     }
   }
 }

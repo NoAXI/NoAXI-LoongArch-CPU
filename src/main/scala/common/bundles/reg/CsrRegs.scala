@@ -208,8 +208,10 @@ class ASID_info extends Bundle {
   val asid     = UInt(10.W)
 }
 
+// very strange bug, why the asidbits can be changed
+// func_test 1c00f614
 class ASID extends base {
-  override val info = RegInit({ WireDefault(0.U.asTypeOf(new ASID_info)) }).suggestName("ASID")
+  override val info = RegInit({ 0x000a0000.U.asTypeOf(new ASID_info) }).suggestName("ASID")
   override val id   = CSRCodes.ASID
   override val rw   = "b0000_0000_0000_0000_0000_0011_1111_1111".U
 }

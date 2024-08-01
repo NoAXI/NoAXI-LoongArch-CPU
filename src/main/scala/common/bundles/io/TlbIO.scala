@@ -55,6 +55,5 @@ class TlbBufferInfo extends Bundle {
     val asid = UInt(10.W)         // rj.data(9:0)
     val va   = UInt(ADDR_WIDTH.W) // rk.data
   }
-  val opType = TlbOpType()        // tlb inst optype
-  val va     = UInt(ADDR_WIDTH.W) // pc
+  val opType = TlbOpType() // tlb inst optype
 }
