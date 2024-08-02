@@ -158,4 +158,15 @@ class Decoder extends Module {
   // Return: JIRL $r0,$r1,0 指令
   io.isCALL   := is_bl || is_jirl && io.rd === 1.U
   io.isReturn := io.inst === RETURN_ADDR.U
+
+  when(io.inst === LA32R.CACOP) {
+    io.func_type    := FuncType.alu
+    io.pipelineType := PipelineType.arith
+    io.op_type      := AluOpType.add
+    io.exc_type     := ECodes.NONE
+    io.iswf         := false.B
+    io.rj           := 0.U
+    io.rk           := 0.U
+    io.rd           := 0.U
+  }
 }

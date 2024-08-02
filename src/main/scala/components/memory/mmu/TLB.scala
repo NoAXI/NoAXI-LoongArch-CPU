@@ -251,18 +251,21 @@ class TLB extends Module {
     val direct_hittedway = PriorityEncoder(direct_hit)
 
     // if direct, pa=va, no other things to worry
-    io.stage0(j).isDirect := false.B
-    io.stage0(j).directpa := 0.U
+    io.stage0(j).isDirect  := false.B
+    io.stage0(j).directpa  := 0.U
+    io.stage1(j).pa        := 0.U
+    io.stage1(j).cached    := false.B
+    io.stage1(j).exception := 0.U.asTypeOf(new ExcInfo)
     when(io.csr.is_direct) {
       io.stage0(j).isDirect := true.B
-      io.stage0(j).directpa := io.stage0(j).va & 0x1fffffff.U
+      io.stage0(j).directpa := io.stage0(j).va & 0x1fffffff.U // ok????
       when(!io.stage0(j).unitType) {
         io.stage1(j).cached := ShiftRegister(io.csr.crmd.datf(0), 1) // send cached info when at stage1
       }.otherwise {
         io.stage1(j).cached := ShiftRegister(io.csr.crmd.datm(0), 1) // send cached info when at stage1
       }
       io.stage1(j).exception := ShiftRegister(0.U.asTypeOf(new ExcInfo), 1)
-    }.elsewhen(direct_hitted) {
+    }.elsewhen(RegNext(direct_hitted)) {
       // check if Direct mapping mode
       io.stage0(j).isDirect  := true.B
       io.stage0(j).directpa  := Cat(io.csr.dmw(direct_hittedway).pseg, io.stage0(j).va(28, 0))

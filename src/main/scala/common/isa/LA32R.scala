@@ -172,5 +172,8 @@ object LA32R {
     TLBWR   -> List(FuncType.tlb, TlbOpType.wr),
     TLBFILL -> List(FuncType.tlb, TlbOpType.fill),
     INVTLB  -> List(FuncType.tlb, TlbOpType.inv),
+
+    // Cache
+    CACOP -> List(FuncType.none, AluOpType.add),
   )
 }

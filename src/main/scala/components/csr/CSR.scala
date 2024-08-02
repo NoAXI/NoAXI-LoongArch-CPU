@@ -191,6 +191,11 @@ class CSR extends Module {
   }
 
   ESTAT.info.is_9_2 := io.ext_int
+
+  if (!Config.isOnChip) {
+    ESTAT.info.is_9_2 := 0.U
+  }
+
   val any_exc = Cat(ESTAT.info.is_12, ESTAT.info.is_11, ESTAT.info.is_9_2, ESTAT.info.is_1_0) &
     Cat(ECFG.info.lie_12_11, ECFG.info.lie_9_0)
   val is_tlb_exc    = ECodes.istlbException(info.excType)
@@ -217,7 +222,7 @@ class CSR extends Module {
         ESTAT.info.is_11      -> ECodes.INT,
         ESTAT.info.is_12      -> ECodes.INT,
       ),
-    )
+    )(5, 0)
     ESTAT.info.esubcode := Mux(info.excType === ECodes.ADEM, 1.U, 0.U)
     // 软中断的ERApc是下一个pc, TODO:中断标记在某个指令上
     ERA.info.pc := Mux(is_soft_int_ex, info.pc_add_4, info.pc)
