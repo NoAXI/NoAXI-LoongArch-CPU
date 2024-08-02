@@ -1,3 +1,5 @@
+
+
 <center><b><p style = "font-size:48px">NSCSCC2024 初赛设计报告</p></b></center>
 
 <center><b><p style = "font-size:24px">杭州电子科技大学 NoAXI队</p></b></center>
@@ -5,12 +7,6 @@
 <center><b><p style = "font-size:24px">陈润澎 刘文涛</p></b></center>
 
 ![pipeline](./Pipeline.drawio.svg)
-
-<div STYLE="page-break-after: always;"></div>
-
-<center><b><p style = "font-size:32px">目录</p></b></center>
-
-[TOC]
 
 <div STYLE="page-break-after: always;"></div>
 
@@ -33,10 +29,9 @@
 - CSR相关指令：`CSRRD`, `CSRWR`, `CSRXCHG`
 - Cache相关指令：`*CACOP` 
 - TLB相关指令：`TLBSRCH`, `TLBRD`, `TLBWR`, `TLBFILL`, `INVTLB`
-- 其他杂项指令：`RDCNTVL.W`, `RDCNTVH.W`, `RDCNTID`, `SYSCALL`, `BREAK`, `ERTN`  
+- 其他杂项指令：`RDCNTVL.W`, `RDCNTVH.W`, `RDCNTID`, `SYSCALL`, `BREAK`, `ERTN`
 
-  
-支持的CSR寄存器：如下表所示
+## 1.3 CSR寄存器支持
 
 | 地址  |   名称    |
 | :---: | :-------: |
@@ -70,7 +65,7 @@
 | 0x180 |   DMW0    |
 | 0x181 |   DMW1    |
 
-异常中断支持：
+## 1.4 异常中断支持
 
 | Ecode  |  EsubCode  |  名称    |
 | :---:  | :-------:  |:-------: |
@@ -296,3 +291,17 @@ NoAXI处理器采取前后端设计，前端共5个流水级，后端共6个流�
 2. 更新aRAT的映射关系，aRAT当中存储的是由已经提交的指令构成的、不涉及推测态指令的寄存器映射表
 3. 对于包括分支、访存、特权在内的部分非算术指令，由于分支预测器更新限制、写缓存入队限制等原因，我们在检测到这些指令的时候，不会进行双指令的提交。假如检测到分支预测失败或例外，还会向冲刷控制器发出冲刷请求。
 4. 当发生流水线清空的时候，首先向冲刷控制器发出请求。冲刷控制器会延迟一拍后，对于各个流水线及功能部件发出冲刷信号，并令重命名相关部件进行状态恢复。具体而言，状态恢复时，会将aRAT赋值给cRAT，清空rob当中的所有表项，并将freelist的尾指针置为头指针位置。
+
+# 3. 参考文献
+
+[1]J. Ye, and L. Xi, *PUA-MIPS*, https://github.com/Clo91eaf/PUA-MIPS, 2023
+
+[2] Z. Ma, *LA32R-pipeline-scala*, https://github.com/MaZirui2001/LA32R-pipeline-scala, 2023
+
+[3] H. Gao, and M. Liu, *NOP-Core*, https://github.com/NOP-Processor/NOP-Core, 2023
+
+[4] Y. Zhou, S. Chen, X. Liu and J. Chen, *Nontrivial-mips*,https://github.com/trivialmips/nontrivial-mips, 2019
+
+[5] W. Wang, and J. Xing, *CPU Design and Practice*, Beijing: China Machine Press, 2021
+
+[6] Y. Yao, *SuperScalar RISC Processor Design*, Beijing: Tsinghua University Press, 2014
