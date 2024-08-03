@@ -23,6 +23,8 @@ class Memory2TopIO extends SingleStageBundle {
   val storeBufferRead  = new Mem2BufferIO
   val mem1             = Flipped(new Mem1Mem2ForwardIO)
   val forward          = Flipped(new ForwardInfoIO)
+
+  val cacOpInfo = Output(new CacOpInfo)
 }
 
 class Memory2Top extends Module {
@@ -35,12 +37,28 @@ class Memory2Top extends Module {
   val valid = raw._2
   val res   = WireDefault(info)
 
-  val isMem        = info.func_type === FuncType.mem
-  val isFirstStore = isMem && !MemOpType.isread(info.op_type)
-  val isFirstLoad  = isMem && MemOpType.isread(info.op_type)
+  // I-Cache
+  io.cacOpInfo    := info.writeInfo.requestInfo.cacop
+  io.cacOpInfo.en := info.actualStore && info.writeInfo.requestInfo.cacop.isICache && info.writeInfo.requestInfo.cacop.en
 
-  val dcacheEn      = info.actualStore || isFirstLoad && info.cached
-  val storebufferEn = isFirstStore || isFirstLoad && !info.cached
+  val cacStop = RegInit(false.B)
+  when(io.cacOpInfo.en) {
+    cacStop := true.B
+  }
+  when(cacStop) {
+    io.cacOpInfo.en := false.B
+  }
+  when(io.from.fire) {
+    cacStop := false.B
+  }
+
+  val isMem        = info.func_type === FuncType.mem
+  val isFirstStore = isMem && MemOpType.iswrite(info.op_type)
+  val isFirstLoad  = isMem && MemOpType.isread(info.op_type)
+  val isFirstCacop = isMem && info.op_type === MemOpType.cacop
+
+  val dcacheEn      = (info.actualStore && !io.cacOpInfo.en) || (isFirstLoad && info.cached)
+  val storebufferEn = isFirstStore || (isFirstLoad && !info.cached) || isFirstCacop
 
   val storeBufferFull = !io.storeBufferWrite.ready
 
@@ -51,6 +69,7 @@ class Memory2Top extends Module {
   io.dCache.request.bits.wdata  := info.wdata
   io.dCache.request.bits.wstrb  := info.wmask
   io.dCache.request.bits.rbType := DontCare
+  io.dCache.request.bits.cacop  := info.writeInfo.requestInfo.cacop
   io.dCache.rwType              := Mux(info.actualStore, info.writeInfo.requestInfo.rbType, isFirstStore)
   io.dCache.flush               := io.flush
   io.dCache.answer.ready        := true.B
@@ -62,10 +81,13 @@ class Memory2Top extends Module {
     io.storeBufferWrite.valid                   := valid && !info.bubble
     io.storeBufferWrite.bits.valid              := true.B
     io.storeBufferWrite.bits.requestInfo.cached := info.cached
-    io.storeBufferWrite.bits.requestInfo.addr   := Mux(isFirstStore, info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W), info.pa)
+    io.storeBufferWrite.bits.requestInfo.addr   := Mux(isFirstStore || isFirstCacop, info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W), info.pa)
     io.storeBufferWrite.bits.requestInfo.wdata  := Mux(isFirstStore, info.wdata, 0.U((22 - ROB_WIDTH).W) ## info.robId ## info.rdInfo.areg ## info.rdInfo.preg)
     io.storeBufferWrite.bits.requestInfo.wstrb  := Mux(isFirstStore, info.wmask, info.op_type)
     io.storeBufferWrite.bits.requestInfo.rbType := isFirstStore
+    io.storeBufferWrite.bits.requestInfo.cacop.en   := isFirstCacop
+    io.storeBufferWrite.bits.requestInfo.cacop.addr := info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
+    io.storeBufferWrite.bits.requestInfo.cacop.code := info.rdInfo.areg
   }
   when(io.flush) {
     io.storeBufferWrite.valid := false.B

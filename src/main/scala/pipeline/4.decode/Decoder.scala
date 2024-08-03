@@ -104,6 +104,7 @@ class Decoder extends Module {
     io.imm := SignedExtend(Cat(imm14, 0.U(2.W)), DATA_WIDTH)
   }
 
+  val is_cacop       = func_type === FuncType.mem && op_type === MemOpType.cacop
   val is_invtlb      = func_type === FuncType.tlb && op_type === TlbOpType.inv
   val is_jirl        = func_type === FuncType.bru && op_type === BruOptype.jirl
   val is_bl          = func_type === FuncType.bru && op_type === BruOptype.bl
@@ -111,9 +112,9 @@ class Decoder extends Module {
   val is_none        = func_type === FuncType.none
   val is_exc         = func_type === FuncType.exc
   val is_tlb         = func_type === FuncType.tlb
-  val is_st          = func_type === FuncType.mem && !MemOpType.isread(op_type)
+  val is_st          = func_type === FuncType.mem && MemOpType.iswrite(op_type)
   val br_not_jirl_bl = func_type === FuncType.bru && !is_jirl_bl
-  io.iswf := !(is_exc || is_st || is_none || br_not_jirl_bl || is_tlb)
+  io.iswf := !(is_exc || is_st || is_none || br_not_jirl_bl || is_tlb || is_cacop)
   io.rd := MuxCase(
     io.inst(4, 0),
     List(
@@ -158,15 +159,4 @@ class Decoder extends Module {
   // Return: JIRL $r0,$r1,0 指令
   io.isCALL   := is_bl || is_jirl && io.rd === 1.U
   io.isReturn := io.inst === RETURN_ADDR.U
-
-  when(io.inst === LA32R.CACOP) {
-    io.func_type    := FuncType.alu
-    io.pipelineType := PipelineType.arith
-    io.op_type      := AluOpType.add
-    io.exc_type     := ECodes.NONE
-    io.iswf         := false.B
-    io.rj           := 0.U
-    io.rk           := 0.U
-    io.rd           := 0.U
-  }
 }

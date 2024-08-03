@@ -14,6 +14,8 @@ class ICacheIO extends Bundle {
   val preFetch = Flipped(new PreFetchICacheIO)
   val fetch    = Flipped(new FetchICacheIO)
 
+  val cacop = Input(new CacOpInfo)
+
   val succeed_time = if (Config.statistic_on) Some(Output(UInt(DATA_WIDTH.W))) else None
   val total_time   = if (Config.statistic_on) Some(Output(UInt(DATA_WIDTH.W))) else None
 }
@@ -21,8 +23,8 @@ class ICacheIO extends Bundle {
 class ICache extends Module {
   val io = IO(new ICacheIO)
 
-  //   0        1           2
-  val idle :: replace :: waiting :: Nil = Enum(3)
+  //   0        1           2             3
+  val idle :: replace :: waiting :: uncacheRead :: Nil = Enum(4)
 
   val datasram = VecInit.fill(WAY_WIDTH)(Module(new xilinx_single_port_ram_read_first((LINE_SIZE * 8), LINE_WIDTH)).io)
   val tagsram  = VecInit.fill(WAY_WIDTH)(Module(new xilinx_single_port_ram_read_first(TAG_WIDTH, LINE_WIDTH)).io)
@@ -47,9 +49,9 @@ class ICache extends Module {
   val wmask          = RegInit(1.U(4.W))
   val wmove          = Mux1H((3 to 0 by -1).map(i => wmask(i) -> (i * 32).U))
   val saved_info     = RegInit(0.U.asTypeOf(new savedInfo))
+  val saved_cached   = RegInit(false.B)
   val next_addr      = io.preFetch.request.bits.addr
-  val addr           = RegInit(0.U(ADDR_WIDTH.W))
-  addr := next_addr
+  val addr           = io.fetch.request.bits
 
   for (i <- 0 until 2) {
     datasram(i).clka  := clock
@@ -81,33 +83,57 @@ class ICache extends Module {
     is(idle) {
       ans_valid := false.B
       when(io.fetch.request.fire) {
-        if (Config.statistic_on) {
-          total_requests := total_requests + 1.U
-        }
-        when(hitted) {
+        when(io.fetch.cached || true.B) { // !!! TODO: uncached fetch logic !!!
           if (Config.statistic_on) {
-            hitted_times := hitted_times + 1.U
+            total_requests := total_requests + 1.U
           }
-          lru.wea  := true.B
-          lru.dina := !hittedway
+          when(hitted) {
+            if (Config.statistic_on) {
+              hitted_times := hitted_times + 1.U
+            }
+            lru.wea  := true.B
+            lru.dina := !hittedway
 
-          state          := Mux(io.fetch.cango, idle, waiting)
-          i_ans_valid    := true.B
-          i_ans_bits     := hitdatalineVec
-          saved_ans_bits := hitdatalineVec
+            state          := Mux(io.fetch.cango, idle, waiting)
+            i_ans_valid    := true.B
+            i_ans_bits     := hitdatalineVec
+            saved_ans_bits := hitdatalineVec
+          }.otherwise {
+            arvalid         := true.B
+            ar.addr         := addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
+            ar.size         := 2.U
+            ar.len          := (BANK_WIDTH / 4 - 1).U
+            rready          := false.B
+            linedata        := 0.U
+            wmask           := 1.U
+            state           := replace
+            saved_info.addr := addr
+            saved_cached    := io.fetch.cached
+          }
         }.otherwise {
-          arvalid         := true.B
-          ar.addr         := addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
-          ar.size         := 2.U
-          ar.len          := (BANK_WIDTH / 4 - 1).U
-          rready          := false.B
-          linedata        := 0.U
-          wmask           := 1.U
-          state           := replace
-          saved_info.addr := addr
+          i_ans_valid := false.B
+          arvalid     := true.B
+          rready      := false.B
+          ar.addr     := addr(ADDR_WIDTH - 1, 2) ## 0.U(2.W) // pay attention
+          ar.len      := 0.U
+          state       := uncacheRead
         }
       }
     }
+
+    is(uncacheRead) {
+      when(io.axi.ar.valid) {
+        when(io.axi.ar.ready) {
+          arvalid := false.B
+          rready  := true.B
+        }
+      }.elsewhen(io.axi.r.fire) {
+        i_ans_valid := true.B
+        i_ans_bits  := VecInit(io.axi.r.bits.data, io.axi.r.bits.data, io.axi.r.bits.data, io.axi.r.bits.data)
+        state       := idle
+      }
+    }
+
     is(replace) {
       val getline_complete = RegInit(false.B)
       when(io.axi.ar.valid) {
@@ -137,7 +163,7 @@ class ICache extends Module {
         tagsram(lruway).wea                := true.B
         tagsram(lruway).addra              := saved_info.index
         tagsram(lruway).dina               := saved_info.tag
-        validreg(saved_info.index)(lruway) := true.B
+        validreg(saved_info.index)(lruway) := true.B && saved_cached
         state                              := Mux(io.fetch.cango, idle, waiting)
         ans_valid                          := true.B
         ans_bits                           := _ans_bits
@@ -152,6 +178,32 @@ class ICache extends Module {
       i_ans_valid := true.B
       i_ans_bits  := saved_ans_bits
       state       := Mux(io.fetch.cango, idle, waiting)
+    }
+  }
+
+  when(io.cacop.isICache && io.cacop.en) {
+    switch(io.cacop.opType) {
+      is(0.U) {
+        // QUESTION: after the cacop inst that fetched, modify the sram, right??
+
+        for (i <- 0 until WAY_WIDTH) {
+          tagsram(i).wea   := true.B
+          tagsram(i).addra := io.cacop.index
+          tagsram(i).dina  := 0.U
+        }
+      }
+
+      is(1.U) {
+        for (i <- 0 until WAY_WIDTH) {
+          validreg(io.cacop.index)(i) := false.B
+        }
+      }
+
+      is(2.U) {
+        for (i <- 0 until WAY_WIDTH) {
+          validreg(io.cacop.index)(i) := false.B
+        }
+      }
     }
   }
 

@@ -73,14 +73,18 @@ class WritebackTop(
   io.rob.index := res.robId
 
   // basic rob info
-  io.rob.bits.done    := true.B
-  io.rob.bits.pc      := res.pc
-  io.rob.bits.wen     := res.iswf || info.uncachedLoad
-  io.rob.bits.areg    := res.rdInfo.areg
-  io.rob.bits.preg    := res.rdInfo.preg
-  io.rob.bits.opreg   := res.opreg
-  io.rob.bits.wdata   := res.rdInfo.data
-  io.rob.bits.isStore := res.func_type === FuncType.mem && (!MemOpType.isread(res.op_type) || (MemOpType.isread(res.op_type) && !info.cached))
+  io.rob.bits.done  := true.B
+  io.rob.bits.pc    := res.pc
+  io.rob.bits.wen   := res.iswf || info.uncachedLoad
+  io.rob.bits.areg  := res.rdInfo.areg
+  io.rob.bits.preg  := res.rdInfo.preg
+  io.rob.bits.opreg := res.opreg
+  io.rob.bits.wdata := res.rdInfo.data
+  io.rob.bits.isStore := res.func_type === FuncType.mem && (
+    MemOpType.iswrite(res.op_type)
+      || (MemOpType.isread(res.op_type) && !info.cached)
+      || res.op_type === MemOpType.cacop
+  )
 
   // branch
   io.rob.bits.bfail     := res.realBr

@@ -139,9 +139,10 @@ class Top extends Module {
   muldiv2.mul <> muldiv0.mul // multiplier connect
 
   // memory
-  memory0.to <> memorySel.fromMem0
-  memory1.to <> memory2.from
-  memory2.to <> writeback(3).from
+  memory0.to        <> memorySel.fromMem0
+  memory1.to        <> memory2.from
+  memory2.to        <> writeback(3).from
+  memory2.cacOpInfo <> iCache.cacop
 
   // always set write-ready high for wb stage
   for (i <- 0 until BACK_ISSUE_WIDTH) {

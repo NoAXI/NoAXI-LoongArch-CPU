@@ -48,7 +48,7 @@ class Memory1Top extends Module {
   val tlbpa     = Mux(stall, savedPa, io.tlb.pa)
   val tlbcached = Mux(stall, savedCached, io.tlb.cached)
   val tlbexc    = Mux(stall, savedExc, io.tlb.exception)
-  val pa        = Mux(info.actualStore, info.writeInfo.requestInfo.addr, Mux(info.isDirect, info.pa, tlbpa))
+  val pa        = Mux(info.actualStore, info.writeInfo.requestInfo.addr, tlbpa)
   val cached    = Mux(info.actualStore, info.writeInfo.requestInfo.cached, tlbcached)
   val exception = tlbexc
   res.pa     := pa
@@ -83,7 +83,7 @@ class Memory1Top extends Module {
     res.iswf         := false.B
   }
 
-  when(info.actualStore && !info.writeInfo.requestInfo.rbType) {
+  when(info.actualStore && !info.writeInfo.requestInfo.rbType && !info.writeInfo.requestInfo.cacop.en) {
     res.iswf            := true.B
     res.robId           := info.writeInfo.requestInfo.wdata(12 + ROB_WIDTH - 1, 12)
     res.rdInfo.areg     := info.writeInfo.requestInfo.wdata(11, 6)

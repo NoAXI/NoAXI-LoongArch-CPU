@@ -91,6 +91,7 @@ class RequestInfo extends Bundle {
   val wdata  = UInt(DATA_WIDTH.W)
   val wstrb  = UInt(4.W)
   val rbType = Bool()
+  val cacop  = new CacOpInfo
 }
 
 class Mem1DCacheIO extends Bundle {
@@ -107,4 +108,15 @@ class Mem2DCacheIO extends Bundle {
   val prevAwake = Input(Bool())
   val flush     = Output(Bool())
   // val cango   = Output(Bool())
+}
+
+class CacOpInfo extends Bundle {
+  val en   = Bool()
+  val addr = UInt(ADDR_WIDTH.W)
+  val code = UInt(5.W)
+
+  def isICache = code(2, 0) === 0.U
+  def isDCache = code(2, 0) === 1.U
+  def index    = addr(11, 4)
+  def opType   = code(4, 3)
 }

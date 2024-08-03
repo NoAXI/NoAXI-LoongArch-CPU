@@ -79,11 +79,14 @@ object MemOpType {
   def ll = "b0100".U
   def sc = "b0101".U
 
-  def isread(memOpType: UInt): Bool = memOpType(3)
-  def ish(memOpType: UInt): Bool    = memOpType(2, 1) === h
-  def isb(memOpType: UInt): Bool    = memOpType(2, 1) === b
-  def signed(memOpType: UInt): Bool = memOpType(0).asBool
-  def apply()                       = UInt(4.W)
+  def cacop = "b0110".U
+
+  def isread(memOpType: UInt): Bool  = memOpType(3)
+  def iswrite(memOpType: UInt): Bool = !memOpType(3) && !memOpType(2)
+  def ish(memOpType: UInt): Bool     = memOpType(2, 1) === h
+  def isb(memOpType: UInt): Bool     = memOpType(2, 1) === b
+  def signed(memOpType: UInt): Bool  = memOpType(0).asBool
+  def apply()                        = UInt(4.W)
 }
 
 object CsrOpType {

@@ -25,7 +25,7 @@ class Memory1Access extends Module {
   val io = IO(new Memory1AccessIO)
 
   val re    = MemOpType.isread(io.op_type) && io.isMem
-  val we    = !re && io.isMem
+  val we    = MemOpType.iswrite(io.op_type) && io.isMem
   val piece = io.addr(1, 0)
 
   io.exc_type := Mux(

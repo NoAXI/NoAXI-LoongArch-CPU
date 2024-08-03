@@ -58,7 +58,7 @@ class FetchTop extends Module {
   val tlbpa     = Mux(stall, savedPa, io.tlb.pa)
   val tlbcached = Mux(stall, savedCached, io.tlb.cached)
   val tlbexc    = Mux(stall, savedExc, io.tlb.exception)
-  val pa        = Mux(info.actualStore, info.writeInfo.requestInfo.addr, Mux(info.isDirect, info.pa, tlbpa))
+  val pa        = Mux(info.actualStore, info.writeInfo.requestInfo.addr, tlbpa)
   val cached    = Mux(info.actualStore, info.writeInfo.requestInfo.cached, tlbcached)
   val exception = tlbexc
 
@@ -79,7 +79,11 @@ class FetchTop extends Module {
   busy := !io.iCache.answer.fire && !excEn && !info.bubble && !force_stop_for_simulate
 
   res.instGroup := Mux(info.pc(2), VecInit(instVec(1), instVec(0)), instVec)
-  res.fetchExc  := VecInit(excType, excType)
+  // !!! TODO: uncached fetch logic !!!
+  // when(!cached) {
+  //   res.instGroupValid(1) := false.B
+  // }
+  res.fetchExc := VecInit(excType, excType)
 
   res.predict  := Mux(stall, savedPredict, io.bpu.predict)
   res.jumpInst := !Mux(stall, savedJumpInst, io.bpu.firstInstJump)

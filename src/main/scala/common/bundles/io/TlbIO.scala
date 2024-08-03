@@ -35,8 +35,6 @@ class Stage0TLBIO extends Bundle {
   val unitType = Output(Bool()) // 0: fetch    1: load/store
 
   val hitVec   = Input(Vec(TLB_ENTRIES, Bool()))
-  val isDirect = Input(Bool())
-  val directpa = Input(UInt(ADDR_WIDTH.W))
 }
 
 class Stage1TLBIO extends Bundle {

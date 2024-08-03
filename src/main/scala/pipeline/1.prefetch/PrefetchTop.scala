@@ -71,8 +71,6 @@ class PrefetchTop extends Module {
   io.tlb.memType  := memType.fetch
   io.tlb.unitType := false.B
   val hitVec   = io.tlb.hitVec
-  val isDirect = io.tlb.isDirect
-  val directpa = io.tlb.directpa
 
   // I-Cache
   io.iCache.request.valid     := io.from.fire
@@ -82,8 +80,6 @@ class PrefetchTop extends Module {
   res.pc             := pc
   res.pc_add_4       := pc_add_4
   res.hitVec         := hitVec
-  res.isDirect       := isDirect
-  res.pa             := directpa
   res.instGroupValid := VecInit(Seq(true.B, pc_add_4(2)))
   io.to.bits.bits(0) := Mux(invalid, info.getFlushInfo, res)
 }

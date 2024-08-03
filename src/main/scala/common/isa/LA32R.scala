@@ -50,7 +50,7 @@ object LA32R {
   def CSRXCHG = BitPat("b00000100????????????????????????")
 
   // cacop
-  def CACOP = BitPat("b0000011000??????????????????????") // 尚未实现
+  def CACOP = BitPat("b0000011000??????????????????????")
 
   // tlb
   def TLBSRCH = BitPat("b00000110010010000010100000000000")
@@ -150,10 +150,11 @@ object LA32R {
     ST_W  -> List(FuncType.mem, MemOpType.writew),
     LD_BU -> List(FuncType.mem, MemOpType.readbu),
     LD_HU -> List(FuncType.mem, MemOpType.readhu),
-
     // atom mem, LL-SC, vaddr = rj + imm
     LL_W -> List(FuncType.mem, MemOpType.ll),
     SC_W -> List(FuncType.mem, MemOpType.sc),
+    // Cache
+    CACOP -> List(FuncType.mem, MemOpType.cacop),
 
     //  bru, jumped address calculated by ALU.add: pc + imm (jirl: rj + imm)
     JIRL -> List(FuncType.bru, BruOptype.jirl),
@@ -172,8 +173,5 @@ object LA32R {
     TLBWR   -> List(FuncType.tlb, TlbOpType.wr),
     TLBFILL -> List(FuncType.tlb, TlbOpType.fill),
     INVTLB  -> List(FuncType.tlb, TlbOpType.inv),
-
-    // Cache
-    CACOP -> List(FuncType.none, AluOpType.add),
   )
 }

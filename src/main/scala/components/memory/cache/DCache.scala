@@ -10,6 +10,7 @@ import const.Parameters._
 import const.Config
 
 import pipeline._
+import const.cacheConst
 
 class DCacheIO extends Bundle {
   val axi = new DCacheAXI
@@ -66,6 +67,9 @@ class DCache extends Module {
   //   0           1               2             3              4            5              6
   val idle :: uncacheRead :: uncacheWrite :: checkdirty :: writeBack0 :: writeBack1 :: replaceLine :: Nil = Enum(7)
 
+  //      0           1
+  val firstWay :: secondWay :: Nil = Enum(2)
+
   val state  = RegInit(idle)
   val cached = io.mem2.request.bits.cached
   val pa     = io.mem2.request.bits.addr
@@ -88,6 +92,10 @@ class DCache extends Module {
     ),
   )
 
+  val cacop        = io.mem2.request.bits.cacop
+  val cacopen      = cacop.en && cacop.isDCache
+  val cacop_flag   = RegInit(false.B)
+  val not_complete = RegInit(false.B)
   val imm_ansvalid = WireDefault(false.B)
   val imm_ans      = WireDefault(0.U(DATA_WIDTH.W))
   val savedInfo    = RegInit(0.U.asTypeOf(new savedInfo))
@@ -95,16 +103,77 @@ class DCache extends Module {
   val linedata     = RegInit(0.U((LINE_SIZE * 8).W))
   val wmask        = RegInit(1.U(4.W))
   val wmove        = Mux1H(((DATA_WIDTH / 8 - 1) to 0 by -1).map(i => wmask(i) -> (i * 32).U))
-  val w_data       = savedInfo.linedata(lru(savedInfo.index))
+  val w_data       = Mux(cacop_flag, savedInfo.linedata(0), savedInfo.linedata(lru(savedInfo.index)))
+  val cacop_state  = RegInit(firstWay)
+  val saved_line   = RegInit(0.U((LINE_SIZE * 8).W))
+  val saved_tag    = RegInit(0.U(TAG_WIDTH.W))
 
   switch(state) {
     is(idle) {
       imm_ansvalid := true.B
       when(io.mem2.request.fire) {
-        if (Config.statistic_on) {
-          total_requests := total_requests + 1.U
-        }
-        when(cached) {
+        when(cacopen) {
+          switch(cacop.opType) {
+            is(0.U) {
+              for (i <- 0 until WAY_WIDTH) {
+                tagV(i).wea   := true.B
+                tagV(i).addra := cacop.index
+                tagV(i).dina  := 0.U
+              }
+            }
+
+            is(2.U) {
+              when(cacheHit) {
+                // QUESTION: why Invalidate ??
+                imm_ansvalid := false.B
+                // tagV(cacheHitWay).wea   := true.B
+                // tagV(cacheHitWay).addra := cacop.index
+                // tagV(cacheHitWay).dina  := 0.U
+
+                // writeback
+                cacop_flag            := true.B
+                state                 := writeBack0
+                savedInfo.linedata(0) := hitdataline
+                savedInfo.addr        := tag(cacheHitWay) ## cacop.index ## 0.U(4.W)
+                not_complete          := false.B
+              }
+            }
+
+            is(1.U) {
+              imm_ansvalid := false.B
+
+              switch(cacop_state) {
+                is(firstWay) {
+                  cacop_state := secondWay
+                  when(valid(0)) {
+                    cacop_flag            := true.B
+                    state                 := writeBack0
+                    savedInfo.linedata(0) := data(0).doutb
+                    savedInfo.addr        := tag(0) ## cacop.index ## 0.U(4.W)
+                    not_complete          := true.B
+                  }
+                  saved_line := data(1).doutb
+                  saved_tag  := tag(1)
+                }
+                is(secondWay) {
+                  cacop_state := firstWay
+                  when(valid(1)) {
+                    cacop_flag            := true.B
+                    state                 := writeBack0
+                    savedInfo.linedata(0) := saved_line
+                    savedInfo.addr        := saved_tag ## cacop.index ## 0.U(4.W)
+                    not_complete          := false.B
+                  }.otherwise {
+                    imm_ansvalid := true.B
+                  }
+                }
+              }
+            }
+          }
+        }.elsewhen(cached) {
+          if (Config.statistic_on) {
+            total_requests := total_requests + 1.U
+          }
           when(cacheHit) {
             if (Config.statistic_on) {
               hitted_times := hitted_times + 1.U
@@ -187,22 +256,24 @@ class DCache extends Module {
       // when the line is dirty, send to writebuffer
       val isDirty = dirty(savedInfo.index)(lru(savedInfo.index))
       when(isDirty) {
-        state := writeBack0
+        cacop_flag := false.B
+        state      := writeBack0
       }.otherwise {
-        arvalid  := true.B
-        ar.addr  := savedInfo.addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
-        ar.size  := 2.U
-        ar.len   := (BANK_WIDTH / 4 - 1).U
-        rready   := false.B
-        linedata := 0.U
-        wmask    := 1.U
-        state    := replaceLine
+        arvalid    := true.B
+        ar.addr    := savedInfo.addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
+        ar.size    := 2.U
+        ar.len     := (BANK_WIDTH / 4 - 1).U
+        rready     := false.B
+        linedata   := 0.U
+        wmask      := 1.U
+        cacop_flag := false.B
+        state      := replaceLine
       } // is not dirty
     }
 
     is(writeBack0) {
       awvalid := true.B
-      aw.addr := savedInfo.linetag(lru(savedInfo.index)) ## savedInfo.index ## 0.U(4.W)
+      aw.addr := Mux(cacop_flag, savedInfo.addr, savedInfo.linetag(lru(savedInfo.index)) ## savedInfo.index ## 0.U(4.W))
       aw.size := 2.U
       aw.len  := (BANK_WIDTH / 4 - 1).U
 
@@ -235,14 +306,19 @@ class DCache extends Module {
         }
       }
       when(io.axi.b.fire) {
-        arvalid  := true.B
-        ar.addr  := savedInfo.addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
-        ar.size  := 2.U
-        ar.len   := (BANK_WIDTH / 4 - 1).U
-        rready   := false.B
-        linedata := 0.U
-        wmask    := 1.U
-        state    := replaceLine
+        when(cacop_flag) {
+          imm_ansvalid := !not_complete
+          state        := idle
+        }.otherwise {
+          arvalid  := true.B
+          ar.addr  := savedInfo.addr(ADDR_WIDTH - 1, 4) ## 0.U(4.W)
+          ar.size  := 2.U
+          ar.len   := (BANK_WIDTH / 4 - 1).U
+          rready   := false.B
+          linedata := 0.U
+          wmask    := 1.U
+          state    := replaceLine
+        }
       }
     }
 
