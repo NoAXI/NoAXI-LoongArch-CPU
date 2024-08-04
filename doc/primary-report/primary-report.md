@@ -30,6 +30,20 @@
 | D-Cache命中率    |   98.8%   |                     |
 | 流水级数          |   13     |  最深流水级数      |
 
+## 1.3 实现功能
+
+(前有标记`*`的为暂未实现但会在未来实现)
+
+支持指令集：龙芯架构32位精简版中的以下指令
+- 算数类指令：`ADD.W`, `SUB.W`, `ADDI.W`, `LU12I.W`, `SLT[U]`, `SLT[U]I`, `PCADDU12I`, `AND`, `OR`, `NOR`, `XOR`, `ANDI`, `ORI`, `XORI`, `MUL.W`, `MULH.W[U]`, `DIV.W[U]`, `MOD.W[U]`, `SLL.W`, `SRL.W`, `SRA.W`, `SLLI.W`, `SRLI.W`, `SRAI.W`
+- 跳转指令：`BEQ`, `BNE`, `BLT[U]`, `BGE[U]`, `B`, `BL`, `JIRL`
+- 访存指令：`LD.B`, `LD.H`, `LD.W`, `LD.BU`, `LD.HU`, `ST.B`, `ST.H`, `ST.W`,`*LL`,`*SC`
+- CSR相关指令：`CSRRD`, `CSRWR`, `CSRXCHG`
+- Cache相关指令：`*CACOP` 
+- TLB相关指令：`TLBSRCH`, `TLBRD`, `TLBWR`, `TLBFILL`, `INVTLB`
+- 栅障指令：`*IBAR`,`*DBAR`
+- 其他杂项指令：`RDCNTVL.W`, `RDCNTVH.W`, `RDCNTID`, `SYSCALL`, `BREAK`, `ERTN`
+
 
 # 2. 处理器微架构设计
 
@@ -46,74 +60,6 @@
 &emsp;&emsp;前端采取顺序双发射设计，取指宽度为2，每个周期可以向后端最多传输2条指令。
 
 &emsp;&emsp;后端采取乱序四发射设计，流水线条数为4，每个周期可以进行最多两条指令的提交。
-
-## 2.2 实现功能
-
-(前有标记`*`的为暂未实现但会在未来实现)
-
-支持指令集：龙芯架构32位精简版中的以下指令
-- 算数类指令：`ADD.W`, `SUB.W`, `ADDI.W`, `LU12I.W`, `SLT[U]`, `SLT[U]I`, `PCADDU12I`, `AND`, `OR`, `NOR`, `XOR`, `ANDI`, `ORI`, `XORI`, `MUL.W`, `MULH.W[U]`, `DIV.W[U]`, `MOD.W[U]`, `SLL.W`, `SRL.W`, `SRA.W`, `SLLI.W`, `SRLI.W`, `SRAI.W`
-- 跳转指令：`BEQ`, `BNE`, `BLT[U]`, `BGE[U]`, `B`, `BL`, `JIRL`
-- 访存指令：`LD.B`, `LD.H`, `LD.W`, `LD.BU`, `LD.HU`, `ST.B`, `ST.H`, `ST.W`,`*LL`,`*SC`
-- CSR相关指令：`CSRRD`, `CSRWR`, `CSRXCHG`
-- Cache相关指令：`*CACOP` 
-- TLB相关指令：`TLBSRCH`, `TLBRD`, `TLBWR`, `TLBFILL`, `INVTLB`
-- 栅障指令：`*IBAR`,`*DBAR`
-- 其他杂项指令：`RDCNTVL.W`, `RDCNTVH.W`, `RDCNTID`, `SYSCALL`, `BREAK`, `ERTN`
-
-
-## 2.3 CSR寄存器支持
-
-| 地址  |   名称    |
-| :---: | :-------: |
-| 0x00  |   CRMD    |
-| 0x01  |   PRMD    |
-| 0x02  |   EUEN    |
-| 0x04  |   ECFG    |
-| 0x05  |   ESTAT   |
-| 0x06  |    ERA    |
-| 0x07  |   BADV    |
-| 0x0c  |  EENTRY   |
-| 0x10  |  TLBIDX   |
-| 0x11  |  TLBEHI   |
-| 0x12  |  TLBELO0  |
-| 0x13  |  TLBELO1  |
-| 0x18  |   ASID    |
-| 0x19  |   PGDL    |
-| 0x1a  |   PGDH    |
-| 0x1b  |    PGD    |
-| 0x30  |   SAVE0   |
-| 0x31  |   SAVE1   |
-| 0x32  |   SAVE2   |
-| 0x33  |   SAVE3   |
-| 0x40  |    TID    |
-| 0x41  |   TCFG    |
-| 0x42  |   TVAL    |
-| 0x44  |   TICLR   |
-| 0x60  |  *LLBCTL   |
-| 0x88  | TLBRENTRY |
-| 0x98  |   *CTAG    |
-| 0x180 |   DMW0    |
-| 0x181 |   DMW1    |
-
-## 2.4 异常中断支持
-
-| Ecode  |  EsubCode  |  名称    |
-| :---:  | :-------:  |:-------: |
-| 0x00   |   0        |   INT    |
-| 0x01   |   0        |   PIL    |
-| 0x02   |   0        |   PIS    |
-| 0x03   |   0        |   PIF    |
-| 0x04   |   0        |   PME    |
-| 0x07   |   0        |   PPI    |
-| 0x08   |   0        |   ADEF   |
-| 0x08   |   1        |   ADEM   |
-| 0x09   |   0        |   ALE    |
-| 0x0b   |   0        |   SYS    |
-| 0x0c   |   0        |   BRK    |
-| 0x0d   |   0        |   INE    |
-| 0x0e   |   0        |   *IPE   |
-| 0x3f   |   0        |   TLBR   |
 
 ## 2.2 前端设计
 
@@ -207,15 +153,25 @@
 
 &emsp;&emsp;在预译码级与译码级之间，我们使用**自己设计**的`FIFO`，实现了一个指令缓冲，用于解耦取指级与译码级。该缓冲让取指效率最大化，无论后端是否阻塞都不会浪费前端的取指资源，做到了效率的最大利用；前端只需专注取指并填充至`IB`，而后端只需专注于从`IB`中取出指令并执行，极大地提高了处理器的执行效率。
 
-取指前端保证`IB`中的信息均为有效指令，无气泡指令
+取指前端保证`IB`中的信息均为有效指令，无气泡指令。
 
 ### 2.1.4 译码 Decode
 
-![alt text](image.png)
-
 &emsp;&emsp;本级用于译码，我们通过chisel语言的特性，利用`BitPat`生成树形译码元件进行译码，并输出指令所需信息(例如功能模块名和具体功能)，做到了代码上的清晰明了。
 
-&emsp;&emsp;这一级也用来标记中断。
+```scala
+object LA32R {
+  def SLLI_W    = BitPat("b00000000010000001???????????????")
+  ...
+  val table = Array(
+    // rj, imm(u) calculated by ALU, then write to rd
+    LU12I_W   -> List(FuncType.alu_imm, AluOpType.add),
+    ...
+  )
+}
+```
+
+&emsp;&emsp;同时，我们会在这一级对于指令进行中断的标记，保证了CPU资源的利用率。
 
 ### 2.2.5 重命名 Rename
 
@@ -318,11 +274,11 @@
 #### 2.3.6.5 数据(指令)缓存 Cache
 
 &emsp;&emsp;每路的组织形式如下，在我们的设计中index = 8。
-   
+
    | Line $0$ |bank 0 | bank 1  |  bank 2 | bank 3 | valid  | dirty  | Tag               |
    | :---:    | :---: | :--:    | :--:    | :-----:| :-----:| :-----:| :-----:           |
    |          | 32 b  | 32 b    | 32 b    |  32 b  |  1  b  |  1  b  |  (32 - index) b  |
-   
+
    | Line $1$ |bank 0 | bank 1  |  bank 2 | bank 3 | valid  | dirty  | Tag               |
    | :---:    | :---: | :--:    | :--:    | :-----:| :-----:| :-----:| :-----:           |
    |          | 32 b  | 32 b    | 32 b    |  32 b  |  1  b  |  1  b  |  (32 - index) b  |
@@ -348,7 +304,7 @@
 
 &emsp;&emsp;这一级用于写物理寄存器，更新rob当中对应的提交信息，并更新发射队列当中的寄存器占用状态。
 
-&emsp;&emsp;在我们的初版设计当中，为了时序考虑，直到这一级才会对访存流水线相关的指令进行串行的唤醒。
+&emsp;&emsp;为了时序考虑，直到这一级才会对访存流水线相关的指令进行串行的唤醒。
 
 ### 2.3.8 提交 Commit
 
