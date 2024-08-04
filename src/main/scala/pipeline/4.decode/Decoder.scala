@@ -155,6 +155,14 @@ class Decoder extends Module {
     ),
   )
 
+  // dbar = nop
+  when(io.inst === LA32R.DBAR || io.inst === LA32R.IDLE) {
+    io.rd   := 0.U
+    io.rj   := 0.U
+    io.rk   := 0.U
+    io.iswf := false.B
+  }
+
   // CALL:   BL 或链接返回地址到 $r1 的 JIRL 指令
   // Return: JIRL $r0,$r1,0 指令
   io.isCALL   := is_bl || is_jirl && io.rd === 1.U

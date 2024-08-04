@@ -95,7 +95,7 @@ class WritebackTop(
 
   // exception & privilege
   val isExc = res.func_type === FuncType.exc
-  val isPri = FuncType.isPrivilege(res.func_type)
+  val isPri = FuncType.isPrivilege(res.func_type) || res.func_type === FuncType.mem && res.op_type === MemOpType.cacop
   io.rob.bits.exc_type    := res.exc_type
   io.rob.bits.exc_vaddr   := res.exc_vaddr
   io.rob.bits.isPrivilege := isPri

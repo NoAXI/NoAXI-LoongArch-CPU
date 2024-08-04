@@ -8,6 +8,7 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 import isa.PipelineType
+import isa.LA32R
 
 class DecodeTopIO extends StageBundle {
   val intExc = Input(Bool())
@@ -58,8 +59,12 @@ class DecodeTop extends Module {
     to_info.bits(i).pipelineType := Mux(info(i).bubble, PipelineType.nop, dec(i).pipelineType)
   }
 
+  when((info(0).inst === LA32R.IDLE || info(1).inst === LA32R.IDLE) && !io.intExc) {
+    busy := true.B
+  }
+
   io.to.bits := to_info
-  if(Config.debug_on) {
+  if (Config.debug_on) {
     dontTouch(to_info)
   }
 }

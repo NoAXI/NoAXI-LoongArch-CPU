@@ -80,6 +80,7 @@ object MemOpType {
   def sc = "b0101".U
 
   def cacop = "b0110".U
+  def ibar  = "b0111".U
 
   def isread(memOpType: UInt): Bool  = memOpType(3)
   def iswrite(memOpType: UInt): Bool = !memOpType(3) && !memOpType(2)

@@ -61,7 +61,7 @@ object LA32R {
 
   // priv
   def ERTN = BitPat("b00000110010010000011100000000000") // 未完全实现
-  def IDLE = BitPat("b00000110010010001???????????????") // 尚未实现
+  def IDLE = BitPat("b00000110010010001???????????????")
 
   // imm and pc
   def LU12I_W   = BitPat("b0001010?????????????????????????")
@@ -159,6 +159,7 @@ object LA32R {
     SC_W -> List(FuncType.mem, MemOpType.sc),
     // Cache
     CACOP -> List(FuncType.mem, MemOpType.cacop),
+    IBAR  -> List(FuncType.mem, MemOpType.ibar),
 
     //  bru, jumped address calculated by ALU.add: pc + imm (jirl: rj + imm)
     JIRL -> List(FuncType.bru, BruOptype.jirl),
@@ -177,5 +178,9 @@ object LA32R {
     TLBWR   -> List(FuncType.tlb, TlbOpType.wr),
     TLBFILL -> List(FuncType.tlb, TlbOpType.fill),
     INVTLB  -> List(FuncType.tlb, TlbOpType.inv),
+
+    // others
+    IDLE -> List(FuncType.alu, AluOpType.and),
+    DBAR -> List(FuncType.alu, AluOpType.and),// nop
   )
 }

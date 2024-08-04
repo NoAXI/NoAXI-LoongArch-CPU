@@ -51,6 +51,7 @@ class StoreBuffer(
   val bitHit  = WireDefault(VecInit(Seq.fill(4)(0.U(8.W))))
   val bitStrb = WireDefault(VecInit(Seq.fill(4)(false.B)))
   for (i <- 0 until entries) {
+    // 确保只有store才会触发前递
     when(io.memory2.forwardpa === mem(i).requestInfo.addr && mem(i).valid && mem(i).requestInfo.rbType) {
       hit := true.B
       for (j <- 0 to 3) {

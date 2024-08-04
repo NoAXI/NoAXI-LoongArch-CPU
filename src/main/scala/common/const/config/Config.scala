@@ -9,6 +9,7 @@ object Config {
   val debug_on: Boolean      = true & !isOnChip
   val statistic_on: Boolean  = true & !isOnChip
   val staticPredict: Boolean = false
+  val ext_int_on: Boolean    = true
   val loadSpecial: Boolean   = isOnChip
   val divClockNum: Int       = 8
   val mulClockNum: Int       = 2

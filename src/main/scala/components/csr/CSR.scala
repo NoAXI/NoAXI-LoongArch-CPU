@@ -109,8 +109,6 @@ class CSR extends Module {
   }
 
   val conuter_run    = WireDefault(true.B)
-  val is_soft_int_ex = WireDefault(false.B)
-
   when(io.csrWrite.we) {
     for (x <- csrlist) {
       when(io.csrWrite.waddr === x.id) {
@@ -123,9 +121,6 @@ class CSR extends Module {
         when(x.id === CSRCodes.TCFG) {
           conuter_run       := false.B
           TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 3.U(2.W)
-        }
-        when(x.id === CSRCodes.ESTAT && wdata(1, 0) =/= 0.U) {
-          is_soft_int_ex := true.B
         }
       }
     }
@@ -192,7 +187,7 @@ class CSR extends Module {
 
   ESTAT.info.is_9_2 := io.ext_int
 
-  if (!Config.isOnChip) {
+  if (!Config.ext_int_on) {
     ESTAT.info.is_9_2 := 0.U
   }
 
@@ -224,8 +219,7 @@ class CSR extends Module {
       ),
     )(5, 0)
     ESTAT.info.esubcode := Mux(info.excType === ECodes.ADEM, 1.U, 0.U)
-    // 软中断的ERApc是下一个pc, TODO:中断标记在某个指令上
-    ERA.info.pc := Mux(is_soft_int_ex, info.pc_add_4, info.pc)
+    ERA.info.pc := info.pc
     BADV.info.vaddr := MateDefault(
       info.excType,
       BADV.info.vaddr,
