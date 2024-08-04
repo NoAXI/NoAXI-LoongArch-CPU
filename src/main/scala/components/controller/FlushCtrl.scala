@@ -9,7 +9,8 @@ import func.Functions._
 import const.Parameters._
 
 class FlushCtrlIO extends Bundle {
-  val flushInfo = Input(new BranchInfo)
+  val flushInfo    = Input(new BranchInfo)
+  val stallRecover = Input(new BranchInfo)
 
   val frontFlush  = Output(Bool())
   val backFlush   = Output(Bool())
@@ -21,13 +22,20 @@ class FlushCtrlIO extends Bundle {
 class FlushCtrl extends Module {
   val io = IO(new FlushCtrlIO)
 
-  val doFlush    = io.flushInfo.en
-  val delayFlush = RegNext(doFlush)
+  val flushReg = RegInit(0.U.asTypeOf(io.flushInfo))
+  when(io.stallRecover.en) {
+    flushReg.en  := true.B
+    flushReg.tar := io.stallRecover.tar
+  }.elsewhen(io.flushInfo.en) {
+    flushReg.en  := true.B
+    flushReg.tar := io.flushInfo.tar
+  }.otherwise {
+    flushReg := 0.U.asTypeOf(flushReg)
+  }
+  io.flushTarget := flushReg
 
-  io.flushTarget := RegNext(io.flushInfo)
   io.commitStall := false.B
-
-  io.frontFlush := delayFlush
-  io.backFlush  := delayFlush
-  io.recover    := delayFlush
+  io.frontFlush  := flushReg.en
+  io.backFlush   := flushReg.en
+  io.recover     := flushReg.en
 }

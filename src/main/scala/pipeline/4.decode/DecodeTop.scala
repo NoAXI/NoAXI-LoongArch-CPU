@@ -12,7 +12,6 @@ import isa.LA32R
 
 class DecodeTopIO extends StageBundle {
   val intExc = Input(Bool())
-  val stall  = Input(Bool())
 }
 
 class DecodeTop extends Module {
@@ -58,10 +57,6 @@ class DecodeTop extends Module {
     )
     to_info.bits(i).exc_vaddr    := info(i).pc
     to_info.bits(i).pipelineType := Mux(info(i).bubble, PipelineType.nop, dec(i).pipelineType)
-  }
-
-  when(io.stall) {
-    busy := true.B
   }
 
   io.to.bits := to_info

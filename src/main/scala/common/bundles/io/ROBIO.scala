@@ -9,6 +9,7 @@ import func.Functions._
 import const.Parameters._
 
 import pipeline._
+import controller._
 
 class RobInfo extends Bundle {
   val done = Bool()
@@ -37,9 +38,10 @@ class RobInfo extends Bundle {
   // csr write info
   val csr_iswf = Bool()
   val isTlb    = Bool()
-  // val csr_wmask = UInt(DATA_WIDTH.W)
-  // val csr_addr  = UInt(CSR_WIDTH.W)
-  // val csr_value = UInt(DATA_WIDTH.W)
+
+  // stall info
+  val isStall   = Bool()
+  val stallType = StallType()
 }
 
 class RobRenameIO extends Bundle {

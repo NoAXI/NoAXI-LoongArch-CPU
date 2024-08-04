@@ -81,6 +81,7 @@ class Top extends Module {
 
   // ==================== unit define ====================
   val flushCtrl = Module(new FlushCtrl).io
+  val stallCtrl = Module(new StallCtrl).io
   val bpu       = Module(new BPU).io
   val csr       = Module(new CSR).io
 
@@ -250,8 +251,13 @@ class Top extends Module {
   flushCtrl.recover <> commit.flush
 
   // stall
-  ib.stall          := false.B // flushCtrl.backFlush
-  issue.memoryStall := false.B
+  issue.memoryStall      := false.B
+  stallCtrl.frontStall   <> ib.stall
+  stallCtrl.stallType    <> commit.stallType
+  stallCtrl.stallInfo    <> commit.stallInfo
+  stallCtrl.cacopSignal  <> writeback(MEMORY_ISSUE_ID).cacopDone
+  stallCtrl.idleSignal   <> csr.intExc
+  stallCtrl.stallRecover <> flushCtrl.stallRecover
 
   // back flush
   flushCtrl.backFlush <> dispatch.flush
@@ -310,6 +316,8 @@ class Top extends Module {
     io.statistic.get.iCache_total_time   := BoringUtils.bore(iCache.total_time.get)
     io.statistic.get.dCache_succeed_time := BoringUtils.bore(dcache.succeed_time.get)
     io.statistic.get.dCache_total_time   := BoringUtils.bore(dcache.total_time.get)
+
+    memory1.llbit := false.B
   }
   if (Config.debug_on) {
     io.debug_uncached.get := writeback(MEMORY_ISSUE_ID).debug_uncached.get

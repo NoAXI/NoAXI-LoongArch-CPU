@@ -7,6 +7,7 @@ import const._
 import bundles._
 import func.Functions._
 import const.Parameters._
+import controller._
 
 class CommitTopIO extends Bundle {
   // architectural state update
@@ -22,6 +23,8 @@ class CommitTopIO extends Bundle {
   val stall         = Input(Bool())
   val predictResult = Output(new PredictRes)
   val flushInfo     = Output(new BranchInfo)
+  val stallInfo     = Output(new BranchInfo)
+  val stallType     = Output(StallType())
 
   // exception
   val excHappen    = Output(new ExcHappenInfo)
@@ -49,7 +52,7 @@ class CommitTop extends Module {
     }
 
     // when detect write / csr / brfail, set next inst stall
-    when(info.done && (info.isPrivilege || info.isStore || info.isbr || info.isException)) {
+    when(info.done && (info.isPrivilege || info.isStore || info.isbr || info.isException || info.isStall)) {
       if (i != 0) {
         when(info.isStore || info.isException || info.isPrivilege) {
           readyBit(i) := false.B
@@ -94,6 +97,18 @@ class CommitTop extends Module {
   }
   when(io.excJump.en) {
     io.flushInfo := io.excJump
+  }
+
+  // stall, should make sure that stall insts are marked as priv
+  io.stallInfo := 0.U.asTypeOf(io.stallInfo)
+  io.stallType := 0.U
+  when(io.rob(0).info.ready) {
+    val info = io.rob(0).info.bits
+    when(info.isStall) {
+      io.stallInfo.en  := true.B
+      io.stallInfo.tar := info.bfail.tar
+      io.stallType     := info.stallType
+    }
   }
 
   // send info

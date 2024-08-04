@@ -8,6 +8,7 @@ import const._
 import bundles._
 import func.Functions._
 import const.Parameters._
+import controller._
 
 class WritebackTopIO extends SingleStageBundle {
   val preg        = Flipped(new PRegWriteIO)
@@ -15,6 +16,7 @@ class WritebackTopIO extends SingleStageBundle {
   val forward     = Flipped(new ForwardInfoIO)
   val awake       = Output(new AwakeInfo)
   val writeLLBCTL = Output(Bool())
+  val cacopDone   = Output(Bool())
 
   val debug_uncached = if (Config.debug_on) Some(new DebugIO) else None
 }
@@ -56,14 +58,20 @@ class WritebackTop(
     res.rdInfo.data := Mux(info.actualStore && info.writeInfo.requestInfo.atom && info.writeInfo.requestInfo.rbType, res.canrequest, mem2.data)
     dontTouch(bitHit)
 
-    // 写LLBCTL
+    // write LLBCTL
     io.writeLLBCTL := info.actualStore && info.writeInfo.requestInfo.atom && !info.writeInfo.requestInfo.rbType
+
+    // judge roll-back cacop
+    // TODO: add cacop logic here
+    io.cacopDone := true.B
 
     io.awake.valid := valid && info.iswf && io.to.fire
     io.awake.preg  := info.rdInfo.preg
     doForward(io.forward, res, false.B)
   } else {
-    io.awake := DontCare
+    io.awake       := DontCare
+    io.writeLLBCTL := DontCare
+    io.cacopDone   := DontCare
     doForward(io.forward, res, valid)
   }
 
@@ -99,7 +107,7 @@ class WritebackTop(
 
   // exception & privilege
   val isExc = res.func_type === FuncType.exc
-  val isPri = FuncType.isPrivilege(res.func_type) || res.func_type === FuncType.mem && res.op_type === MemOpType.cacop
+  val isPri = FuncType.isPrivilege(res.func_type) || io.rob.bits.isStall
   io.rob.bits.exc_type    := res.exc_type
   io.rob.bits.exc_vaddr   := res.exc_vaddr
   io.rob.bits.isPrivilege := isPri
@@ -108,6 +116,13 @@ class WritebackTop(
   when(isPri) {
     io.rob.bits.bfail.tar := res.pc + 4.U
   }
+
+  // stall
+  val isIdle    = res.func_type === FuncType.alu && res.op_type === AluOpType.idle
+  val isCacop   = res.func_type === FuncType.mem && res.op_type === MemOpType.cacop
+  val stallType = isCacop // idle -> 0, cacop -> 1
+  io.rob.bits.isStall   := isIdle || isCacop
+  io.rob.bits.stallType := stallType
 
   // csr / tlb
   io.rob.bits.csr_iswf := res.isWriteCsr
