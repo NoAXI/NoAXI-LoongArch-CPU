@@ -104,6 +104,7 @@ class SingleInfo extends BasicStageInfo {
   val forwardData   = Vec(2, UInt(DATA_WIDTH.W))
   val forwardStrb   = Vec(2, UInt((DATA_WIDTH / 8).W))
   val uncachedLoad  = Bool()
+  val canrequest    = Bool()
 
   // storebuffer
   val storeBufferHit     = Bool()

@@ -180,7 +180,7 @@ object LA32R {
     INVTLB  -> List(FuncType.tlb, TlbOpType.inv),
 
     // others
-    IDLE -> List(FuncType.alu, AluOpType.and),
+    IDLE -> List(FuncType.alu, AluOpType.idle),
     DBAR -> List(FuncType.alu, AluOpType.and),// nop
   )
 }

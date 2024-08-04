@@ -10,10 +10,11 @@ import func.Functions._
 import const.Parameters._
 
 class WritebackTopIO extends SingleStageBundle {
-  val preg    = Flipped(new PRegWriteIO)
-  val rob     = Flipped(new RobWriteIO)
-  val forward = Flipped(new ForwardInfoIO)
-  val awake   = Output(new AwakeInfo)
+  val preg        = Flipped(new PRegWriteIO)
+  val rob         = Flipped(new RobWriteIO)
+  val forward     = Flipped(new ForwardInfoIO)
+  val awake       = Output(new AwakeInfo)
+  val writeLLBCTL = Output(Bool())
 
   val debug_uncached = if (Config.debug_on) Some(new DebugIO) else None
 }
@@ -52,8 +53,11 @@ class WritebackTop(
     mem2.rdata      := Mux(info.actualStore, info.ldData, result)
     mem2.addr       := Mux(info.actualStore, info.writeInfo.requestInfo.addr, info.pa)
     mem2.op_type    := Mux(info.actualStore, info.writeInfo.requestInfo.wstrb, info.op_type)
-    res.rdInfo.data := mem2.data
+    res.rdInfo.data := Mux(info.actualStore && info.writeInfo.requestInfo.atom && info.writeInfo.requestInfo.rbType, res.canrequest, mem2.data)
     dontTouch(bitHit)
+
+    // 写LLBCTL
+    io.writeLLBCTL := info.actualStore && info.writeInfo.requestInfo.atom && !info.writeInfo.requestInfo.rbType
 
     io.awake.valid := valid && info.iswf && io.to.fire
     io.awake.preg  := info.rdInfo.preg

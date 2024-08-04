@@ -92,6 +92,7 @@ class RequestInfo extends Bundle {
   val wstrb  = UInt(4.W)
   val rbType = Bool()
   val cacop  = new CacOpInfo
+  val atom   = Bool()
 }
 
 class Mem1DCacheIO extends Bundle {

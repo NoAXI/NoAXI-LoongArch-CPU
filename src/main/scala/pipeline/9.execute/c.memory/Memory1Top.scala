@@ -21,6 +21,7 @@ class Memory1TopIO extends SingleStageBundle {
   val tlb    = new Stage1TLBIO
   val dCache = new Mem1DCacheIO
   val mem2   = new Mem1Mem2ForwardIO
+  val llbit  = Input(Bool())
 }
 
 class Memory1Top extends Module {
@@ -71,6 +72,8 @@ class Memory1Top extends Module {
   res.exc_type  := Mux(hasExc, info.exc_type, excType)
   res.exc_vaddr := Mux(hasExc, info.exc_vaddr, excVaddr)
   res.iswf      := Mux(excEn, false.B, info.iswf)
+
+  res.canrequest := Mux(info.actualStore && info.writeInfo.requestInfo.atom && info.writeInfo.requestInfo.rbType, io.llbit, true.B)
 
   // when(info.actualStore) {
   //   res.exc_type  := ECodes.NONE

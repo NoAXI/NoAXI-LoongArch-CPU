@@ -104,6 +104,7 @@ class Decoder extends Module {
     io.imm := SignedExtend(Cat(imm14, 0.U(2.W)), DATA_WIDTH)
   }
 
+  val is_idle        = func_type === FuncType.alu && op_type === AluOpType.idle
   val is_cacop       = func_type === FuncType.mem && op_type === MemOpType.cacop
   val is_invtlb      = func_type === FuncType.tlb && op_type === TlbOpType.inv
   val is_jirl        = func_type === FuncType.bru && op_type === BruOptype.jirl
@@ -112,9 +113,9 @@ class Decoder extends Module {
   val is_none        = func_type === FuncType.none
   val is_exc         = func_type === FuncType.exc
   val is_tlb         = func_type === FuncType.tlb
-  val is_st          = func_type === FuncType.mem && MemOpType.iswrite(op_type)
+  val is_st          = func_type === FuncType.mem && MemOpType.iswrite(op_type) && op_type =/= MemOpType.sc
   val br_not_jirl_bl = func_type === FuncType.bru && !is_jirl_bl
-  io.iswf := !(is_exc || is_st || is_none || br_not_jirl_bl || is_tlb || is_cacop)
+  io.iswf := !(is_exc || is_st || is_none || br_not_jirl_bl || is_tlb || is_cacop || is_idle)
   io.rd := MuxCase(
     io.inst(4, 0),
     List(

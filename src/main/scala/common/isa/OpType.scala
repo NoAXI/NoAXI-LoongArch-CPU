@@ -35,6 +35,8 @@ object AluOpType {
   def srl = "b01001".U
   def sra = "b01010".U
 
+  def idle = "b11111".U
+
   def isimm5(aluOpType: UInt): Bool = aluOpType(3)
   def isimmu(aluOpType: UInt): Bool = aluOpType(4)
 
@@ -61,31 +63,26 @@ object MulOpType {
 }
 
 object MemOpType {
-  def readw = "b1100".U
-
+  def readw  = "b1100".U
   def readh  = "b1011".U
   def readhu = "b1010".U
-
   def readb  = "b1001".U
   def readbu = "b1000".U
-
-  def h = "b01".U
-  def b = "b00".U
+  def ll     = "b1101".U
 
   def writew = "b0000".U
   def writeh = "b0001".U
   def writeb = "b0010".U
+  def sc     = "b0011".U
 
-  def ll = "b0100".U
-  def sc = "b0101".U
-
-  def cacop = "b0110".U
-  def ibar  = "b0111".U
+  def cacop = "b0100".U
+  def ibar  = "b0101".U
 
   def isread(memOpType: UInt): Bool  = memOpType(3)
   def iswrite(memOpType: UInt): Bool = !memOpType(3) && !memOpType(2)
-  def ish(memOpType: UInt): Bool     = memOpType(2, 1) === h
-  def isb(memOpType: UInt): Bool     = memOpType(2, 1) === b
+  def ish(memOpType: UInt): Bool     = memOpType(2, 1) === "b01".U
+  def isb(memOpType: UInt): Bool     = memOpType(2, 1) === "b00".U
+  def isatom(memOpType: UInt): Bool  = memOpType === ll || memOpType === sc // can be improved?
   def signed(memOpType: UInt): Bool  = memOpType(0).asBool
   def apply()                        = UInt(4.W)
 }

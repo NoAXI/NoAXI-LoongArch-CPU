@@ -50,15 +50,15 @@ class CSR extends Module {
   val PGDH    = new PGDH
   val PGD     = new PGD
   // val CPUID     =
-  val SAVE0 = new SAVE0
-  val SAVE1 = new SAVE1
-  val SAVE2 = new SAVE2
-  val SAVE3 = new SAVE3
-  val TID   = new TID
-  val TCFG  = new TCFG
-  val TVAL  = new TVAL
-  val TICLR = new TICLR
-  // val LLBCTL    =
+  val SAVE0     = new SAVE0
+  val SAVE1     = new SAVE1
+  val SAVE2     = new SAVE2
+  val SAVE3     = new SAVE3
+  val TID       = new TID
+  val TCFG      = new TCFG
+  val TVAL      = new TVAL
+  val TICLR     = new TICLR
+  val LLBCTL    = new LLBCTL
   val TLBRENTRY = new TLBRENTRY
   // val CTAG      =
   val DMW0 = new DMW0
@@ -90,7 +90,7 @@ class CSR extends Module {
     TCFG,
     TVAL,
     TICLR,
-    // LLBCTL,
+    LLBCTL,
     TLBRENTRY,
     // CTAG,
     DMW0,
@@ -108,7 +108,7 @@ class CSR extends Module {
     }
   }
 
-  val conuter_run    = WireDefault(true.B)
+  val conuter_run = WireDefault(true.B)
   when(io.csrWrite.we) {
     for (x <- csrlist) {
       when(io.csrWrite.waddr === x.id) {
@@ -121,6 +121,9 @@ class CSR extends Module {
         when(x.id === CSRCodes.TCFG) {
           conuter_run       := false.B
           TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 3.U(2.W)
+        }
+        when(x.id === CSRCodes.LLBCTL && wdata(1) === 1.U) {
+          LLBCTL.info.rollb := false.B
         }
       }
     }
@@ -219,7 +222,7 @@ class CSR extends Module {
       ),
     )(5, 0)
     ESTAT.info.esubcode := Mux(info.excType === ECodes.ADEM, 1.U, 0.U)
-    ERA.info.pc := info.pc
+    ERA.info.pc         := info.pc
     BADV.info.vaddr := MateDefault(
       info.excType,
       BADV.info.vaddr,
@@ -258,13 +261,11 @@ class CSR extends Module {
       CRMD.info.pg := true.B
     }
 
-    /*
     when(LLBCTL.info.klo) {
       LLBCTL.info.klo := false.B
     }.otherwise {
       LLBCTL.info := 0.U.asTypeOf(LLBCTL.info)
     }
-     */
 
     io.excJump.en  := true.B
     io.excJump.tar := ERA.info.pc

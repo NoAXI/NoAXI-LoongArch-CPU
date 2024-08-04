@@ -56,9 +56,10 @@ class Memory2Top extends Module {
   val isFirstStore = isMem && MemOpType.iswrite(info.op_type)
   val isFirstLoad  = isMem && MemOpType.isread(info.op_type)
   val isFirstCacop = isMem && info.op_type === MemOpType.cacop
+  val isFirstAtom  = isMem && MemOpType.isatom(info.op_type)
 
-  val dcacheEn      = (info.actualStore && !io.cacOpInfo.en) || (isFirstLoad && info.cached)
-  val storebufferEn = isFirstStore || (isFirstLoad && !info.cached) || isFirstCacop
+  val dcacheEn      = ((info.actualStore && !io.cacOpInfo.en) || (isFirstLoad && info.cached && !isFirstAtom)) && info.canrequest
+  val storebufferEn = isFirstStore || (isFirstLoad && !info.cached) || isFirstCacop || isFirstAtom
 
   val storeBufferFull = !io.storeBufferWrite.ready
 
@@ -69,6 +70,7 @@ class Memory2Top extends Module {
   io.dCache.request.bits.wdata  := info.wdata
   io.dCache.request.bits.wstrb  := info.wmask
   io.dCache.request.bits.rbType := DontCare
+  io.dCache.request.bits.atom   := DontCare
   io.dCache.request.bits.cacop  := info.writeInfo.requestInfo.cacop
   io.dCache.rwType              := Mux(info.actualStore, info.writeInfo.requestInfo.rbType, isFirstStore)
   io.dCache.flush               := io.flush
@@ -85,6 +87,7 @@ class Memory2Top extends Module {
     io.storeBufferWrite.bits.requestInfo.wdata  := Mux(isFirstStore, info.wdata, 0.U((22 - ROB_WIDTH).W) ## info.robId ## info.rdInfo.areg ## info.rdInfo.preg)
     io.storeBufferWrite.bits.requestInfo.wstrb  := Mux(isFirstStore, info.wmask, info.op_type)
     io.storeBufferWrite.bits.requestInfo.rbType := isFirstStore
+    io.storeBufferWrite.bits.requestInfo.atom   := MemOpType.isatom(info.op_type)
     io.storeBufferWrite.bits.requestInfo.cacop.en   := isFirstCacop
     io.storeBufferWrite.bits.requestInfo.cacop.addr := info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
     io.storeBufferWrite.bits.requestInfo.cacop.code := info.rdInfo.areg

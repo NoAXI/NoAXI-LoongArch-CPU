@@ -356,6 +356,21 @@ class TICLR extends base {
 
 //-------------------------------------------------------------------------
 
+class LLBCTL_info extends Bundle {
+  val zero  = UInt(29.W)
+  val klo   = Bool()
+  val wcllb = Bool()
+  val rollb = Bool() // llbit的值
+}
+
+class LLBCTL extends base {
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new LLBCTL_info)) }).suggestName("LLBCTL")
+  override val id   = CSRCodes.LLBCTL
+  override val rw   = "b0000_0000_0000_0000_0000_0000_0000_0110".U
+}
+
+//-------------------------------------------------------------------------
+
 class TLBRENTRY_info extends Bundle {
   val pa   = UInt(26.W)
   val zero = UInt(6.W)
