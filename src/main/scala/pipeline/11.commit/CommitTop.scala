@@ -104,7 +104,7 @@ class CommitTop extends Module {
   io.stallType := 0.U
   when(io.rob(0).info.ready) {
     val info = io.rob(0).info.bits
-    when(info.isStall) {
+    when(info.isStall && !info.isException) {
       io.stallInfo.en  := true.B
       io.stallInfo.tar := info.bfail.tar
       io.stallType     := info.stallType

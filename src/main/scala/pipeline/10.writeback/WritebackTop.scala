@@ -63,7 +63,7 @@ class WritebackTop(
 
     // judge roll-back cacop
     // TODO: add cacop logic here
-    io.cacopDone := true.B
+    io.cacopDone := info.actualStore && info.writeInfo.requestInfo.cacop.en
 
     io.awake.valid := valid && info.iswf && io.to.fire
     io.awake.preg  := info.rdInfo.preg
