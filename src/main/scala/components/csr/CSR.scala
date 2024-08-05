@@ -9,6 +9,8 @@ import func.Functions._
 import const.Parameters._
 import isa.TlbOpType
 
+// TODO: IPE !
+
 class CSRIO extends Bundle {
   // memory2
   val csrRead = new CsrReadIO
@@ -26,6 +28,10 @@ class CSRIO extends Bundle {
 
   // hard interrupt
   val ext_int = Input(UInt(8.W))
+
+  // llbit
+  val llbit       = Output(Bool())
+  val writeLLBCTL = Input(Bool())
 }
 
 class CSR extends Module {
@@ -119,8 +125,9 @@ class CSR extends Module {
           ESTAT.info.is_11 := false.B
         }
         when(x.id === CSRCodes.TCFG) {
-          conuter_run       := false.B
-          TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 3.U(2.W)
+          conuter_run := false.B
+          // TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 3.U(2.W)
+          TVAL.info.timeval := wdata(COUNT_N - 1, 6) ## 63.U(6.W)
         }
         when(x.id === CSRCodes.LLBCTL && wdata(1) === 1.U) {
           LLBCTL.info.rollb := false.B
@@ -281,4 +288,9 @@ class CSR extends Module {
   io.tlb.tlbelo0   := TLBELO0.info
   io.tlb.tlbelo1   := TLBELO1.info
   io.tlb.tlbidx    := TLBIDX.info
+
+  io.llbit := LLBCTL.info.rollb
+  when(io.writeLLBCTL) {
+    LLBCTL.info.rollb := true.B
+  }
 }

@@ -290,12 +290,14 @@ class Top extends Module {
   commit.predictResult  <> prefetch.predictResFromBack
 
   // csr
-  csr.csrRead   <> muldiv0.csrRead
-  csr.csrWrite  <> muldiv0.csrWrite
-  csr.excJump   <> commit.excJump
-  csr.excHappen <> commit.excHappen
-  csr.intExc    <> decode.intExc
-  csr.ext_int   <> io.ext_int
+  csr.csrRead     <> muldiv0.csrRead
+  csr.csrWrite    <> muldiv0.csrWrite
+  csr.excJump     <> commit.excJump
+  csr.excHappen   <> commit.excHappen
+  csr.intExc      <> decode.intExc
+  csr.ext_int     <> io.ext_int
+  csr.llbit       <> memory1.llbit
+  csr.writeLLBCTL <> writeback(MEMORY_ISSUE_ID).writeLLBCTL
 
   muldiv0.commitCsrWriteDone <> commit.csrWritePop
 
@@ -316,8 +318,6 @@ class Top extends Module {
     io.statistic.get.iCache_total_time   := BoringUtils.bore(iCache.total_time.get)
     io.statistic.get.dCache_succeed_time := BoringUtils.bore(dcache.succeed_time.get)
     io.statistic.get.dCache_total_time   := BoringUtils.bore(dcache.total_time.get)
-
-    memory1.llbit := false.B
   }
   if (Config.debug_on) {
     io.debug_uncached.get := writeback(MEMORY_ISSUE_ID).debug_uncached.get
