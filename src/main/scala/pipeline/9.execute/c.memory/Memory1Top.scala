@@ -81,16 +81,16 @@ class Memory1Top extends Module {
   //   res.iswf      := false.B
   // }
 
-  when(!info.actualStore && !cached && info.func_type === FuncType.mem && MemOpType.isread(info.op_type)) {
+  when(!info.actualStore && mem1.isMem && ((!cached && MemOpType.isread(info.op_type)) || MemOpType.isatom(info.op_type))) {
     res.uncachedLoad := true.B
     res.iswf         := false.B
   }
 
-  when(info.actualStore && !info.writeInfo.requestInfo.rbType && !info.writeInfo.requestInfo.cacop.en) {
+  when(info.actualStore && ((!info.writeInfo.requestInfo.rbType && !info.writeInfo.requestInfo.cacop.en) || info.writeInfo.requestInfo.atom)) {
     res.iswf            := true.B
-    res.robId           := info.writeInfo.requestInfo.wdata(12 + ROB_WIDTH - 1, 12)
-    res.rdInfo.areg     := info.writeInfo.requestInfo.wdata(11, 6)
-    res.rdInfo.preg     := info.writeInfo.requestInfo.wdata(5, 0)
+    res.robId           := info.writeInfo.requestInfo.cacop.addr(12 + ROB_WIDTH - 1, 12)
+    res.rdInfo.areg     := info.writeInfo.requestInfo.cacop.addr(11, 6)
+    res.rdInfo.preg     := info.writeInfo.requestInfo.cacop.addr(5, 0)
     res.writeInfo.valid := info.writeInfo.requestInfo.rbType
   }
 

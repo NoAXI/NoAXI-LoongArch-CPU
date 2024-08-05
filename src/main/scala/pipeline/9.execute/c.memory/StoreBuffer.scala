@@ -110,7 +110,7 @@ class StoreBuffer(
     validReg(validPos) := true.B
   }
   when(validHappenReg) {
-    io.committedBusy.preg  := mem(validPosReg).requestInfo.wdata(PREG_WIDTH - 1, 0)
+    io.committedBusy.preg  := mem(validPosReg).requestInfo.cacop.addr(PREG_WIDTH - 1, 0)
     io.committedBusy.valid := !mem(validPosReg).requestInfo.cacop.en && !mem(validPosReg).requestInfo.rbType && io.committedBusy.preg =/= 0.U
   }
   when(io.popValid =/= io.to.fire) {

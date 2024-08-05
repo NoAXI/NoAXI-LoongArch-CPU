@@ -9,11 +9,12 @@ import func.Functions._
 import const.Parameters._
 
 object StallType {
-  def idle    = "0".U
-  def cacop   = "1".U
-  def apply() = UInt(1.W)
+  def idle    = "00".U
+  def cacop   = "01".U
+  def ll      = "10".U
+  def apply() = UInt(2.W)
 
-  def typeCount: Int = 2
+  def typeCount: Int = 3
 }
 
 class StallCtrlIO extends Bundle {
@@ -22,6 +23,7 @@ class StallCtrlIO extends Bundle {
 
   val idleSignal  = Input(Bool())
   val cacopSignal = Input(Bool())
+  val llSignal    = Input(Bool())
 
   val frontStall   = Output(Bool())
   val stallRecover = Output(new BranchInfo)
@@ -31,11 +33,11 @@ class StallCtrl extends Module {
   val io       = IO(new StallCtrlIO)
   val stallReg = RegInit(0.U.asTypeOf(io.stallInfo))
   val typeReg  = RegInit(0.U.asTypeOf(UInt(StallType.typeCount.W)))
-  val signal   = Cat(io.cacopSignal, io.idleSignal) // when you update optype, update this signal as well
+  val signal   = Cat(io.llSignal, io.cacopSignal, io.idleSignal) // when you update optype, update this signal as well
 
   when(io.stallInfo.en) {
     stallReg := io.stallInfo
-    typeReg  := UIntToOH(io.stallType)
+    typeReg  := (UIntToOH(io.stallType))(StallType.typeCount - 1, 0)
   }
 
   when(stallReg.en && (signal & typeReg) =/= 0.U) {

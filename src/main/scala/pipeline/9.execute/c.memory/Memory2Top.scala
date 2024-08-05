@@ -84,12 +84,12 @@ class Memory2Top extends Module {
     io.storeBufferWrite.bits.valid              := true.B
     io.storeBufferWrite.bits.requestInfo.cached := info.cached
     io.storeBufferWrite.bits.requestInfo.addr   := Mux(isFirstStore || isFirstCacop, info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W), info.pa)
-    io.storeBufferWrite.bits.requestInfo.wdata  := Mux(isFirstStore, info.wdata, 0.U((22 - ROB_WIDTH).W) ## info.robId ## info.rdInfo.areg ## info.rdInfo.preg)
+    io.storeBufferWrite.bits.requestInfo.wdata  := info.wdata
     io.storeBufferWrite.bits.requestInfo.wstrb  := Mux(isFirstStore, info.wmask, info.op_type)
     io.storeBufferWrite.bits.requestInfo.rbType := isFirstStore
     io.storeBufferWrite.bits.requestInfo.atom   := MemOpType.isatom(info.op_type)
     io.storeBufferWrite.bits.requestInfo.cacop.en   := isFirstCacop
-    io.storeBufferWrite.bits.requestInfo.cacop.addr := info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W)
+    io.storeBufferWrite.bits.requestInfo.cacop.addr := Mux(isFirstCacop, info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W), 0.U((22 - ROB_WIDTH).W) ## info.robId ## info.rdInfo.areg ## info.rdInfo.preg)
     io.storeBufferWrite.bits.requestInfo.cacop.code := info.rdInfo.areg
   }
   when(io.flush) {

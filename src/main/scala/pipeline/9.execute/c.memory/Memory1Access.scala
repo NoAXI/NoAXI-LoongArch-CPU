@@ -53,6 +53,7 @@ class Memory1Access extends Module {
         MemOpType.writeb -> ("b0001".U << piece),
         MemOpType.writeh -> ("b0011".U << piece),
         MemOpType.writew -> "b1111".U,
+        MemOpType.sc     -> "b1111".U,
       ),
     ),
     0.U,
@@ -64,6 +65,7 @@ class Memory1Access extends Module {
       MemOpType.writeb -> Fill(4, io.rd_value(7, 0)),
       MemOpType.writeh -> Fill(2, io.rd_value(15, 0)),
       MemOpType.writew -> io.rd_value,
+      MemOpType.sc     -> io.rd_value,
     ),
   )
 }

@@ -11,12 +11,16 @@ import const.Parameters._
 import controller._
 
 class WritebackTopIO extends SingleStageBundle {
-  val preg        = Flipped(new PRegWriteIO)
-  val rob         = Flipped(new RobWriteIO)
-  val forward     = Flipped(new ForwardInfoIO)
-  val awake       = Output(new AwakeInfo)
-  val writeLLBCTL = Output(Bool())
-  val cacopDone   = Output(Bool())
+  val preg    = Flipped(new PRegWriteIO)
+  val rob     = Flipped(new RobWriteIO)
+  val forward = Flipped(new ForwardInfoIO)
+  val awake   = Output(new AwakeInfo)
+  val writeLLBCTL = Output(new Bundle {
+    val en    = Bool()
+    val wdata = Bool()
+  })
+  val cacopDone = Output(Bool())
+  val llDone    = Output(Bool())
 
   val debug_uncached = if (Config.debug_on) Some(new DebugIO) else None
 }
@@ -59,19 +63,32 @@ class WritebackTop(
     dontTouch(bitHit)
 
     // write LLBCTL
-    io.writeLLBCTL := info.actualStore && info.writeInfo.requestInfo.atom && !info.writeInfo.requestInfo.rbType
+    io.writeLLBCTL.en    := info.actualStore && info.writeInfo.requestInfo.atom
+    io.writeLLBCTL.wdata := !info.writeInfo.requestInfo.rbType
+    io.llDone            := io.writeLLBCTL.en
+
+    val writeStop = RegInit(false.B)
+    when(io.writeLLBCTL.en) {
+      writeStop := true.B
+    }
+    when(writeStop || info.bubble) {
+      io.writeLLBCTL.en := false.B
+    }
+    when(io.from.fire) {
+      writeStop := false.B
+    }
 
     // judge roll-back cacop
-    // TODO: add cacop logic here
     io.cacopDone := info.actualStore && info.writeInfo.requestInfo.cacop.en
 
-    io.awake.valid := valid && info.iswf && io.to.fire
+    io.awake.valid := io.preg.en
     io.awake.preg  := info.rdInfo.preg
     doForward(io.forward, res, false.B)
   } else {
     io.awake       := DontCare
     io.writeLLBCTL := DontCare
     io.cacopDone   := DontCare
+    io.llDone      := DontCare
     doForward(io.forward, res, valid)
   }
 
@@ -96,6 +113,7 @@ class WritebackTop(
     MemOpType.iswrite(res.op_type)
       || (MemOpType.isread(res.op_type) && !info.cached)
       || res.op_type === MemOpType.cacop
+      || MemOpType.isatom(res.op_type)
   )
 
   // branch
@@ -118,10 +136,18 @@ class WritebackTop(
   }
 
   // stall
-  val isIdle    = res.func_type === FuncType.alu && res.op_type === AluOpType.idle
-  val isCacop   = res.func_type === FuncType.mem && res.op_type === MemOpType.cacop
-  val stallType = isCacop // idle -> 0, cacop -> 1
-  io.rob.bits.isStall   := isIdle || isCacop
+  val isIdle  = res.func_type === FuncType.alu && res.op_type === AluOpType.idle
+  val isCacop = res.func_type === FuncType.mem && res.op_type === MemOpType.cacop
+  val isAtom  = res.func_type === FuncType.mem && MemOpType.isatom(res.op_type)
+  val stallType = MuxCase(
+    3.U,
+    Seq(
+      isIdle  -> 0.U,
+      isCacop -> 1.U,
+      isAtom  -> 2.U,
+    ),
+  ) // idle -> 0, cacop -> 1, atom -> 2
+  io.rob.bits.isStall   := isIdle || isCacop || isAtom
   io.rob.bits.stallType := stallType
 
   // csr / tlb

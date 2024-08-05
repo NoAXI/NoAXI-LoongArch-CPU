@@ -20,7 +20,7 @@ class MemoryLoadAccess extends Module {
   val io = IO(new MemoryLoadAccessIO)
 
   val re    = MemOpType.isread(io.op_type)
-  val we    = !re
+  val we    = MemOpType.iswrite(io.op_type)
   val piece = io.addr(1, 0)
 
   val rdata_h = Extend(

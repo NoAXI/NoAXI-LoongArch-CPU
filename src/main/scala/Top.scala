@@ -258,6 +258,7 @@ class Top extends Module {
   stallCtrl.cacopSignal  <> writeback(MEMORY_ISSUE_ID).cacopDone
   stallCtrl.idleSignal   <> csr.intExc
   stallCtrl.stallRecover <> flushCtrl.stallRecover
+  stallCtrl.llSignal     <> writeback(MEMORY_ISSUE_ID).llDone
 
   // back flush
   flushCtrl.backFlush <> dispatch.flush

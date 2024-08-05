@@ -20,4 +20,5 @@ object FuncType {
   def apply() = UInt(FUNC_TYPE_WIDTH.W)
 
   def isPrivilege(funcType: UInt): Bool = funcType(3).asBool
+  // def isPrivilege(funcType: UInt): Bool = VecInit(csr, exc, tlb).contains(funcType)
 }

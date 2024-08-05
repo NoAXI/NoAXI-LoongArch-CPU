@@ -30,8 +30,11 @@ class CSRIO extends Bundle {
   val ext_int = Input(UInt(8.W))
 
   // llbit
-  val llbit       = Output(Bool())
-  val writeLLBCTL = Input(Bool())
+  val llbit = Output(Bool())
+  val writeLLBCTL = Input(new Bundle {
+    val en    = Bool()
+    val wdata = Bool()
+  })
 }
 
 class CSR extends Module {
@@ -129,7 +132,7 @@ class CSR extends Module {
           // TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 3.U(2.W)
           TVAL.info.timeval := wdata(COUNT_N - 1, 6) ## 63.U(6.W)
         }
-        when(x.id === CSRCodes.LLBCTL && wdata(1) === 1.U) {
+        when(x.id === CSRCodes.LLBCTL && wdata(1)) {
           LLBCTL.info.rollb := false.B
         }
       }
@@ -290,7 +293,7 @@ class CSR extends Module {
   io.tlb.tlbidx    := TLBIDX.info
 
   io.llbit := LLBCTL.info.rollb
-  when(io.writeLLBCTL) {
-    LLBCTL.info.rollb := true.B
+  when(io.writeLLBCTL.en) {
+    LLBCTL.info.rollb := io.writeLLBCTL.wdata
   }
 }
