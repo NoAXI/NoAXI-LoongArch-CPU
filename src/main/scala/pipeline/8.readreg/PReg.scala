@@ -27,6 +27,9 @@ class PRegWriteIO extends Bundle {
 class PRegIO extends Bundle {
   val read  = Vec(BACK_ISSUE_WIDTH, new PRegReadIO)
   val write = Vec(BACK_ISSUE_WIDTH, new PRegWriteIO)
+
+  val debug_rat = Input(Vec(AREG_NUM, UInt(PREG_WIDTH.W)))
+  val debug_gpr = Output(Vec(AREG_NUM, UInt(DATA_WIDTH.W)))
 }
 
 class PReg extends Module {
@@ -48,5 +51,14 @@ class PReg extends Module {
     when(rd.en && rd.index =/= 0.U) {
       preg(rd.index) := rd.data
     }
+  }
+
+  if (Config.debug_on_chiplab) {
+    for(i <- 0 until AREG_NUM) {
+      io.debug_gpr(i) := preg(io.debug_rat(i))
+    }
+  } else {
+    io.debug_rat := DontCare
+    io.debug_gpr := DontCare
   }
 }

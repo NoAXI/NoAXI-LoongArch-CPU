@@ -348,4 +348,8 @@ class Top extends Module {
   if (Config.debug_on) {
     io.debug_uncached.get := writeback(MEMORY_ISSUE_ID).debug_uncached.get
   }
+  if(Config.debug_on_chiplab) {
+    preg.debug_rat <> rat.debug_rat
+    // io.debug1.gpr <> preg.debug_gpr
+  }
 }

@@ -39,6 +39,8 @@ class RatIO extends Bundle {
   val rename = Vec(ISSUE_WIDTH, new RatRenameIO)
   val read   = Vec(ISSUE_WIDTH, new RatReadIO)
   val commit = Vec(ISSUE_WIDTH, new RatCommitIO)
+
+  val debug_rat = Output(Vec(AREG_NUM, UInt(PREG_WIDTH.W)))
 }
 
 class Rat extends Module {
@@ -147,6 +149,12 @@ class Rat extends Module {
     when(realPushOffset =/= realPopOffset) {
       maybeFull := realPushOffset > realPopOffset
     }
+  }
+
+  if (Config.debug_on_chiplab) {
+    io.debug_rat := aRat
+  } else {
+    io.debug_rat := DontCare
   }
 }
 
