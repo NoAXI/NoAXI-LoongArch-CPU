@@ -34,6 +34,7 @@ class TopIO extends Bundle {
   val ext_int        = Input(UInt(8.W))
   val axi            = new AXIIO
   val debug          = new DebugIO
+  val debug1         = if (Config.debug_on_chiplab) Some(new DebugIO) else None
   val statistic      = if (Config.statistic_on) Some(new StatisticIO) else None
   val debug_uncached = if (Config.debug_on) Some(new DebugIO) else None
 }
@@ -228,6 +229,30 @@ class Top extends Module {
     io.debug := commit.debug(0)
   }.otherwise {
     io.debug := commit.debug(1)
+  }
+  if (Config.debug_on_chiplab) {
+
+    val debugVec = RegInit(VecInit.fill(2)(0.U.asTypeOf(new Bundle {
+      val wb_pc       = UInt(32.W)
+      val wb_rf_we    = UInt(4.W)
+      val wb_rf_wnum  = UInt(5.W)
+      val wb_rf_wdata = UInt(32.W)
+    })))
+
+    for (i <- 0 until 2) {
+      when(commit.debug(i).wb_rf_we.orR) {
+        debugVec(i).wb_pc       := commit.debug(i).wb_pc
+        debugVec(i).wb_rf_we    := commit.debug(i).wb_rf_we
+        debugVec(i).wb_rf_wnum  := commit.debug(i).wb_rf_wnum
+        debugVec(i).wb_rf_wdata := commit.debug(i).wb_rf_wdata
+      }
+    }
+
+    io.debug          := debugVec(0)
+    io.debug.wb_rf_we := RegNext(commit.debug(0).wb_rf_we)
+
+    io.debug1.get          := debugVec(1)
+    io.debug1.get.wb_rf_we := RegNext(commit.debug(1).wb_rf_we)
   }
 
   // store roll back

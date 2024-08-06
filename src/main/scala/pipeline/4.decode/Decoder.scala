@@ -157,7 +157,7 @@ class Decoder extends Module {
   )
 
   // dbar = nop
-  when(io.inst === LA32R.DBAR || io.inst === LA32R.IDLE) {
+  when(io.inst === LA32R.DBAR || io.inst === LA32R.IBAR || io.inst === LA32R.IDLE) {
     io.rd   := 0.U
     io.rj   := 0.U
     io.rk   := 0.U

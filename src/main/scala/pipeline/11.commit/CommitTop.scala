@@ -118,7 +118,7 @@ class CommitTop extends Module {
     val writeValid = rob.fire && rob.bits.wen && !rob.bits.isException
 
     // rob -> commit
-    io.debug(i).wb_rf_we    := writeValid
+    io.debug(i).wb_rf_we    := Fill(4, writeValid)
     io.debug(i).wb_pc       := Mux(writeValid, rob.bits.pc, 0.U)
     io.debug(i).wb_rf_wnum  := Mux(writeValid, rob.bits.areg, 0.U)
     io.debug(i).wb_rf_wdata := Mux(writeValid, rob.bits.wdata, 0.U)
