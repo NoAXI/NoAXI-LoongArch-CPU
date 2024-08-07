@@ -87,11 +87,12 @@ class SingleInfo extends BasicStageInfo {
   val isReturn  = Bool()
 
   // tlb
-  val va       = UInt(ADDR_WIDTH.W)
-  val pa       = UInt(ADDR_WIDTH.W)
-  val cached   = Bool()
-  val isDirect = Bool()
-  val hitVec   = Vec(TLB_ENTRIES, Bool())
+  val va               = UInt(ADDR_WIDTH.W)
+  val pa               = UInt(ADDR_WIDTH.W)
+  val cached           = Bool()
+  val isDirect         = Bool()
+  val hitVec           = Vec(TLB_ENTRIES, Bool())
+  val tlb_refill_index = if (Config.debug_on_chiplab) Some(UInt(TLB_INDEX_LEN.W)) else None
 
   // mem
   val writeInfo = new BufferInfo

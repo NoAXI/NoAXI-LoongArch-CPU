@@ -13,6 +13,7 @@ import controller._
 import memory.tlb._
 import memory.cache._
 import chisel3.util.experimental.BoringUtils
+import chisel3.WireDefaultImpl
 
 class DebugIO extends Bundle {
   val wb_pc       = Output(UInt(32.W))
@@ -31,12 +32,15 @@ class StatisticIO extends Bundle {
 }
 
 class TopIO extends Bundle {
-  val ext_int        = Input(UInt(8.W))
-  val axi            = new AXIIO
-  val debug          = new DebugIO
-  val debug1         = if (Config.debug_on_chiplab) Some(new DebugIO) else None
+  val ext_int = Input(UInt(8.W))
+  val axi     = new AXIIO
+  val debug   = new DebugIO
+  val debug1  = if (Config.debug_on_chiplab) Some(new DebugIO) else None
+  // val gpr            = if (Config.debug_on_chiplab) Some(Output(Vec(AREG_NUM, UInt(DATA_WIDTH.W)))) else None
   val statistic      = if (Config.statistic_on) Some(new StatisticIO) else None
   val debug_uncached = if (Config.debug_on) Some(new DebugIO) else None
+
+  val diff = if (Config.debug_on_chiplab) Some(Output(new CommitBundle)) else None
 }
 class Top extends Module {
   val io = IO(new TopIO)
@@ -230,30 +234,30 @@ class Top extends Module {
   }.otherwise {
     io.debug := commit.debug(1)
   }
-  if (Config.debug_on_chiplab) {
+  // if (Config.debug_on_chiplab) {
 
-    val debugVec = RegInit(VecInit.fill(2)(0.U.asTypeOf(new Bundle {
-      val wb_pc       = UInt(32.W)
-      val wb_rf_we    = UInt(4.W)
-      val wb_rf_wnum  = UInt(5.W)
-      val wb_rf_wdata = UInt(32.W)
-    })))
+  //   val debugVec = RegInit(VecInit.fill(2)(0.U.asTypeOf(new Bundle {
+  //     val wb_pc       = UInt(32.W)
+  //     val wb_rf_we    = UInt(4.W)
+  //     val wb_rf_wnum  = UInt(5.W)
+  //     val wb_rf_wdata = UInt(32.W)
+  //   })))
 
-    for (i <- 0 until 2) {
-      when(commit.debug(i).wb_rf_we.orR) {
-        debugVec(i).wb_pc       := commit.debug(i).wb_pc
-        debugVec(i).wb_rf_we    := commit.debug(i).wb_rf_we
-        debugVec(i).wb_rf_wnum  := commit.debug(i).wb_rf_wnum
-        debugVec(i).wb_rf_wdata := commit.debug(i).wb_rf_wdata
-      }
-    }
+  //   for (i <- 0 until 2) {
+  //     when(commit.debug(i).wb_rf_we.orR) {
+  //       debugVec(i).wb_pc       := commit.debug(i).wb_pc
+  //       debugVec(i).wb_rf_we    := commit.debug(i).wb_rf_we
+  //       debugVec(i).wb_rf_wnum  := commit.debug(i).wb_rf_wnum
+  //       debugVec(i).wb_rf_wdata := commit.debug(i).wb_rf_wdata
+  //     }
+  //   }
 
-    io.debug          := debugVec(0)
-    io.debug.wb_rf_we := RegNext(commit.debug(0).wb_rf_we)
+  //   io.debug          := debugVec(0)
+  //   io.debug.wb_rf_we := RegNext(commit.debug(0).wb_rf_we)
 
-    io.debug1.get          := debugVec(1)
-    io.debug1.get.wb_rf_we := RegNext(commit.debug(1).wb_rf_we)
-  }
+  //   io.debug1.get          := debugVec(1)
+  //   io.debug1.get.wb_rf_we := RegNext(commit.debug(1).wb_rf_we)
+  // }
 
   // store roll back
   storeBuffer.popValid := commit.bufferPopValid
@@ -348,8 +352,41 @@ class Top extends Module {
   if (Config.debug_on) {
     io.debug_uncached.get := writeback(MEMORY_ISSUE_ID).debug_uncached.get
   }
-  if(Config.debug_on_chiplab) {
+
+  if (Config.debug_on_chiplab) {
     preg.debug_rat <> rat.debug_rat
-    // io.debug1.gpr <> preg.debug_gpr
+
+    //   // val commitQueue  = Module(new Queue(new CommitBundle, 128)).io
+    //   // when(commit.debug(0).wb_rf_we.orR && clock.asBool) {
+    //   //   commitQueue.enq.bits  := commitBundle
+    //   //   commitQueue.enq.valid := true.B
+    //   // }
+    //   // when(commit.debug(1).wb_rf_we.orR && ~clock.asBool) {
+    //   //   commitQueue.enq.bits  := commitBundle
+    //   //   commitQueue.enq.valid := true.B
+    //   // }
+
+    //   // when(commitQueue.deq.valid) {
+    //   //   io.c.get              := commitQueue.deq.bits
+    //   //   commitQueue.deq.ready := true.B
+    //   // }
+
+    val commitBundle = WireDefault(0.U.asTypeOf(new CommitBundle))
+    val commitID     = commit.debug_chiplab.get(1).DifftestInstrCommit.valid
+    commitBundle.DifftestInstrCommit := RegNext(commit.debug_chiplab.get(commitID).DifftestInstrCommit)
+    commitBundle.DifftestExcpEvent   := RegNext(commit.debug_chiplab.get(commitID).DifftestExcpEvent)
+    commitBundle.DifftestLoadEvent   := RegNext(commit.debug_chiplab.get(commitID).DifftestLoadEvent)
+    commitBundle.DifftestStoreEvent  := RegNext(commit.debug_chiplab.get(commitID).DifftestStoreEvent)
+    commitBundle.DifftestTrapEvent   := RegNext(commit.debug_chiplab.get(commitID).DifftestTrapEvent)
+
+    commitBundle.DifftestGRegState.coreid := 0.U
+    commitBundle.DifftestGRegState.gpr    := preg.debug_gpr
+    commitBundle.DifftestCSRRegState      := csr.csrRegs.get
+    commitBundle.DifftestExcpEvent.intrNo := csr.csrRegs.get.estat(12, 2)
+
+    io.debug      := commit.debug(0)
+    io.debug1.get := commit.debug(1)
+
+    io.diff.get := commitBundle
   }
 }

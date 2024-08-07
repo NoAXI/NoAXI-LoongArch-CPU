@@ -31,11 +31,15 @@ class TLB extends Module {
     io.stage1(i).pa := 0.U
   }
 
-  val tlb       = RegInit(VecInit(Seq.fill(TLB_ENTRIES)(0.U.asTypeOf(new TLBEntry))))
-  val tlb_found = WireDefault(VecInit(Seq.fill(2)(false.B))) // tlb_hit
-  val tlbHitVec = WireDefault(VecInit(Seq.fill(2)(VecInit(Seq.fill(TLB_ENTRIES)(false.B)))))
-  val found_ps  = WireDefault(VecInit(Seq.fill(2)(0.U(6.W))))
-  val found     = WireDefault(VecInit(Seq.fill(2)(0.U.asTypeOf(new TLBTransform))))
+  val refill_index = RegInit(0.U(TLB_INDEX_LEN.W))
+  val tlb          = RegInit(VecInit(Seq.fill(TLB_ENTRIES)(0.U.asTypeOf(new TLBEntry))))
+  val tlb_found    = WireDefault(VecInit(Seq.fill(2)(false.B))) // tlb_hit
+  val tlbHitVec    = WireDefault(VecInit(Seq.fill(2)(VecInit(Seq.fill(TLB_ENTRIES)(false.B)))))
+  val found_ps     = WireDefault(VecInit(Seq.fill(2)(0.U(6.W))))
+  val found        = WireDefault(VecInit(Seq.fill(2)(0.U.asTypeOf(new TLBTransform))))
+
+  io.stage1(0).tlb_refill_index.get := refill_index
+  io.stage1(1).tlb_refill_index.get := refill_index
 
   // tlb insts
   val is_tlb_refill = io.csr.estat.ecode === ECodes.TLBR
@@ -104,7 +108,6 @@ class TLB extends Module {
       // \|/            \|/
       is(TlbOpType.fill) {
         // tlb_index random chose
-        val refill_index = RegInit(0.U(TLB_INDEX_LEN.W))
         refill_index := refill_index + 1.U
 
         tlb(refill_index).ps   := tlbidx.ps

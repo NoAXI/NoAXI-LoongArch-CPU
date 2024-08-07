@@ -34,6 +34,8 @@ class CommitTopIO extends Bundle {
 
   // debug info output
   val debug = Vec(ISSUE_WIDTH, new DebugIO)
+
+  val debug_chiplab = if (Config.debug_on_chiplab) Some(Output(Vec(ISSUE_WIDTH, new RobCommitBundle))) else None
 }
 
 class CommitTop extends Module {
@@ -112,6 +114,7 @@ class CommitTop extends Module {
   }
 
   // send info
+  io.debug_chiplab.get := 0.U.asTypeOf(io.debug_chiplab.get)
   val doStore = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(false.B)))
   for (i <- 0 until ISSUE_WIDTH) {
     val rob        = io.rob(i).info
@@ -119,9 +122,16 @@ class CommitTop extends Module {
 
     // rob -> commit
     io.debug(i).wb_rf_we    := Fill(4, writeValid)
-    io.debug(i).wb_pc       := Mux(writeValid, rob.bits.pc, 0.U)
-    io.debug(i).wb_rf_wnum  := Mux(writeValid, rob.bits.areg, 0.U)
-    io.debug(i).wb_rf_wdata := Mux(writeValid, rob.bits.wdata, 0.U)
+    io.debug(i).wb_pc       := rob.bits.pc
+    io.debug(i).wb_rf_wnum  := rob.bits.areg
+    io.debug(i).wb_rf_wdata := rob.bits.wdata
+
+    if (Config.debug_on_chiplab) {
+      io.debug_chiplab.get(i)                           := rob.bits.commitBundle
+      io.debug_chiplab.get(i).DifftestInstrCommit.index := i.U
+      io.debug_chiplab.get(i).DifftestStoreEvent.index  := i.U
+      io.debug_chiplab.get(i).DifftestLoadEvent.index   := i.U
+    }
 
     // commit -> rat
     io.rat(i).valid := writeValid

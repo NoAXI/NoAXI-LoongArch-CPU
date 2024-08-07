@@ -37,23 +37,27 @@ class Memory1Top extends Module {
   // tlb
   io.tlb.va     := info.va
   io.tlb.hitVec := info.hitVec
-  val stall       = !ShiftRegister(io.from.fire, 1)
-  val savedCached = RegInit(false.B)
-  val savedPa     = RegInit(0.U(ADDR_WIDTH.W))
-  val savedExc    = RegInit(0.U.asTypeOf(new ExcInfo))
+  val stall            = !ShiftRegister(io.from.fire, 1)
+  val savedCached      = RegInit(false.B)
+  val savedPa          = RegInit(0.U(ADDR_WIDTH.W))
+  val savedExc         = RegInit(0.U.asTypeOf(new ExcInfo))
+  val savedRefillIndex = RegInit(0.U(tlbConst.TLB_INDEX_LEN.W))
   when(ShiftRegister(io.from.fire, 1)) {
-    savedCached := io.tlb.cached
-    savedPa     := io.tlb.pa
-    savedExc    := io.tlb.exception
+    savedCached      := io.tlb.cached
+    savedPa          := io.tlb.pa
+    savedExc         := io.tlb.exception
+    savedRefillIndex := io.tlb.tlb_refill_index.get
   }
   val tlbpa     = Mux(stall, savedPa, io.tlb.pa)
   val tlbcached = Mux(stall, savedCached, io.tlb.cached)
   val tlbexc    = Mux(stall, savedExc, io.tlb.exception)
+  val tlbRefill = Mux(stall, savedRefillIndex, io.tlb.tlb_refill_index.get)
   val pa        = Mux(info.actualStore, info.writeInfo.requestInfo.addr, tlbpa)
   val cached    = Mux(info.actualStore, info.writeInfo.requestInfo.cached, tlbcached)
   val exception = tlbexc
-  res.pa     := pa
-  res.cached := cached
+  res.pa                   := pa
+  res.cached               := cached
+  res.tlb_refill_index.get := tlbRefill
 
   // mem1
   mem1.isMem    := info.func_type === FuncType.mem

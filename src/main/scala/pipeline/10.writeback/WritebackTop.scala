@@ -9,6 +9,7 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 import controller._
+import chisel3.util.experimental.BoringUtils
 
 class WritebackTopIO extends SingleStageBundle {
   val preg    = Flipped(new PRegWriteIO)
@@ -167,5 +168,58 @@ class WritebackTop(
     } else {
       io.debug_uncached.get := DontCare
     }
+  }
+
+  if (Config.debug_on_chiplab) {
+    val instCommit  = WireDefault(0.U.asTypeOf(new DifftestInstrCommit))
+    val excpCommit  = WireDefault(0.U.asTypeOf(new DifftestExcpEvent))
+    val trapCommit  = WireDefault(0.U.asTypeOf(new DifftestTrapEvent)) // not used
+    val storeCommit = WireDefault(0.U.asTypeOf(new DifftestStoreEvent))
+    val loadCommit  = WireDefault(0.U.asTypeOf(new DifftestLoadEvent))
+    val csrCommit   = WireDefault(0.U.asTypeOf(new DifftestCSRRegState))
+    val gregCommit  = WireDefault(0.U.asTypeOf(new DifftestGRegState))
+
+    instCommit.coreid         := 0.U
+    instCommit.index          := 0.U // commit write
+    instCommit.valid          := true.B
+    instCommit.pc             := res.pc
+    instCommit.instr          := res.inst
+    instCommit.skip           := false.B
+    instCommit.is_TLBFILL     := res.exc_type === ECodes.TLBR
+    instCommit.TLBFILL_index  := res.tlb_refill_index.get
+    instCommit.is_CNTinst     := res.inst === LA32R.RDCNTID || res.func_type === FuncType.cnt
+    instCommit.timer_64_value := res.rdInfo.data
+    instCommit.wen            := res.iswf
+    instCommit.wdest          := res.rdInfo.areg
+    instCommit.wdata          := res.rdInfo.data
+    instCommit.csr_rstat      := res.isWriteCsr && res.csr_addr === CSRCodes.ESTAT
+    instCommit.csr_data       := res.rkInfo.data
+
+    excpCommit.coreid        := 0.U
+    excpCommit.excp_valid    := res.exc_type =/= ECodes.NONE
+    excpCommit.eret          := res.exc_type === ECodes.ertn
+    excpCommit.intrNo        := 0.U // top write
+    excpCommit.cause         := res.exc_type
+    excpCommit.exceptionPC   := res.pc
+    excpCommit.exceptionInst := res.inst
+
+    storeCommit.coreid     := 0.U
+    storeCommit.index      := 0.U
+    storeCommit.valid      := res.func_type === FuncType.mem && MemOpType.iswrite(res.op_type)
+    storeCommit.storePAddr := res.pa
+    storeCommit.storeVAddr := res.va
+    storeCommit.storeData  := res.wdata
+
+    loadCommit.coreid := 0.U
+    loadCommit.index  := 0.U
+    loadCommit.valid  := res.func_type === FuncType.mem && MemOpType.isread(res.op_type)
+    loadCommit.paddr  := res.pa
+    loadCommit.vaddr  := res.va
+
+    io.rob.bits.commitBundle.DifftestInstrCommit := instCommit
+    io.rob.bits.commitBundle.DifftestExcpEvent   := excpCommit
+    io.rob.bits.commitBundle.DifftestTrapEvent   := trapCommit
+    io.rob.bits.commitBundle.DifftestStoreEvent  := storeCommit
+    io.rob.bits.commitBundle.DifftestLoadEvent   := loadCommit
   }
 }

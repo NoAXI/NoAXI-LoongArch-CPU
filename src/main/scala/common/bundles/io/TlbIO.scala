@@ -9,6 +9,7 @@ import const.ECodes
 import isa.TlbOpType
 import const.tlbConst._
 import bundles._
+import const.Config
 
 class CSRTLBIO extends Bundle {
   val is_direct = Output(Bool())
@@ -34,7 +35,7 @@ class Stage0TLBIO extends Bundle {
   val memType  = Output(const.memType())
   val unitType = Output(Bool()) // 0: fetch    1: load/store
 
-  val hitVec   = Input(Vec(TLB_ENTRIES, Bool()))
+  val hitVec = Input(Vec(TLB_ENTRIES, Bool()))
 }
 
 class Stage1TLBIO extends Bundle {
@@ -44,6 +45,8 @@ class Stage1TLBIO extends Bundle {
   val pa        = Input(UInt(ADDR_WIDTH.W))
   val cached    = Input(Bool())
   val exception = Input(new ExcInfo)
+
+  val tlb_refill_index = if (Config.debug_on_chiplab) Some(Input(UInt(TLB_INDEX_LEN.W))) else None
 }
 
 class TlbBufferInfo extends Bundle {

@@ -35,6 +35,8 @@ class CSRIO extends Bundle {
     val en    = Bool()
     val wdata = Bool()
   })
+
+  val csrRegs = if (Config.debug_on_chiplab) Some(Output(new DifftestCSRRegState)) else None
 }
 
 class CSR extends Module {
@@ -295,5 +297,36 @@ class CSR extends Module {
   io.llbit := LLBCTL.info.rollb
   when(io.writeLLBCTL.en) {
     LLBCTL.info.rollb := io.writeLLBCTL.wdata
+  }
+
+  if (Config.debug_on_chiplab) {
+    io.csrRegs.get.coreid    := 0.U
+    io.csrRegs.get.crmd      := CRMD.info.asUInt
+    io.csrRegs.get.prmd      := PRMD.info.asUInt
+    io.csrRegs.get.euen      := EUEN.info.asUInt
+    io.csrRegs.get.ecfg      := ECFG.info.asUInt
+    io.csrRegs.get.estat     := ESTAT.info.asUInt
+    io.csrRegs.get.era       := ERA.info.asUInt
+    io.csrRegs.get.badv      := BADV.info.asUInt
+    io.csrRegs.get.eentry    := EENTRY.info.asUInt
+    io.csrRegs.get.tlbidx    := TLBIDX.info.asUInt
+    io.csrRegs.get.tlbehi    := TLBEHI.info.asUInt
+    io.csrRegs.get.tlbelo0   := TLBELO0.info.asUInt
+    io.csrRegs.get.tlbelo1   := TLBELO1.info.asUInt
+    io.csrRegs.get.asid      := ASID.info.asUInt
+    io.csrRegs.get.pgdl      := PGDL.info.asUInt
+    io.csrRegs.get.pgdh      := PGDH.info.asUInt
+    io.csrRegs.get.save0     := SAVE0.info.asUInt
+    io.csrRegs.get.save1     := SAVE1.info.asUInt
+    io.csrRegs.get.save2     := SAVE2.info.asUInt
+    io.csrRegs.get.save3     := SAVE3.info.asUInt
+    io.csrRegs.get.tid       := TID.info.asUInt
+    io.csrRegs.get.tcfg      := TCFG.info.asUInt
+    io.csrRegs.get.tval      := TVAL.info.asUInt
+    io.csrRegs.get.ticlr     := TICLR.info.asUInt
+    io.csrRegs.get.llbctl    := LLBCTL.info.asUInt
+    io.csrRegs.get.tlbrentry := TLBRENTRY.info.asUInt
+    io.csrRegs.get.dmw0      := DMW0.info.asUInt
+    io.csrRegs.get.dmw1      := DMW1.info.asUInt
   }
 }
