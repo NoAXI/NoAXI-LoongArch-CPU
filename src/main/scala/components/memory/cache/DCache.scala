@@ -67,11 +67,11 @@ class DCache extends Module {
   //   0           1               2             3              4            5              6
   val idle :: uncacheRead :: uncacheWrite :: checkdirty :: writeBack0 :: writeBack1 :: replaceLine :: Nil = Enum(7)
 
-  //   0         1             2
-  val init :: firstWay :: secondWay :: Nil = Enum(3)
+  //   0         1             2          3
+  val init :: firstWay :: secondWay :: readDirty :: Nil = Enum(4)
 
   val state  = RegInit(idle)
-  val cached = io.mem2.request.bits.cached && false.B
+  val cached = io.mem2.request.bits.cached
   val pa     = io.mem2.request.bits.addr
   val wdata  = io.mem2.request.bits.wdata
   val wstrb  = io.mem2.request.bits.wstrb
@@ -108,6 +108,9 @@ class DCache extends Module {
   val saved_line    = RegInit(0.U((LINE_SIZE * 8).W))
   val saved_tag     = RegInit(0.U(TAG_WIDTH.W))
   val ibarLineIndex = RegInit(0.U(LINE_WIDTH_LOG.W))
+  val dirtySignal   = RegInit(false.B)
+  val dirtyRIndex   = RegInit(0.U(LINE_WIDTH_LOG.W))
+  val dirtyRWay     = RegInit(false.B)
 
   switch(state) {
     is(idle) {

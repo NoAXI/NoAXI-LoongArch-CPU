@@ -44,22 +44,18 @@ class FetchTop extends Module {
 
   val stall         = !ShiftRegister(io.from.fire, 1)
   val savedCached   = RegInit(false.B)
-  val savedPa       = RegInit(0.U(ADDR_WIDTH.W))
   val savedExc      = RegInit(0.U.asTypeOf(new ExcInfo))
   val savedPredict  = RegInit(0.U.asTypeOf(new BranchInfo))
   val savedJumpInst = RegInit(false.B)
   when(ShiftRegister(io.from.fire, 1)) {
     savedCached   := io.tlb.cached
-    savedPa       := io.tlb.pa
     savedExc      := io.tlb.exception
     savedPredict  := io.bpu.predict
     savedJumpInst := io.bpu.firstInstJump
   }
-  val tlbpa     = Mux(stall, savedPa, io.tlb.pa)
   val tlbcached = Mux(stall, savedCached, io.tlb.cached)
   val tlbexc    = Mux(stall, savedExc, io.tlb.exception)
-  val pa        = Mux(info.actualStore, info.writeInfo.requestInfo.addr, tlbpa)
-  val cached    = Mux(info.actualStore, info.writeInfo.requestInfo.cached, tlbcached)
+  val cached    = tlbcached
   val exception = tlbexc
 
   // exception
@@ -68,8 +64,8 @@ class FetchTop extends Module {
   val excEn   = isADEF || exception.en
 
   // I-Cache
-  io.iCache.cached        := cached
-  io.iCache.request.bits  := pa
+  io.iCache.cached        := io.tlb.cached
+  io.iCache.request.bits  := io.tlb.pa
   io.iCache.request.valid := ShiftRegister(io.from.fire, 1) && !excEn && !info.bubble && !force_stop_for_simulate
   io.iCache.answer.ready  := true.B
   io.iCache.cango         := io.to.ready

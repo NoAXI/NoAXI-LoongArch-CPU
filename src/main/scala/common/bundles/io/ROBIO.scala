@@ -44,7 +44,7 @@ class RobInfo extends Bundle {
   val stallType = StallType()
 
   // debug for chiplab
-  val commitBundle = new RobCommitBundle
+  // val commitBundle = new RobCommitBundle
 }
 
 class RobRenameIO extends Bundle {

@@ -12,6 +12,7 @@ import isa.LA32R
 
 class DecodeTopIO extends StageBundle {
   val intExc = Input(Bool())
+  val plv    = Input(UInt(2.W))
 }
 
 class DecodeTop extends Module {
@@ -28,6 +29,7 @@ class DecodeTop extends Module {
   for (i <- 0 until ISSUE_WIDTH) {
     dec(i).pc   := info(i).pc
     dec(i).inst := info(i).inst
+    dec(i).plv  := io.plv
 
     // to_info.bits(i).pc          := info(i).pc
     // to_info.bits(i).inst        := info(i).inst

@@ -33,16 +33,16 @@ class CommitTopIO extends Bundle {
   val tlbBufferPop = Output(Bool())
 
   // csr llbctl
-  val writeLLBCTL = Output(new Bundle {
-    val en    = Bool()
-    val wdata = Bool()
-  })
+  // val writeLLBCTL = Output(new Bundle {
+  //   val en    = Bool()
+  //   val wdata = Bool()
+  // })
 
   // debug info output
   val debug = Vec(ISSUE_WIDTH, new DebugIO)
 
-  val debug_chiplab = if (Config.debug_on_chiplab) Some(Output(Vec(ISSUE_WIDTH, new RobCommitBundle))) else None
-  val debug_isExc   = if (Config.debug_on_chiplab) Some(Output(Bool())) else None
+  // val debug_chiplab = if (Config.debug_on_chiplab) Some(Output(Vec(ISSUE_WIDTH, new RobCommitBundle))) else None
+  // val debug_isExc   = if (Config.debug_on_chiplab) Some(Output(Bool())) else None
 }
 
 class CommitTop extends Module {
@@ -73,10 +73,10 @@ class CommitTop extends Module {
     }
   }
 
-  if (Config.debug_on_chiplab) {
-    readyBit(1)        := false.B // FOR CHIPLAB!
-    io.debug_isExc.get := io.rob(0).info.bits.isException
-  }
+  // if (Config.debug_on_chiplab) {
+  //   readyBit(1)        := false.B // FOR CHIPLAB!
+  //   io.debug_isExc.get := io.rob(0).info.bits.isException
+  // }
 
   // when got flushed or detect exception,
   // then this inst shouldn't be committed
@@ -129,7 +129,7 @@ class CommitTop extends Module {
   }
 
   // send info
-  io.debug_chiplab.get := 0.U.asTypeOf(io.debug_chiplab.get)
+  // io.debug_chiplab.get := 0.U.asTypeOf(io.debug_chiplab.get)
   val doStore = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(false.B)))
   for (i <- 0 until ISSUE_WIDTH) {
     val rob        = io.rob(i).info
@@ -137,21 +137,21 @@ class CommitTop extends Module {
 
     // rob -> commit
     io.debug(i).wb_rf_we    := Fill(4, writeValid)
-    io.debug(i).wb_pc       := rob.bits.pc
-    io.debug(i).wb_rf_wnum  := rob.bits.areg
-    io.debug(i).wb_rf_wdata := rob.bits.wdata
+    io.debug(i).wb_pc       := Mux(!writeValid, 0.U, rob.bits.pc)
+    io.debug(i).wb_rf_wnum  := Mux(!writeValid, 0.U, rob.bits.areg)
+    io.debug(i).wb_rf_wdata := Mux(!writeValid, 0.U, rob.bits.wdata)
 
-    if (Config.debug_on_chiplab) {
-      when(rob.fire) {
-        io.debug_chiplab.get(i) := rob.bits.commitBundle
-      }.otherwise {
-        io.debug_chiplab.get(i) := 0.U.asTypeOf(new RobCommitBundle)
-      }
+    // if (Config.debug_on_chiplab) {
+    //   when(rob.fire) {
+    //     io.debug_chiplab.get(i) := rob.bits.commitBundle
+    //   }.otherwise {
+    //     io.debug_chiplab.get(i) := 0.U.asTypeOf(new RobCommitBundle)
+    //   }
 
-      // io.debug_chiplab.get(i).DifftestInstrCommit.index := i.U
-      // io.debug_chiplab.get(i).DifftestStoreEvent.index  := i.U
-      // io.debug_chiplab.get(i).DifftestLoadEvent.index   := i.U
-    }
+    //   // io.debug_chiplab.get(i).DifftestInstrCommit.index := i.U
+    //   // io.debug_chiplab.get(i).DifftestStoreEvent.index  := i.U
+    //   // io.debug_chiplab.get(i).DifftestLoadEvent.index   := i.U
+    // }
 
     // commit -> rat
     io.rat(i).valid := writeValid
@@ -160,7 +160,7 @@ class CommitTop extends Module {
     io.rat(i).opreg := rob.bits.opreg
 
     // commit -> store buffer <> wb buffer
-    doStore(i) := readyBit(i) && rob.bits.isStore
+    doStore(i) := readyBit(i) && rob.bits.isStore && !rob.bits.isException
   }
 
   // store buffer
@@ -202,9 +202,9 @@ class CommitTop extends Module {
   }
 
   // FOR CHIPLAB!
-  io.writeLLBCTL.en := (io.rob(0).info.bits.commitBundle.DifftestLoadEvent.valid(5)
-    || io.rob(0).info.bits.commitBundle.DifftestStoreEvent.valid(3)) && io.rob(0).info.fire && !io.rob(0).info.bits.isException
-  io.writeLLBCTL.wdata := io.rob(0).info.bits.commitBundle.DifftestLoadEvent.valid(5) // ll
+  // io.writeLLBCTL.en := (io.rob(0).info.bits.commitBundle.DifftestLoadEvent.valid(5)
+  //   || io.rob(0).info.bits.commitBundle.DifftestStoreEvent.valid(3)) && io.rob(0).info.fire && !io.rob(0).info.bits.isException
+  // io.writeLLBCTL.wdata := io.rob(0).info.bits.commitBundle.DifftestLoadEvent.valid(5) // ll
 
   // tlb
   val tlbCurPop = WireDefault(false.B)

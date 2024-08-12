@@ -303,6 +303,19 @@ class SAVE3 extends base {
 
 //-------------------------------------------------------------------------
 
+class CPUID_info extends Bundle {
+  val zero   = UInt(23.W)
+  val coreid = UInt(9.W)
+}
+
+class CPUID extends base {
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new CPUID_info)) }).suggestName("CPUID")
+  override val id   = CSRCodes.CPUID
+  override val rw   = "b0000_0000_0000_0000_0000_0000_0000_0000".U(32.W)
+}
+
+//-------------------------------------------------------------------------
+
 class TID_info extends Bundle {
   val tid = UInt(32.W)
 }
@@ -380,6 +393,18 @@ class TLBRENTRY extends base {
   override val info = RegInit({ WireDefault(0.U.asTypeOf(new TLBRENTRY_info)) }).suggestName("TLBRENTRY")
   override val id   = CSRCodes.TLBRENTRY
   override val rw   = "b1111_1111_1111_1111_1111_1111_1100_0000".U(32.W)
+}
+
+//-------------------------------------------------------------------------
+
+class CTAG_info extends Bundle {
+  val info = UInt(32.W) // TODO: unknown
+}
+
+class CTAG extends base {
+  override val info = RegInit({ WireDefault(0.U.asTypeOf(new CTAG_info)) }).suggestName("CTAG")
+  override val id   = CSRCodes.CTAG
+  override val rw   = "b1111_1111_1111_1111_1111_1111_1111_1111".U(32.W)
 }
 
 //-------------------------------------------------------------------------
