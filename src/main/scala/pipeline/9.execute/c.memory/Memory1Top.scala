@@ -37,27 +37,23 @@ class Memory1Top extends Module {
   // tlb
   io.tlb.va     := info.va
   io.tlb.hitVec := info.hitVec
-  val stall            = !ShiftRegister(io.from.fire, 1)
-  val savedCached      = RegInit(false.B)
-  val savedPa          = RegInit(0.U(ADDR_WIDTH.W))
-  val savedExc         = RegInit(0.U.asTypeOf(new ExcInfo))
-  val savedRefillIndex = RegInit(0.U(tlbConst.TLB_INDEX_LEN.W))
+  val stall       = !ShiftRegister(io.from.fire, 1)
+  val savedCached = RegInit(false.B)
+  val savedPa     = RegInit(0.U(ADDR_WIDTH.W))
+  val savedExc    = RegInit(0.U.asTypeOf(new ExcInfo))
   when(ShiftRegister(io.from.fire, 1)) {
-    savedCached      := io.tlb.cached
-    savedPa          := io.tlb.pa
-    savedExc         := io.tlb.exception
-    savedRefillIndex := io.tlb.tlb_refill_index.get
+    savedCached := io.tlb.cached
+    savedPa     := io.tlb.pa
+    savedExc    := io.tlb.exception
   }
   val tlbpa     = Mux(stall, savedPa, io.tlb.pa)
   val tlbcached = Mux(stall, savedCached, io.tlb.cached)
   val tlbexc    = Mux(stall, savedExc, io.tlb.exception)
-  val tlbRefill = Mux(stall, savedRefillIndex, io.tlb.tlb_refill_index.get)
   val pa        = Mux(info.actualStore, info.writeInfo.requestInfo.addr, tlbpa)
   val cached    = Mux(info.actualStore, info.writeInfo.requestInfo.cached, tlbcached)
   val exception = tlbexc
-  res.pa                   := pa
-  res.cached               := cached
-  res.tlb_refill_index.get := tlbRefill
+  res.pa     := pa
+  res.cached := cached
 
   // mem1
   mem1.isMem    := info.func_type === FuncType.mem
@@ -77,7 +73,15 @@ class Memory1Top extends Module {
   res.exc_vaddr := Mux(hasExc, info.exc_vaddr, excVaddr)
   res.iswf      := Mux(excEn, false.B, info.iswf)
 
-  res.canrequest := Mux(info.actualStore && info.writeInfo.requestInfo.atom && info.writeInfo.requestInfo.rbType, io.llbit, true.B)
+  if (Config.debug_on_chiplab) {
+    res.canrequest := Mux(
+      info.actualStore && info.writeInfo.requestInfo.atom && info.writeInfo.requestInfo.rbType,
+      info.writeInfo.requestInfo.cacop.addr(31),
+      true.B,
+    )
+  } else {
+    res.canrequest := Mux(info.actualStore && info.writeInfo.requestInfo.atom && info.writeInfo.requestInfo.rbType, io.llbit, true.B)
+  }
 
   // when(info.actualStore) {
   //   res.exc_type  := ECodes.NONE
@@ -98,7 +102,7 @@ class Memory1Top extends Module {
     res.writeInfo.valid := info.writeInfo.requestInfo.rbType
   }
 
-  when(info.actualStore) {
+  when(info.actualStore || (info.func_type === FuncType.mem && info.op_type === MemOpType.cacop && info.rdInfo.areg === 24.U)) {
     res.exc_type  := ECodes.NONE
     res.exc_vaddr := 0.U
   }

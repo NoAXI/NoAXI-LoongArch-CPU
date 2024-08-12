@@ -163,7 +163,7 @@ class ICache extends Module {
         tagsram(lruway).wea                := true.B
         tagsram(lruway).addra              := saved_info.index
         tagsram(lruway).dina               := saved_info.tag
-        validreg(saved_info.index)(lruway) := true.B && saved_cached
+        validreg(saved_info.index)(lruway) := true.B && saved_cached // cached logic !!
         state                              := Mux(io.fetch.cango, idle, waiting)
         ans_valid                          := true.B
         ans_bits                           := _ans_bits
@@ -203,6 +203,10 @@ class ICache extends Module {
         for (i <- 0 until WAY_WIDTH) {
           validreg(io.cacop.index)(i) := false.B
         }
+      }
+
+      is(3.U) {
+        validreg := 0.U.asTypeOf(validreg)
       }
     }
   }

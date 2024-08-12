@@ -117,7 +117,7 @@ class CacOpInfo extends Bundle {
   val code = UInt(5.W)
 
   def isICache = code(2, 0) === 0.U
-  def isDCache = code(2, 0) === 1.U
+  def isDCache = code(2, 0) === 1.U || isICache && opType === 3.U
   def index    = addr(11, 4)
   def opType   = code(4, 3)
 }

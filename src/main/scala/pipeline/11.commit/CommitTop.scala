@@ -32,10 +32,17 @@ class CommitTopIO extends Bundle {
   val csrWritePop  = Output(Bool())
   val tlbBufferPop = Output(Bool())
 
+  // csr llbctl
+  val writeLLBCTL = Output(new Bundle {
+    val en    = Bool()
+    val wdata = Bool()
+  })
+
   // debug info output
   val debug = Vec(ISSUE_WIDTH, new DebugIO)
 
   val debug_chiplab = if (Config.debug_on_chiplab) Some(Output(Vec(ISSUE_WIDTH, new RobCommitBundle))) else None
+  val debug_isExc   = if (Config.debug_on_chiplab) Some(Output(Bool())) else None
 }
 
 class CommitTop extends Module {
@@ -66,9 +73,17 @@ class CommitTop extends Module {
     }
   }
 
+  if (Config.debug_on_chiplab) {
+    readyBit(1)        := false.B // FOR CHIPLAB!
+    io.debug_isExc.get := io.rob(0).info.bits.isException
+  }
+
   // when got flushed or detect exception,
   // then this inst shouldn't be committed
-  when(io.flush || io.stall) {
+  val excFlushReg    = RegInit(false.B)
+  val excFlushSignal = WireDefault(false.B)
+  excFlushReg := excFlushSignal
+  when(io.flush || io.stall || excFlushReg) {
     readyBit := 0.U.asTypeOf(readyBit)
   }
 
@@ -127,10 +142,15 @@ class CommitTop extends Module {
     io.debug(i).wb_rf_wdata := rob.bits.wdata
 
     if (Config.debug_on_chiplab) {
-      io.debug_chiplab.get(i)                           := rob.bits.commitBundle
-      io.debug_chiplab.get(i).DifftestInstrCommit.index := i.U
-      io.debug_chiplab.get(i).DifftestStoreEvent.index  := i.U
-      io.debug_chiplab.get(i).DifftestLoadEvent.index   := i.U
+      when(rob.fire) {
+        io.debug_chiplab.get(i) := rob.bits.commitBundle
+      }.otherwise {
+        io.debug_chiplab.get(i) := 0.U.asTypeOf(new RobCommitBundle)
+      }
+
+      // io.debug_chiplab.get(i).DifftestInstrCommit.index := i.U
+      // io.debug_chiplab.get(i).DifftestStoreEvent.index  := i.U
+      // io.debug_chiplab.get(i).DifftestLoadEvent.index   := i.U
     }
 
     // commit -> rat
@@ -153,19 +173,22 @@ class CommitTop extends Module {
   }
 
   // exception & csr
-  io.excHappen := 0.U.asTypeOf(io.excHappen)
+  val excHappen = 0.U.asTypeOf(io.excHappen)
+  val excReg    = RegNext(excHappen)
+  io.excHappen := excReg
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rob(i).info.bits
     when(io.rob(i).info.ready && info.isException) {
       when(info.exc_type === ECodes.ertn) {
-        io.excHappen.end := true.B
+        excHappen.end := true.B
       }.otherwise {
-        io.excHappen.start := true.B
+        excHappen.start := true.B
       }
-      io.excHappen.info.excType  := info.exc_type
-      io.excHappen.info.excVAddr := info.exc_vaddr
-      io.excHappen.info.pc       := info.pc
-      io.excHappen.info.pc_add_4 := info.pc + 4.U
+      excFlushSignal          := true.B
+      excHappen.info.excType  := info.exc_type
+      excHappen.info.excVAddr := info.exc_vaddr
+      excHappen.info.pc       := info.pc
+      excHappen.info.pc_add_4 := info.pc + 4.U
     }
   }
   val csrCurPop = WireDefault(false.B)
@@ -177,6 +200,11 @@ class CommitTop extends Module {
       csrCurPop := true.B
     }
   }
+
+  // FOR CHIPLAB!
+  io.writeLLBCTL.en := (io.rob(0).info.bits.commitBundle.DifftestLoadEvent.valid(5)
+    || io.rob(0).info.bits.commitBundle.DifftestStoreEvent.valid(3)) && io.rob(0).info.fire && !io.rob(0).info.bits.isException
+  io.writeLLBCTL.wdata := io.rob(0).info.bits.commitBundle.DifftestLoadEvent.valid(5) // ll
 
   // tlb
   val tlbCurPop = WireDefault(false.B)

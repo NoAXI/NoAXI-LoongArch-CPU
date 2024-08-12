@@ -67,11 +67,11 @@ class DCache extends Module {
   //   0           1               2             3              4            5              6
   val idle :: uncacheRead :: uncacheWrite :: checkdirty :: writeBack0 :: writeBack1 :: replaceLine :: Nil = Enum(7)
 
-  //      0           1
-  val firstWay :: secondWay :: Nil = Enum(2)
+  //   0         1             2
+  val init :: firstWay :: secondWay :: Nil = Enum(3)
 
   val state  = RegInit(idle)
-  val cached = io.mem2.request.bits.cached
+  val cached = io.mem2.request.bits.cached && false.B
   val pa     = io.mem2.request.bits.addr
   val wdata  = io.mem2.request.bits.wdata
   val wstrb  = io.mem2.request.bits.wstrb
@@ -92,21 +92,22 @@ class DCache extends Module {
     ),
   )
 
-  val cacop        = io.mem2.request.bits.cacop
-  val cacopen      = cacop.en && cacop.isDCache
-  val cacop_flag   = RegInit(false.B)
-  val not_complete = RegInit(false.B)
-  val imm_ansvalid = WireDefault(false.B)
-  val imm_ans      = WireDefault(0.U(DATA_WIDTH.W))
-  val savedInfo    = RegInit(0.U.asTypeOf(new savedInfo))
-  val count        = RegInit(1.U(3.W))
-  val linedata     = RegInit(0.U((LINE_SIZE * 8).W))
-  val wmask        = RegInit(1.U(4.W))
-  val wmove        = Mux1H(((DATA_WIDTH / 8 - 1) to 0 by -1).map(i => wmask(i) -> (i * 32).U))
-  val w_data       = Mux(cacop_flag, savedInfo.linedata(0), savedInfo.linedata(lru(savedInfo.index)))
-  val cacop_state  = RegInit(firstWay)
-  val saved_line   = RegInit(0.U((LINE_SIZE * 8).W))
-  val saved_tag    = RegInit(0.U(TAG_WIDTH.W))
+  val cacop         = io.mem2.request.bits.cacop
+  val cacopen       = cacop.en && cacop.isDCache
+  val cacop_flag    = RegInit(false.B)
+  val not_complete  = RegInit(false.B)
+  val imm_ansvalid  = WireDefault(false.B)
+  val imm_ans       = WireDefault(0.U(DATA_WIDTH.W))
+  val savedInfo     = RegInit(0.U.asTypeOf(new savedInfo))
+  val count         = RegInit(1.U(3.W))
+  val linedata      = RegInit(0.U((LINE_SIZE * 8).W))
+  val wmask         = RegInit(1.U(4.W))
+  val wmove         = Mux1H(((DATA_WIDTH / 8 - 1) to 0 by -1).map(i => wmask(i) -> (i * 32).U))
+  val w_data        = Mux(cacop_flag, savedInfo.linedata(0), savedInfo.linedata(lru(savedInfo.index)))
+  val cacop_state   = RegInit(init)
+  val saved_line    = RegInit(0.U((LINE_SIZE * 8).W))
+  val saved_tag     = RegInit(0.U(TAG_WIDTH.W))
+  val ibarLineIndex = RegInit(0.U(LINE_WIDTH_LOG.W))
 
   switch(state) {
     is(idle) {
@@ -131,11 +132,12 @@ class DCache extends Module {
                 // tagV(cacheHitWay).dina  := 0.U
 
                 // writeback
-                cacop_flag            := true.B
-                state                 := writeBack0
-                savedInfo.linedata(0) := hitdataline
-                savedInfo.addr        := tag(cacheHitWay) ## cacop.index ## 0.U(4.W)
-                not_complete          := false.B
+                dirty(cacop.index)(cacheHitWay) := false.B
+                cacop_flag                      := true.B
+                state                           := writeBack0
+                savedInfo.linedata(0)           := hitdataline
+                savedInfo.addr                  := tag(cacheHitWay) ## cacop.index ## 0.U(4.W)
+                not_complete                    := false.B
               }
             }
 
@@ -143,9 +145,17 @@ class DCache extends Module {
               imm_ansvalid := false.B
 
               switch(cacop_state) {
+                is(init) {
+                  for (i <- 0 until WAY_WIDTH) {
+                    data(i).addrb := cacop.index
+                    tagV(i).addrb := cacop.index
+                  }
+                  cacop_state := firstWay
+                }
                 is(firstWay) {
                   cacop_state := secondWay
-                  when(valid(0)) {
+                  when(dirty(cacop.index)(0)) {
+                    dirty(cacop.index)(0) := false.B
                     cacop_flag            := true.B
                     state                 := writeBack0
                     savedInfo.linedata(0) := data(0).doutb
@@ -156,8 +166,9 @@ class DCache extends Module {
                   saved_tag  := tag(1)
                 }
                 is(secondWay) {
-                  cacop_state := firstWay
-                  when(valid(1)) {
+                  cacop_state := init
+                  when(dirty(cacop.index)(1)) {
+                    dirty(cacop.index)(1) := false.B
                     cacop_flag            := true.B
                     state                 := writeBack0
                     savedInfo.linedata(0) := saved_line
@@ -165,6 +176,47 @@ class DCache extends Module {
                     not_complete          := false.B
                   }.otherwise {
                     imm_ansvalid := true.B
+                  }
+                }
+              }
+            }
+
+            is(3.U) {
+              imm_ansvalid := false.B
+
+              switch(cacop_state) {
+                is(init) {
+                  for (i <- 0 until WAY_WIDTH) {
+                    data(i).addrb := ibarLineIndex
+                    tagV(i).addrb := ibarLineIndex
+                  }
+                  cacop_state := firstWay
+                }
+                is(firstWay) {
+                  cacop_state := secondWay
+                  when(dirty(ibarLineIndex)(0)) {
+                    dirty(ibarLineIndex)(0) := false.B
+                    cacop_flag              := true.B
+                    state                   := writeBack0
+                    savedInfo.linedata(0)   := data(0).doutb
+                    savedInfo.addr          := tag(0) ## ibarLineIndex ## 0.U(4.W)
+                    not_complete            := true.B
+                  }
+                  saved_line := data(1).doutb
+                  saved_tag  := tag(1)
+                }
+                is(secondWay) {
+                  cacop_state   := init
+                  ibarLineIndex := ibarLineIndex + 1.U
+                  when(dirty(ibarLineIndex)(1)) {
+                    dirty(ibarLineIndex)(1) := false.B
+                    cacop_flag              := true.B
+                    state                   := writeBack0
+                    savedInfo.linedata(0)   := saved_line
+                    savedInfo.addr          := saved_tag ## ibarLineIndex ## 0.U(4.W)
+                    not_complete            := ibarLineIndex =/= (LINE_WIDTH - 1).U
+                  }.otherwise {
+                    imm_ansvalid := ibarLineIndex === (LINE_WIDTH - 1).U
                   }
                 }
               }

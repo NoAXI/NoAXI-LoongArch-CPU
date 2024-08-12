@@ -24,19 +24,19 @@ class FetchTop extends Module {
   val res                     = WireDefault(info)
   val force_stop_for_simulate = WireDefault(false.B)
 
-  if (Config.debug_on) {
-    val pcend = VecInit(
-      0x1c000104.U,
-      0x1c000108.U,
-      0x1c00010c.U,
-      0x1c000110.U,
-      0x1c000114.U,
-      0x1c000118.U,
-    )
-    when(pcend.contains(info.pc)) {
-      force_stop_for_simulate := true.B
-    }
-  }
+  // if (Config.debug_on) {
+  //   val pcend = VecInit(
+  //     0x1c000104.U,
+  //     0x1c000108.U,
+  //     0x1c00010c.U,
+  //     0x1c000110.U,
+  //     0x1c000114.U,
+  //     0x1c000118.U,
+  //   )
+  //   when(pcend.contains(info.pc)) {
+  //     force_stop_for_simulate := true.B
+  //   }
+  // }
 
   // tlb
   io.tlb.va     := info.pc

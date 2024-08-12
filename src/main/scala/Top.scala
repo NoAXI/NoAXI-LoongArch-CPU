@@ -14,6 +14,7 @@ import memory.tlb._
 import memory.cache._
 import chisel3.util.experimental.BoringUtils
 import chisel3.WireDefaultImpl
+import utils.MultiPortFifo
 
 class DebugIO extends Bundle {
   val wb_pc       = Output(UInt(32.W))
@@ -320,14 +321,15 @@ class Top extends Module {
   commit.predictResult  <> prefetch.predictResFromBack
 
   // csr
-  csr.csrRead     <> muldiv0.csrRead
-  csr.csrWrite    <> muldiv0.csrWrite
-  csr.excJump     <> commit.excJump
-  csr.excHappen   <> commit.excHappen
-  csr.intExc      <> decode.intExc
-  csr.ext_int     <> io.ext_int
-  csr.llbit       <> memory1.llbit
-  csr.writeLLBCTL <> writeback(MEMORY_ISSUE_ID).writeLLBCTL
+  csr.csrRead   <> muldiv0.csrRead
+  csr.csrWrite  <> muldiv0.csrWrite
+  csr.excJump   <> commit.excJump
+  csr.excHappen <> commit.excHappen
+  csr.intExc    <> decode.intExc
+  csr.ext_int   <> io.ext_int
+  csr.llbit     <> memory1.llbit
+  // csr.writeLLBCTL <> writeback(MEMORY_ISSUE_ID).writeLLBCTL // FOR CHIPLAB!!
+  csr.writeLLBCTL <> ShiftRegister(commit.writeLLBCTL, 1) // FOR CHIPLAB!!
 
   muldiv0.commitCsrWriteDone <> commit.csrWritePop
 
@@ -354,39 +356,57 @@ class Top extends Module {
   }
 
   if (Config.debug_on_chiplab) {
-    preg.debug_rat <> rat.debug_rat
-
-    //   // val commitQueue  = Module(new Queue(new CommitBundle, 128)).io
-    //   // when(commit.debug(0).wb_rf_we.orR && clock.asBool) {
-    //   //   commitQueue.enq.bits  := commitBundle
-    //   //   commitQueue.enq.valid := true.B
-    //   // }
-    //   // when(commit.debug(1).wb_rf_we.orR && ~clock.asBool) {
-    //   //   commitQueue.enq.bits  := commitBundle
-    //   //   commitQueue.enq.valid := true.B
-    //   // }
-
-    //   // when(commitQueue.deq.valid) {
-    //   //   io.c.get              := commitQueue.deq.bits
-    //   //   commitQueue.deq.ready := true.B
-    //   // }
+    val commit_count = RegInit(0.U(32.W))
+    preg.debug_rat         <> rat.debug_rat
+    writeback(0).llbit.get := csr.csrRegs.get.llbctl(0)
+    writeback(1).llbit.get := csr.csrRegs.get.llbctl(0)
+    writeback(2).llbit.get := csr.csrRegs.get.llbctl(0)
+    writeback(3).llbit.get := csr.csrRegs.get.llbctl(0)
+    memory2.llbit.get      := csr.csrRegs.get.llbctl(0)
 
     val commitBundle = WireDefault(0.U.asTypeOf(new CommitBundle))
-    val commitID     = commit.debug_chiplab.get(1).DifftestInstrCommit.valid
-    commitBundle.DifftestInstrCommit := RegNext(commit.debug_chiplab.get(commitID).DifftestInstrCommit)
-    commitBundle.DifftestExcpEvent   := RegNext(commit.debug_chiplab.get(commitID).DifftestExcpEvent)
-    commitBundle.DifftestLoadEvent   := RegNext(commit.debug_chiplab.get(commitID).DifftestLoadEvent)
-    commitBundle.DifftestStoreEvent  := RegNext(commit.debug_chiplab.get(commitID).DifftestStoreEvent)
-    commitBundle.DifftestTrapEvent   := RegNext(commit.debug_chiplab.get(commitID).DifftestTrapEvent)
+    // val commitQueue  = Module(new MultiPortFifo(128, new CommitBundle)).io
+    // commitQueue.flush        := false.B
+    // commitQueue.pop(0).ready := true.B
+    // commitQueue.pop(1).ready := false.B
 
-    commitBundle.DifftestGRegState.coreid := 0.U
-    commitBundle.DifftestGRegState.gpr    := preg.debug_gpr
-    commitBundle.DifftestCSRRegState      := csr.csrRegs.get
-    commitBundle.DifftestExcpEvent.intrNo := csr.csrRegs.get.estat(12, 2)
+    val hasExc = commit.debug_isExc.get
 
-    io.debug      := commit.debug(0)
-    io.debug1.get := commit.debug(1)
+    commitBundle.DifftestInstrCommit               := ShiftRegister(commit.debug_chiplab.get(0).DifftestInstrCommit, 2)
+    commitBundle.DifftestInstrCommit.csr_data      := ShiftRegister(csr.csrRegs.get.estat, 1)
+    commitBundle.DifftestInstrCommit.TLBFILL_index := ShiftRegister(tlb.fillIndex, 1)
+    commitBundle.DifftestExcpEvent                 := ShiftRegister(commit.debug_chiplab.get(0).DifftestExcpEvent, 2)
+    commitBundle.DifftestLoadEvent                 := ShiftRegister(commit.debug_chiplab.get(0).DifftestLoadEvent, 2)
+    commitBundle.DifftestStoreEvent                := ShiftRegister(commit.debug_chiplab.get(0).DifftestStoreEvent, 2)
+    commitBundle.DifftestTrapEvent                 := ShiftRegister(commit.debug_chiplab.get(0).DifftestTrapEvent, 2)
+    commitBundle.DifftestGRegState.coreid          := 0.U
+    commitBundle.DifftestGRegState.gpr             := ShiftRegister(preg.debug_gpr, 1)
+    commitBundle.DifftestCSRRegState               := csr.csrRegs.get
+    commitBundle.DifftestExcpEvent.intrNo          := csr.csrRegs.get.estat(12, 2)
+    commitBundle.DifftestExcpEvent.cause           := csr.csrRegs.get.estat(21, 16)
+
+    when(ShiftRegister(io.debug_uncached.get.wb_rf_we.orR, 1)) {
+      commitBundle.DifftestTrapEvent.code     := 2.U
+      commitBundle.DifftestTrapEvent.cycleCnt := ShiftRegister(io.debug_uncached.get.wb_rf_wnum, 1)
+      commitBundle.DifftestTrapEvent.instrCnt := ShiftRegister(io.debug_uncached.get.wb_rf_wdata, 1)
+    }
+
+    when(ShiftRegister(hasExc, 2) && !commitBundle.DifftestExcpEvent.eret) {
+      commitBundle.DifftestInstrCommit.valid := false.B
+    }
 
     io.diff.get := commitBundle
+
+    // io.debug := commit.debug(0)
+    io.debug1.get := commit.debug(1)
+
+    when(commitBundle.DifftestInstrCommit.valid) {
+      commit_count := commit_count + 1.U
+    }
+    dontTouch(commit_count)
+
+    io.debug_uncached.get := ShiftRegister(writeback(MEMORY_ISSUE_ID).debug_uncached.get, 1)
+
+    // io.diff.get := commitBundle
   }
 }

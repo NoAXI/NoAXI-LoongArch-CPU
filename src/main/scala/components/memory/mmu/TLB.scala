@@ -22,6 +22,9 @@ class TLBIO extends Bundle {
 
   // tlb insts
   val exe = Input(new TlbBufferInfo)
+
+  // debug
+  val fillIndex = Output(UInt(TLB_INDEX_LEN.W))
 }
 
 class TLB extends Module {
@@ -38,8 +41,7 @@ class TLB extends Module {
   val found_ps     = WireDefault(VecInit(Seq.fill(2)(0.U(6.W))))
   val found        = WireDefault(VecInit(Seq.fill(2)(0.U.asTypeOf(new TLBTransform))))
 
-  io.stage1(0).tlb_refill_index.get := refill_index
-  io.stage1(1).tlb_refill_index.get := refill_index
+  io.fillIndex := refill_index
 
   // tlb insts
   val is_tlb_refill = io.csr.estat.ecode === ECodes.TLBR

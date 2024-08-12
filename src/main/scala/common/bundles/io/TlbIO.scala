@@ -45,8 +45,6 @@ class Stage1TLBIO extends Bundle {
   val pa        = Input(UInt(ADDR_WIDTH.W))
   val cached    = Input(Bool())
   val exception = Input(new ExcInfo)
-
-  val tlb_refill_index = if (Config.debug_on_chiplab) Some(Input(UInt(TLB_INDEX_LEN.W))) else None
 }
 
 class TlbBufferInfo extends Bundle {

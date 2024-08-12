@@ -130,9 +130,9 @@ class CSR extends Module {
           ESTAT.info.is_11 := false.B
         }
         when(x.id === CSRCodes.TCFG) {
-          conuter_run := false.B
-          // TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 3.U(2.W)
-          TVAL.info.timeval := wdata(COUNT_N - 1, 6) ## 63.U(6.W)
+          conuter_run       := false.B
+          TVAL.info.timeval := wdata(COUNT_N - 1, 2) ## 3.U(2.W)
+          // TVAL.info.timeval := wdata(COUNT_N - 1, 6) ## 63.U(6.W)
         }
         when(x.id === CSRCodes.LLBCTL && wdata(1)) {
           LLBCTL.info.rollb := false.B

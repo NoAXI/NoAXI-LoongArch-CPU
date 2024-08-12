@@ -25,6 +25,7 @@ class Memory2TopIO extends SingleStageBundle {
   val forward          = Flipped(new ForwardInfoIO)
 
   val cacOpInfo = Output(new CacOpInfo)
+  val llbit     = if (Config.debug_on_chiplab) Some(Input(Bool())) else None
 }
 
 class Memory2Top extends Module {
@@ -58,7 +59,7 @@ class Memory2Top extends Module {
   val isFirstCacop = isMem && info.op_type === MemOpType.cacop
   val isFirstAtom  = isMem && MemOpType.isatom(info.op_type)
 
-  val dcacheEn      = ((info.actualStore && !io.cacOpInfo.en) || (isFirstLoad && info.cached && !isFirstAtom)) && info.canrequest
+  val dcacheEn = ((info.actualStore && !(io.cacOpInfo.en && io.cacOpInfo.opType =/= 3.U)) || (isFirstLoad && info.cached && !isFirstAtom)) && info.canrequest
   val storebufferEn = isFirstStore || (isFirstLoad && !info.cached) || isFirstCacop || isFirstAtom
 
   val storeBufferFull = !io.storeBufferWrite.ready
@@ -80,16 +81,21 @@ class Memory2Top extends Module {
   io.storeBufferWrite.valid := false.B
   io.storeBufferWrite.bits  := 0.U.asTypeOf(new BufferInfo)
   when(storebufferEn && !info.actualStore) {
-    io.storeBufferWrite.valid                   := valid && !info.bubble
-    io.storeBufferWrite.bits.valid              := true.B
-    io.storeBufferWrite.bits.requestInfo.cached := info.cached
-    io.storeBufferWrite.bits.requestInfo.addr   := Mux(isFirstStore || isFirstCacop, info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W), info.pa)
-    io.storeBufferWrite.bits.requestInfo.wdata  := info.wdata
-    io.storeBufferWrite.bits.requestInfo.wstrb  := Mux(isFirstStore, info.wmask, info.op_type)
-    io.storeBufferWrite.bits.requestInfo.rbType := isFirstStore
-    io.storeBufferWrite.bits.requestInfo.atom   := MemOpType.isatom(info.op_type)
-    io.storeBufferWrite.bits.requestInfo.cacop.en   := isFirstCacop
-    io.storeBufferWrite.bits.requestInfo.cacop.addr := Mux(isFirstCacop, info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W), 0.U((22 - ROB_WIDTH).W) ## info.robId ## info.rdInfo.areg ## info.rdInfo.preg)
+    io.storeBufferWrite.valid                     := valid && !info.bubble && !raw._3
+    io.storeBufferWrite.bits.valid                := true.B
+    io.storeBufferWrite.bits.requestInfo.cached   := info.cached
+    io.storeBufferWrite.bits.requestInfo.addr     := Mux(isFirstStore || isFirstCacop, info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W), info.pa)
+    io.storeBufferWrite.bits.requestInfo.wdata    := info.wdata
+    io.storeBufferWrite.bits.requestInfo.wstrb    := Mux(isFirstStore, info.wmask, info.op_type)
+    io.storeBufferWrite.bits.requestInfo.rbType   := isFirstStore
+    io.storeBufferWrite.bits.requestInfo.atom     := MemOpType.isatom(info.op_type)
+    io.storeBufferWrite.bits.requestInfo.cacop.en := isFirstCacop
+    io.storeBufferWrite.bits.requestInfo.cacop.addr := Mux(
+      isFirstCacop,
+      info.pa(ADDR_WIDTH - 1, 2) ## 0.U(2.W),
+      if (Config.debug_on_chiplab) io.llbit.get ## 0.U(16.W) ## info.robId ## info.rdInfo.areg ## info.rdInfo.preg // FOR CHIPLAB !!
+      else 0.U((22 - ROB_WIDTH).W) ## info.robId ## info.rdInfo.areg ## info.rdInfo.preg,
+    )
     io.storeBufferWrite.bits.requestInfo.cacop.code := info.rdInfo.areg
   }
   when(io.flush) {

@@ -159,7 +159,7 @@ object LA32R {
     SC_W -> List(FuncType.mem, MemOpType.sc),
     // Cache
     CACOP -> List(FuncType.mem, MemOpType.cacop),
-    IBAR  -> List(FuncType.mem, MemOpType.ibar),
+    IBAR  -> List(FuncType.mem, MemOpType.cacop),
 
     //  bru, jumped address calculated by ALU.add: pc + imm (jirl: rj + imm)
     JIRL -> List(FuncType.bru, BruOptype.jirl),

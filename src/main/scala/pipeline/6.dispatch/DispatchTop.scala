@@ -134,7 +134,7 @@ class DispatchTop extends Module {
   for (i <- 0 until ISSUE_WIDTH) {
     val to = io.to(port(i))
     io.busyInfo(i).valid := validReg &&
-      to.fire &&
+      !io.flush &&
       to.bits.rdInfo.preg =/= 0.U &&
       to.bits.iswf &&
       to.bits.pipelineType =/= 0.U

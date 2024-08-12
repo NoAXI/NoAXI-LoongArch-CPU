@@ -55,7 +55,7 @@ class Muldiv0Top extends Module {
 
   // calculate csr_wmask
   val is_xchg = info.func_type === FuncType.csr && info.op_type === CsrOpType.xchg
-  res.csr_wmask := Mux(is_xchg, info.rjInfo.data, ALL_MASK.U)
+  res.csr_wmask := Mux(is_xchg, info.rjInfo.data, Fill(32, 1.U))
 
   // csr read
   io.csrRead.addr := info.csr_addr

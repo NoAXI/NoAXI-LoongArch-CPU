@@ -31,8 +31,9 @@ class StoreBuffer(
   val io = IO(new StoreBufferIO)
 
   // use compressive queue
-  val validReg = RegInit(VecInit(Seq.fill(entries)(false.B)))
-  val validTop = RegInit(0.U(log2Ceil(entries).W))
+  val validReg       = RegInit(VecInit(Seq.fill(entries)(false.B)))
+  val validTop       = RegInit(0.U(log2Ceil(entries).W))
+  val validMaybeFull = RegInit(false.B)
 
   val mem = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(new BufferInfo))))
   val hit = WireDefault(false.B)
@@ -115,15 +116,17 @@ class StoreBuffer(
   }
   when(io.popValid =/= io.to.fire) {
     when(io.popValid) {
-      validTop := validTop + 1.U
+      validTop       := validTop + 1.U
+      validMaybeFull := true.B
     }.otherwise {
-      validTop := validTop - 1.U
+      validTop       := validTop - 1.U
+      validMaybeFull := false.B
     }
   }
 
   when(io.flush) {
     topPtr    := validTop
-    maybeFull := false.B
+    maybeFull := validMaybeFull
     for (i <- 0 until entries) {
       when(!validReg(i)) {
         mem(i) := 0.U.asTypeOf(mem(i))
