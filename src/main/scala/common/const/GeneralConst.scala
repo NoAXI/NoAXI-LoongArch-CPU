@@ -44,7 +44,7 @@ object Parameters {
   val MEMORY_STAGE_NUM = 4 // readreg, mem0, mem1, mem2
 
   // write buffer const
-  val STORE_BUFFER_WIDTH       = 2
+  val STORE_BUFFER_WIDTH       = 4
   val STORE_BUFFER_LENGTH      = 1 << STORE_BUFFER_WIDTH
   val WRITE_BACK_BUFFER_WIDTH  = 2
   val WRITE_BACK_BUFFER_LENGTH = 1 << WRITE_BACK_BUFFER_WIDTH

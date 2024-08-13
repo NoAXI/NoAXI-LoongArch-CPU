@@ -8,6 +8,7 @@ import bundles._
 import func.Functions._
 import const.Parameters._
 
+import isa._
 import pipeline._
 import controller._
 
@@ -44,7 +45,9 @@ class RobInfo extends Bundle {
   val stallType = StallType()
 
   // debug for chiplab
-  val commitBundle = new RobCommitBundle
+  val commitBundle         = new RobCommitBundle
+  val debug_func_type      = FuncType()
+  val debug_isUncachedLoad = Bool()
 }
 
 class RobRenameIO extends Bundle {

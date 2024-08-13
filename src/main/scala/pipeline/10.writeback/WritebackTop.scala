@@ -25,6 +25,8 @@ class WritebackTopIO extends SingleStageBundle {
 
   val debug_uncached = if (Config.debug_on) Some(new DebugIO) else None
   val llbit          = if (Config.debug_on_chiplab) Some(Input(Bool())) else None
+  val debug_rbDone   = Output(Bool())
+  val debug_rbData   = Output(UInt(DATA_WIDTH.W))
 }
 
 class WritebackTop(
@@ -133,6 +135,12 @@ class WritebackTop(
   io.rob.bits.exc_vaddr   := res.exc_vaddr
   io.rob.bits.isPrivilege := isPri
   io.rob.bits.isException := res.exc_type =/= ECodes.NONE
+
+  // debug
+  io.rob.bits.debug_func_type      := res.func_type
+  io.rob.bits.debug_isUncachedLoad := info.uncachedLoad
+  io.debug_rbDone                  := res.actualStore && res.iswf && valid && !info.bubble
+  io.debug_rbData                  := res.rdInfo.data
 
   when(isPri) {
     io.rob.bits.bfail.tar := res.pc + 4.U

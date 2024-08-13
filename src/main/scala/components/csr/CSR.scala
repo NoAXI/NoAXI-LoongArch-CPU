@@ -44,23 +44,23 @@ class CSR extends Module {
 
   val info = io.excHappen.info
 
-  val CRMD    = new CRMD
-  val PRMD    = new PRMD
-  val EUEN    = new EUEN
-  val ECFG    = new ECFG
-  val ESTAT   = new ESTAT
-  val ERA     = new ERA
-  val BADV    = new BADV
-  val EENTRY  = new EENTRY
-  val TLBIDX  = new TLBIDX
-  val TLBEHI  = new TLBEHI
-  val TLBELO0 = new TLBELO0
-  val TLBELO1 = new TLBELO1
-  val ASID    = new ASID
-  val PGDL    = new PGDL
-  val PGDH    = new PGDH
-  val PGD     = new PGD
-  // val CPUID     =
+  val CRMD      = new CRMD
+  val PRMD      = new PRMD
+  val EUEN      = new EUEN
+  val ECFG      = new ECFG
+  val ESTAT     = new ESTAT
+  val ERA       = new ERA
+  val BADV      = new BADV
+  val EENTRY    = new EENTRY
+  val TLBIDX    = new TLBIDX
+  val TLBEHI    = new TLBEHI
+  val TLBELO0   = new TLBELO0
+  val TLBELO1   = new TLBELO1
+  val ASID      = new ASID
+  val PGDL      = new PGDL
+  val PGDH      = new PGDH
+  val PGD       = new PGD
+  val CPUID     = new CPUID
   val SAVE0     = new SAVE0
   val SAVE1     = new SAVE1
   val SAVE2     = new SAVE2
@@ -71,9 +71,9 @@ class CSR extends Module {
   val TICLR     = new TICLR
   val LLBCTL    = new LLBCTL
   val TLBRENTRY = new TLBRENTRY
-  // val CTAG      =
-  val DMW0 = new DMW0
-  val DMW1 = new DMW1
+  val CTAG      = new CTAG
+  val DMW0      = new DMW0
+  val DMW1      = new DMW1
 
   val csrlist = Seq(
     CRMD,
@@ -92,7 +92,7 @@ class CSR extends Module {
     PGDL,
     PGDH,
     PGD,
-    // CPUID,
+    CPUID,
     SAVE0,
     SAVE1,
     SAVE2,
@@ -103,7 +103,7 @@ class CSR extends Module {
     TICLR,
     LLBCTL,
     TLBRENTRY,
-    // CTAG,
+    CTAG,
     DMW0,
     DMW1,
   )
@@ -115,6 +115,13 @@ class CSR extends Module {
       io.csrRead.data := x.info.asUInt
       when(x.id === CSRCodes.TICLR) {
         io.csrRead.data := 0.U
+      }
+      when(x.id === CSRCodes.PGD) {
+        when(!BADV.info.vaddr(ADDR_WIDTH - 1).asBool) {
+          io.csrRead.data := PGDL.info.asUInt
+        }.otherwise {
+          io.csrRead.data := PGDH.info.asUInt
+        }
       }
     }
   }

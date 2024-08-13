@@ -355,6 +355,10 @@ class Top extends Module {
     io.debug_uncached.get := writeback(MEMORY_ISSUE_ID).debug_uncached.get
   }
 
+  // debug
+  writeback(MEMORY_ISSUE_ID).debug_rbData <> commit.debug_rbData
+  writeback(MEMORY_ISSUE_ID).debug_rbDone <> commit.debug_rbDone
+
   if (Config.debug_on_chiplab) {
     val commit_count = RegInit(0.U(32.W))
     preg.debug_rat         <> rat.debug_rat

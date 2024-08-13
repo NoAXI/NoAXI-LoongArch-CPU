@@ -38,6 +38,8 @@ class DecoderIO extends Bundle {
   val src1IsZero = Output(Bool())
   val src2IsFour = Output(Bool())
   val src2IsImm  = Output(Bool())
+
+  val plv = Input(UInt(2.W))
 }
 
 class Decoder extends Module {
@@ -137,6 +139,9 @@ class Decoder extends Module {
   io.csrReg     := Mux(io.inst === LA32R.RDCNTID, CSRCodes.TID, imm(13, 0))
   // io.csr_wmask          := Mux(is_xchg, rj_value, ALL_MASK.U)
 
+  val isPrivilege = ((is_csr && io.inst =/= LA32R.RDCNTID) || (io.inst === LA32R.CACOP && io.inst(4, 3) =/= 2.U) ||
+    func_type === FuncType.tlb)
+
   io.exc_type := MuxCase(
     ECodes.NONE,
     List(
@@ -145,6 +150,7 @@ class Decoder extends Module {
       (is_exc && op_type === ExcOpType.sys)  -> ECodes.SYS,
       (is_exc && op_type === ExcOpType.ertn) -> ECodes.ertn,
       (is_invtlb && io.inst(4, 0) > 6.U)     -> ECodes.INE, // IPE or INE ???
+      (io.plv === 3.U && isPrivilege)        -> ECodes.IPE,
     ),
   )
 

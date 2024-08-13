@@ -9,6 +9,8 @@ import func.Functions._
 import const.Parameters._
 import controller._
 
+import isa._
+
 class CommitTopIO extends Bundle {
   // architectural state update
   val rob = Flipped(Vec(ISSUE_WIDTH, new RobCommitIO))
@@ -43,6 +45,8 @@ class CommitTopIO extends Bundle {
 
   val debug_chiplab = if (Config.debug_on_chiplab) Some(Output(Vec(ISSUE_WIDTH, new RobCommitBundle))) else None
   val debug_isExc   = if (Config.debug_on_chiplab) Some(Output(Bool())) else None
+  val debug_rbDone  = Input(Bool())
+  val debug_rbData  = Input(UInt(DATA_WIDTH.W))
 }
 
 class CommitTop extends Module {
@@ -50,6 +54,7 @@ class CommitTop extends Module {
 
   // generate ready signal
   val readyBit = WireDefault(VecInit(Seq.tabulate(ISSUE_WIDTH)(i => io.rob(i).info.bits.done)))
+  val doStore  = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(false.B)))
   for (i <- 0 until ISSUE_WIDTH) {
     val info = io.rob(i).info.bits
 
@@ -104,6 +109,16 @@ class CommitTop extends Module {
 
   // when ex / bfail appears, do flush
   io.flushInfo := 0.U.asTypeOf(new BranchInfo)
+  // val storeCount = RegInit(0.U(3.W))
+  // when(io.bufferPopValid) {
+  //   storeCount := storeCount + 1.U
+  // }
+  // if (Config.debug_on_chiplab) {
+  //   when(io.rob(0).info.ready && io.rob(0).info.bits.debug_func_type === FuncType.alu_imm && storeCount === 7.U) {
+  //     io.flushInfo.en  := true.B
+  //     io.flushInfo.tar := io.rob(0).info.bits.pc + 4.U
+  //   }
+  // }
   for (i <- 0 until ISSUE_WIDTH) {
     val info    = io.rob(i).info.bits
     val isBfail = info.bfail.en && info.isbr
@@ -130,7 +145,6 @@ class CommitTop extends Module {
 
   // send info
   io.debug_chiplab.get := 0.U.asTypeOf(io.debug_chiplab.get)
-  val doStore = WireDefault(VecInit(Seq.fill(ISSUE_WIDTH)(false.B)))
   for (i <- 0 until ISSUE_WIDTH) {
     val rob        = io.rob(i).info
     val writeValid = rob.fire && rob.bits.wen && !rob.bits.isException
@@ -160,7 +174,7 @@ class CommitTop extends Module {
     io.rat(i).opreg := rob.bits.opreg
 
     // commit -> store buffer <> wb buffer
-    doStore(i) := readyBit(i) && rob.bits.isStore
+    doStore(i) := readyBit(i) && rob.bits.isStore && !rob.bits.isException
   }
 
   // store buffer
@@ -203,7 +217,10 @@ class CommitTop extends Module {
 
   // FOR CHIPLAB!
   io.writeLLBCTL.en := (io.rob(0).info.bits.commitBundle.DifftestLoadEvent.valid(5)
-    || io.rob(0).info.bits.commitBundle.DifftestStoreEvent.valid(3)) && io.rob(0).info.fire && !io.rob(0).info.bits.isException
+    || io.rob(0).info.bits.commitBundle.DifftestStoreEvent.valid(3)) && io
+    .rob(0)
+    .info
+    .fire && !io.rob(0).info.bits.isException
   io.writeLLBCTL.wdata := io.rob(0).info.bits.commitBundle.DifftestLoadEvent.valid(5) // ll
 
   // tlb
@@ -215,5 +232,35 @@ class CommitTop extends Module {
     when(io.rob(i).info.ready && info.isTlb) {
       tlbCurPop := true.B
     }
+  }
+
+  // FOR CHIPLAB
+  if (Config.debug_on_chiplab) {
+    val stall       = RegInit(false.B)
+    val unldInfoReg = RegInit(0.U.asTypeOf(new RobInfo))
+    val stallSignal = io.rob(0).info.fire && io.rob(0).info.bits.debug_isUncachedLoad && !io.rob(0).info.bits.isException
+    when(stallSignal) {
+
+      stall       := true.B
+      unldInfoReg := io.rob(0).info.bits
+      io.debug(0) := 0.U.asTypeOf(io.debug(0))
+
+      io.debug_chiplab.get(0) := 0.U.asTypeOf(io.debug_chiplab.get(0))
+    }
+    when(io.debug_rbDone) {
+      stall                   := false.B
+      io.debug(0).wb_rf_we    := unldInfoReg.wen
+      io.debug(0).wb_pc       := unldInfoReg.pc
+      io.debug(0).wb_rf_wnum  := unldInfoReg.areg
+      io.debug(0).wb_rf_wdata := io.debug_rbData
+
+      io.debug_chiplab.get(0)                           := unldInfoReg.commitBundle
+      io.debug_chiplab.get(0).DifftestInstrCommit.wdata := io.debug_rbData
+    }
+    when(stall) {
+      readyBit := 0.U.asTypeOf(readyBit)
+    }
+  } else {
+    io.debug_rbDone := DontCare
   }
 }
